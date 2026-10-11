@@ -37,6 +37,7 @@ ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
   if(e.key!=='Enter'||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.isComposing)return;e.preventDefault();
   if(id==='pAge')applyBirth();
   const nx=ENTER_NEXT[i+1];if(nx){const n=$(nx);n.focus();if(n.select&&n.type!=='date')n.select();}else focusAfterPatient();}));
+$('urgBtn').onclick=()=>{tick();S.urgent=!S.urgent;renderAll();toast(S.urgent?'Позначено: терміново':'Мітку «Терміново» знято');};
 $('conclKeep').onclick=()=>{const v=$('conclFree').value;if(!v.trim()){$('conclFree').focus();toast('Спершу введіть текст висновку');return;}tick();addToList('concl',v);$('conclFree').value='';renderAll();toast('Висновок запамʼятовано як кнопку');};
 $('recKeep').onclick=()=>{const v=$('recFree').value;if(!v.trim()){$('recFree').focus();toast('Спершу введіть текст рекомендації');return;}tick();addToList('rec',v);$('recFree').value='';renderAll();toast('Рекомендацію запамʼятовано як кнопку');};
 $('flowChk').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
@@ -51,6 +52,12 @@ function newPatient(keep){
   $('pDate').value=date;setEedDefault();if(keep&&eedKeep)$('pEed').value=eedKeep;$('pNum').value=nextNum();$('refMsg').textContent='';
   clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;$('ageMsg').hidden=true;renderAll();
   setTimeout(()=>{if(!$('view-desc').hidden&&window.innerWidth>760){$('pName').focus();}},0);
+}
+/* ще одне дослідження тому самому пацієнту (напр. ОГК + коліно): окремий протокол, № і ЕЕД, дані пацієнта лишаються */
+function sameStudyPatient(){
+  pushHist('click');const keep={};['pName','pAge','pSex','pDept','pRefDoc','pDate'].forEach(i=>keep[i]=$(i).value);
+  newPatient(true);Object.keys(keep).forEach(i=>$(i).value=keep[i]);setEedDefault();$('pNum').value=nextNum();S.prevId=findPrev();renderAll();
+  $('sec-study').scrollIntoView({block:'start',behavior:'smooth'});toast('Той самий пацієнт — виберіть вид дослідження');
 }
 $('newPatient').onclick=()=>{pushHist('click');newPatient(false);toast('Новий пацієнт. Попередній стан можна повернути: Ctrl+Z');};
 $('navUndo').onclick=undo;$('navRedo').onclick=redo;
@@ -107,7 +114,7 @@ function doSave(){
     name:$('pName').value.trim(),age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),
     study:S.study,what:headerLine().replace(/^На\s*/,'').replace(/ від .*$/,''),eed:$('pEed').value.trim(),
     concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,doc:docData(),blank:curBlank(),
-    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
+    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
   saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);

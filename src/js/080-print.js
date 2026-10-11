@@ -67,7 +67,8 @@ const BLANKS={
 };
 const BLANK_ORDER=['C','B','A','D'];
 const curBlank=()=>S.blank||SET.blank||'C';
-function buildUnits(it,cmp){if(!it.doc)return [{h:STAMP,blk:true}].concat(it.units||[]);return (BLANKS[it.blank]||BLANKS.C).build(it.doc,cmp);}
+function buildUnits(it,cmp){if(!it.doc)return [{h:STAMP,blk:true}].concat(it.units||[]);const u=(BLANKS[it.blank]||BLANKS.C).build(it.doc,cmp);
+  if(it.doc.urgent)u.splice(1,0,{h:'<div class="urg">ТЕРМІНОВО · критична знахідка · лікаря повідомлено: ____________ о ____</div>',blk:true});return u;}
 const clsOf=(it,cmp)=>(cmp?'cmp ':'')+'b'+(it.doc?(BLANKS[it.blank]?it.blank:'C'):'L');
 const fitsHalf=(units,cls)=>measure(unitsHTML(units),cls)<=CAP_HALF;
 function contUnits(it,rest){return [{t:`${it.name||'Пацієнт'} — продовження`,p:'cont',c:'cont'},...rest];}

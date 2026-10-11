@@ -170,6 +170,13 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
    await q.click('#conclTools >> text=Редагувати кнопки');await q.click('#conclTools button >> text=Повернути як було');await q.click('#conclTools button >> text=Точно');
    ok(await q.isVisible('#conclChips .chip >> text=Гідроторакс')&&!(await q.isVisible('#conclChips .chip >> text=Плевральні спайки справа')),'«Повернути як було» для висновків');await q.close();}
   await p.click('#allNorm');
+  // бічність і «Терміново»
+  await p.click('#allNorm');await p.click('#zone-infil .seg button:nth-child(2)');for(const t of ['права','нижні поля','інфільтративні'])await p.click(`#zone-infil >> text=${t}`);
+  await p.click('#conclChips .chip >> text=Лівобічна пневмонія');
+  ok((await p.textContent('#checkList')).includes('Бічність'),'перевірка «право / ліво»: справа в описі, зліва у висновку');
+  await p.click('#allNorm');await p.click('#urgBtn');
+  ok((await paper(p)).includes('ТЕРМІНОВО')&&await p.evaluate(()=>window.__skg.docData().urgent===true),'мітка «Терміново» в протоколі');
+  await p.click('#urgBtn');
   // тема «Кабінет»
   await p.click('#navSettings');await p.selectOption('#sTheme','grey');
   ok((await p.evaluate(()=>getComputedStyle(document.body).backgroundColor))==='rgb(42, 43, 45)','тема «Кабінет»: темно-сірий фон');
@@ -179,8 +186,13 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   // збереження з бланком
   await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
   ok(await p.evaluate(()=>{const r=JSON.parse(localStorage.getItem('skiagrama.archive.v1')).slice(-1)[0];return !!(r.doc&&r.blank);}),'архів зберігає дані для бланка');
+  await p.click('#samePt');
+  ok((await p.inputValue('#pName'))!==''&&(await p.inputValue('#pAge'))!==''&&await p.evaluate(()=>!document.getElementById('samePt')),'«Ще дослідження цьому пацієнту»: ПІБ і вік лишились, новий протокол');
   await p.click('#navArchive');const ds=await p.textContent('#dayBox');
-  ok(/1\s*протоколів сьогодні/.test(ds)&&ds.includes('не надруковано'),'підсумок дня в архіві: '+ds.replace(/\s+/g,' ').slice(0,80));
+  const dl=await Promise.all([p.waitForEvent('download',{timeout:5000}).catch(()=>null),p.click('#aCsv')]);
+  const csv=dl[0]?require('fs').readFileSync(await dl[0].path(),'utf8'):'';
+  ok(csv.startsWith('\ufeffДата;№;ПІБ')&&csv.split('\r\n').length>=2,'вивантаження архіву в Excel (CSV)');
+  ok(/\d\s*протоколів сьогодні/.test(ds)&&ds.includes('не надруковано'),'підсумок дня в архіві: '+ds.replace(/\s+/g,' ').slice(0,80));
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }

@@ -156,6 +156,7 @@ function updMeas(silent){
   if(!silent){renderConcl();renderSide();renderNav();}
 }
 function renderConcl(){
+  $('urgBtn').setAttribute('aria-pressed',String(!!S.urgent));
   const sg=$('sugs');sg.textContent='';
   const sugs=suggestions().filter(([t])=>!S.concl.includes(t)&&!S.dismissed.includes(t));
   sugs.forEach(([t,why,tbd])=>{const row=el('div',{class:'ci'});const sp=el('span');sp.append(el('span',tbd?{class:'tbd'}:null,t));sp.append(el('span',{class:'why'},'Підказка: '+why));row.append(sp);
@@ -258,6 +259,7 @@ function renderPaper(){
   man.append(el('span',{class:'badge'},'відредаговано вручну'));
   const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();toast('Повернуто автоматичний текст');};
   man.append(rs,el('span',{class:'note'},'Кнопки зон тепер не змінюють текст — скиньте правку, щоб повернути автотекст.'));p.append(man);
+  if(S.urgent)p.append(el('div',{class:'urgline'},'ТЕРМІНОВО · критична знахідка'));
   const tx=el('div',{id:'ptext',contenteditable:'true',spellcheck:'true',role:'textbox','aria-multiline':'true','aria-label':'Текст протоколу — можна правити прямо тут',title:'Клацніть і пишіть. Alt+клік по реченню — відкрити його зону.'});
   if(S.manual!=null){
     String(S.manual).split('\n').forEach((ln,i)=>{const d=el('div',{class:i===0?'pt':/^Rö-ч:/.test(ln)?'concl':''});if(ln)d.textContent=ln;else d.append(el('br'));tx.append(d);});
@@ -326,7 +328,10 @@ function updBar(w){
   const mw=$('mbarWarn');mw.textContent='';if(w&&w.length)mw.append(el('span',{class:'pill w',title:w.join(' ')},'⚠ '+w.length));
 }
 function renderMeter(){
-  const m=$('meter');if(!t0){m.textContent=editingId?'Відкрито протокол з архіву':'';return;}
+  const m=$('meter');
+  if(tDone||(editingId&&!t0)){m.textContent='';if(!t0)m.append(document.createTextNode('Відкрито протокол з архіву '));else{const sec=Math.round((tDone-t0)/1000);m.append(el('b',null,`${Math.floor(sec/60)}:${pad(sec%60)}`),document.createTextNode(` · ${clicks} дій · збережено в архів `));}
+    const b=el('button',{type:'button',class:'btn sm',id:'samePt'},'+ Ще дослідження цьому пацієнту');b.onclick=sameStudyPatient;m.append(b);return;}
+  if(!t0){m.textContent='';return;}
   const sec=Math.round(((tDone||Date.now())-t0)/1000);m.textContent='';
   m.append(el('b',null,`${Math.floor(sec/60)}:${pad(sec%60)}`));m.append(document.createTextNode(` · ${clicks} дій${tDone?' · збережено в архів':''}${editingId&&!tDone?' · редагування протоколу з архіву':''}`));
 }

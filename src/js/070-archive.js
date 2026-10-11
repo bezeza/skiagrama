@@ -34,9 +34,12 @@ function renderArchive(){
   rows.forEach(r=>{const tr=el('tr',r.example?{class:'ex'}:null);
     const c=el('input',{type:'checkbox','aria-label':'Вибрати для друку'});c.checked=selected.has(r.id);c.onchange=()=>{c.checked?selected.add(r.id):selected.delete(r.id);updPrintBtn();};
     const td0=el('td');td0.append(c);tr.append(td0);
-    tr.append(el('td',null,fmtD(r.date)),el('td',null,r.num),el('td',null,`${r.name}${r.age?', '+r.age+' р.':''}${r.example?' (приклад)':''}`),el('td',null,r.what||''),el('td',{class:'c'},r.concl||''));
+    const nm=el('td',null,`${r.name}${r.age?', '+r.age+' р.':''}${r.example?' (приклад)':''}`);
+    if(r.urgent){nm.append(document.createTextNode(' '),el('span',{class:'pill '+(r.notified?'o':'b')},r.notified?'терміново · повідомлено':'терміново'));if(!r.notified)tr.classList.add('urgrow');}
+    tr.append(el('td',null,fmtD(r.date)),el('td',null,r.num),nm,el('td',null,r.what||''),el('td',{class:'c'},r.concl||''));
     const tp=el('td');tp.append(el('span',{class:'pill '+(r.printed?'o':'w')},r.printed?'так':'ні'));tr.append(tp);
     const ta=el('td');const o=el('button',{type:'button',class:'btn sm'},'Відкрити');o.onclick=()=>openRecord(r);
+    if(r.urgent&&!r.notified){const nb=el('button',{type:'button',class:'btn sm'},'Повідомлено');nb.title='Лікаря, що направив, повідомлено';nb.onclick=()=>{r.notified=true;saveA();renderArchive();};ta.append(nb,document.createTextNode(' '));}
     const del=el('button',{type:'button',class:'btn sm danger'},'Видалити');del.onclick=()=>{if(del.dataset.c){A=A.filter(x=>x!==r);selected.delete(r.id);saveA();renderArchive();renderNames();updCtrlBadge();}else{del.dataset.c='1';del.textContent='Точно?';setTimeout(()=>{del.dataset.c='';del.textContent='Видалити';},3000);}};
     ta.append(o,document.createTextNode(' '),del);tr.append(ta);tb.append(tr);});
   updPrintBtn();
@@ -52,6 +55,7 @@ function renderDaySum(){
   const tile=(n,t,cls)=>{const d=el('div',{class:'dt'+(cls?' '+cls:'')});d.append(el('b',null,String(n)),el('span',null,t));row.append(d);};
   tile(todays.length,'протоколів сьогодні');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
   const ctl=todays.filter(r=>r.ctrlDue).length;if(ctl)tile(ctl,'на контроль');
+  const urg=todays.filter(r=>r.urgent&&!r.notified).length;if(urg)tile(urg,'термінових не повідомлено','b');
   box.append(row);
   box.append(el('p',{class:'note'},Object.keys(by).map(k=>`${STUDY_SHORT[k]||k} — ${by[k]}`).join(' · ')));
   if(unpr.length){const b=el('button',{type:'button',class:'btn primary'},`Вибрати й надрукувати сьогоднішні (${unpr.length})`);
@@ -88,3 +92,10 @@ $('demoA').onclick=()=>{
    mk({num:'405',name:'Пацієнтка Н.',age:'35',study:'fg',what:'ФГ ОГК',eed:'',concl:'Патології не виявлено.',
      text:`Пацієнтка Н., 35 р.\nНа ФГ ОГК від ${fmtD(td)} р. № 405:\nІнфільтративних тіней не виявлено. Легеневий малюнок не змінений. Корені структурні, не розширені. Синуси вільні. Cor — R.N.\nRö-ч: Патології не виявлено.\nЕЕД ___ мЗв.   ${d}`}));
   saveA();renderArchive();renderNames();updCtrlBadge();toast('Додано 5 прикладів');};
+
+/* вивантаження в Excel (CSV з «;» — так відкриває український Excel) */
+$('aCsv').onclick=()=>{const rows=aFiltered().filter(r=>!r.example);if(!rows.length){toast('За цими фільтрами протоколів немає');return;}
+  const q=v=>{v=String(v==null?'':v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Висновок','Терміново','Надруковано','Контроль до'];
+  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.concl,r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
+  const f=$('aFrom').value,t=$('aTo').value;const ok=download(`Skiagrama_архів_${f||'усі'}${t?'_'+t:''}.csv`,'\ufeff'+lines.join('\r\n'),'text/csv');toast(ok?`Вивантажено ${rows.length} протоколів`:'Не вдалося зберегти файл');};

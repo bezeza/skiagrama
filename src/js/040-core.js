@@ -190,7 +190,7 @@ function docData(){
   const P=protocol();
   return {name:$('pName').value.trim()||'[ПІБ]',age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),refDoc:$('pRefDoc').value.trim(),
     num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.join(', '),eed:$('pEed').value.trim(),
-    study:S.study,head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
+    study:S.study,urgent:!!S.urgent,head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
 }
 function genText(P){P=P||protocol();return [P.head,P.ref,P.body.map(x=>x.t).join(' '),P.concl.t,P.rec,P.eed+'   '+P.doc].filter(Boolean).join('\n');}
 const protocolText=()=>S.manual!=null?S.manual:genText();
@@ -198,6 +198,16 @@ function unitsFromP(P){const u=[{t:P.head,p:0,c:'pt'},{t:P.ref,p:1}];P.body.forE
 function unitsFromText(text){const u=[];String(text||'').split('\n').forEach((ln,i)=>{if(!ln.trim())return;const c=i===0?'pt':/^Rö-ч:/.test(ln)?'concl':/^ЕЕД/.test(ln)?'foot':'';ln.split(/(?<=[.!?:])\s+(?=\S)/).forEach(s=>u.push({t:s,p:i,c}));});return u;}
 const currentUnits=()=>S.manual!=null?unitsFromText(S.manual):unitsFromP(protocol());
 
+/* бічність: в описі справа, а у висновку зліва (і навпаки) */
+function lateralityIssue(){
+  const P=protocol();const desc=P.body.map(x=>x.t).join(' ').toLowerCase();const con=conclItems().join(' ').toLowerCase();
+  const both=/обох|двобіч|обидв|з обох/;if(!con||both.test(con)||both.test(desc))return '';
+  const R=/правобіч|правої|правого|правий|праве|справа/,L=/лівобіч|лівої|лівого|лівий|ліве|зліва/;
+  const dR=R.test(desc),dL=L.test(desc),cR=R.test(con),cL=L.test(con);
+  if(dR&&!dL&&cL&&!cR)return 'Бічність: в описі — справа, а у висновку — зліва. Перевірте.';
+  if(dL&&!dR&&cR&&!cL)return 'Бічність: в описі — зліва, а у висновку — справа. Перевірте.';
+  return '';
+}
 /* перевірка перед підписом */
 const REF_RE=/^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/i;
 function checks(){
@@ -217,6 +227,7 @@ function checks(){
   const items=conclItems();const nc=normConclOf();const normRe={test:i=>i===nc||/без патолог|патології не|без кістково/i.test(i)};
   if(allNormal()&&items.length&&!items.every(i=>normRe.test(i)))w.push('Усі зони в нормі, а у висновку патологія — перевірте.');
   if(!allNormal()&&items.some(i=>normRe.test(i)))w.push('Є зміни в описі, а висновок «без патології» — перевірте.');
+  const lat=lateralityIssue();if(lat)w.push(lat);
   measResults().forEach(x=>{if(x.bad)w.push(`${x.def.n}: значення ${fx(x.v,x.def.kind==='kti'?2:0)} поза можливими межами — перевірте.`);if(x.r.c&&!S.concl.includes(renameConcl(x.r.c)))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
   return w;
 }

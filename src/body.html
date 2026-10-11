@@ -17,10 +17,10 @@
   </nav>
   <div class="hbtns">
     <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
-    <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>Пошук…</span><kbd>Ctrl K</kbd></button>
-    <button class="btn" id="newPatient" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Новий<span class="hide-m"> пацієнт</span></button>
-    <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
-    <button class="btn icon" id="navHelp" type="button" title="Довідка" aria-label="Довідка"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6"/><path d="M12 17.2v.1"/></svg></button>
+    <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span><i data-i="search"></i>Пошук…</span><kbd>Ctrl K</kbd></button>
+    <button class="btn" id="newPatient" type="button"><i data-i="userplus"></i>Новий<span class="hide-m"> пацієнт</span></button>
+    <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування"><i data-i="gear"></i></button>
+    <button class="btn icon" id="navHelp" type="button" title="Довідка" aria-label="Довідка"><i data-i="help"></i></button>
   </div>
 </header>
 <div class="banners noprint">
@@ -67,7 +67,7 @@
     <div class="zhead">
       <h2 data-ic="sheet">Опис</h2>
       <div class="navrow"><span class="nz" id="navZones"></span><span class="sep" aria-hidden="true"></span><span id="prevNav"></span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
-      <div class="ztools"><button class="btn sm icon" id="navUndo" type="button" title="Скасувати (Ctrl+Z)" aria-label="Скасувати"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button class="btn sm icon" id="navRedo" type="button" title="Повторити (Ctrl+Y)" aria-label="Повторити"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button><button class="btn sm" id="saveTpl" type="button" title="Зберегти поточний опис як шаблон"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6l-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg><span class="hide-m">Шаблон</span></button><button class="btn norm" id="allNorm" type="button" title="Alt+N" data-ic="ok">Норма всюди</button></div>
+      <div class="ztools"><button class="btn sm icon" id="navUndo" type="button" title="Скасувати (Ctrl+Z)" aria-label="Скасувати"><i data-i="undo"></i></button><button class="btn sm icon" id="navRedo" type="button" title="Повторити (Ctrl+Y)" aria-label="Повторити"><i data-i="redo"></i></button><button class="btn sm" id="saveTpl" type="button" title="Зберегти поточний опис як шаблон"><i data-i="star"></i><span class="hide-m">Шаблон</span></button><button class="btn norm" id="allNorm" type="button" title="Alt+N" data-ic="ok">Норма всюди</button></div>
     </div>
     <div class="stepper" id="stepper"><button class="btn icon" id="stPrev" type="button" aria-label="Попередня зона">‹</button><button class="sn" id="stName" type="button"></button><button class="btn icon" id="stNext" type="button" aria-label="Наступна зона">›</button></div>
     <div class="trow" id="tplRow"></div>
@@ -86,19 +86,19 @@
   </div>
 
   <div class="card" id="sec-concl">
-    <h2 data-ic="concl">Висновок</h2>
+    <div class="chead"><h2 data-ic="concl">Висновок</h2><button class="btn sm urgbtn" id="urgBtn" type="button" aria-pressed="false" data-ic="siren" title="Критична знахідка: пневмоторакс, вільний газ, перелом зі зміщенням…">Терміново</button></div>
     <div id="sugs" class="chosen"></div>
     <div class="chosen" id="chosen"></div>
     <div class="chips" id="conclChips"></div>
     <div class="ltools" id="conclTools"></div>
-    <div class="freerow"><label class="f">Свій висновок — пишіть, і він одразу йде в протокол<input id="conclFree" type="text" autocomplete="off" placeholder="напр. Плевральні спайки справа"></label><button class="btn sm" id="conclKeep" type="button" title="Додати цей текст як кнопку висновку для цього виду дослідження"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6l-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg>Запамʼятати як кнопку</button></div>
+    <div class="freerow"><label class="f">Свій висновок — пишіть, і він одразу йде в протокол<input id="conclFree" type="text" autocomplete="off" placeholder="напр. Плевральні спайки справа"></label><button class="btn sm" id="conclKeep" type="button" title="Додати цей текст як кнопку висновку для цього виду дослідження"><i data-i="star"></i>Запамʼятати як кнопку</button></div>
   </div>
 
   <div class="card" id="sec-rec">
     <h2 data-ic="rec">Рекомендації</h2>
     <div class="chips" id="recChips"></div>
     <div class="ltools" id="recTools"></div>
-    <div class="freerow"><label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label><button class="btn sm" id="recKeep" type="button" title="Додати цей текст як кнопку рекомендації"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6l-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg>Запамʼятати як кнопку</button></div>
+    <div class="freerow"><label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label><button class="btn sm" id="recKeep" type="button" title="Додати цей текст як кнопку рекомендації"><i data-i="star"></i>Запамʼятати як кнопку</button></div>
   </div>
 </section>
 
@@ -108,14 +108,14 @@
     <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
   </div>
   <div class="actbar noprint">
-    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Готово</span><span class="cnt" id="doneCnt" hidden></span></button>
+    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Готово</span><span class="cnt" id="doneCnt" hidden></span></button>
     <div class="split">
-      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>Копіювати</button>
+      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><i data-i="copy"></i>Копіювати</button>
       <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
         <div class="mpop"><span class="note">Для h24 частинами:</span><button id="copyDesc" type="button">Опис</button><button id="copyConcl" type="button">Висновок</button><button id="copyRec" type="button">Рекомендації</button></div></details>
     </div>
-    <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>Друк</button>
-    <details class="menu"><summary class="btn" title="Зберегти протокол у файл"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 20v-6h8v6"/></svg>Зберегти як ▾</summary>
+    <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)"><i data-i="print"></i>Друк</button>
+    <details class="menu"><summary class="btn" title="Зберегти протокол у файл"><i data-i="save"></i>Зберегти як ▾</summary>
       <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.doc)</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.fodt)</button></div></details>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
@@ -150,6 +150,7 @@
       <button class="btn" id="aClear" type="button">Усі дати</button>
       <span style="flex:1"></span>
       <button class="btn" id="aSelUnprinted" type="button">Вибрати ненадруковані</button>
+      <button class="btn" id="aCsv" type="button" data-ic="csv" title="Таблиця для Excel за вибраними фільтрами">Вивантажити в Excel</button>
       <button class="btn primary" id="aPrint" type="button" data-ic="print">Друкувати вибрані</button>
     </div>
   </div>
