@@ -1,7 +1,7 @@
 /* ===== Сховища, налаштування, стан, генерація тексту ===== */
 const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1';
 let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Терапевтичне №2, Хірургічне, Неврологічне, Інфекційне, Педіатричне, Амбулаторно',
-  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},lists:{},conclNorm:{},
+  eed:{...DEF_EED},docTitle:'Лікар-рентгенолог',norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},lists:{},conclNorm:{},
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
 SET.eed=Object.assign({...DEF_EED},SET.eed||{});SET.norms=SET.norms||{};SET.my=SET.my||{};
 ['org','btn','btnAdd','btnOrder','lists','conclNorm'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
@@ -54,6 +54,8 @@ const THEME_LABEL={system:'Тема: авто',light:'Тема: світла',gr
 function applyLook(){const r=document.documentElement;if(SET.theme==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',SET.theme);
   r.style.setProperty('--fs',FONT[SET.font]||FONT.m);r.style.setProperty('--pfs',PFONT[SET.pfs]||PFONT.m);const tb=$('themeBtn');if(tb){tb.innerHTML=ic({system:'monitor',light:'sun',grey:'half',dark:'moon'}[SET.theme]||'monitor');tb.title=(THEME_LABEL[SET.theme]||THEME_LABEL.system)+' — натисніть, щоб змінити';tb.setAttribute('aria-label',tb.title);}}
 
+/* посада в підписі — однаково в тексті протоколу й на всіх бланках */
+const DOC_TITLE=()=>(SET.docTitle||'').trim()||'Лікар-рентгенолог';
 /* стан */
 const FIELDS=['pName','pAge','pSex','pNum','pDate','pEed','pDept','pRef','pRefDoc','pCount','conclFree','recFree'];
 let S,clicks=0,t0=null,tDone=null,editingId=null;
@@ -217,14 +219,14 @@ function protocol(){
   measResults().filter(x=>!x.bad).forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
   const dy=dynText();if(dy)body.push({t:dy,zone:'prev'});
   const eed=$('pEed').value.trim();
-  return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:SET.doctor?`Лікар: ${SET.doctor}`:'Лікар: ____________'};
+  return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()}: ${SET.doctor||'____________'}`};
 }
 const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографія ОГК',bone:`Rö-графія ${objPhrase()}`,spine:`Rö-графія ${deptGen()} відділу хребта`,abd:'Оглядова Rö-графія ОЧП',skull:`Rö-графія ${S.skull==='ppn'?'ППН':'черепа'}`}[S.study]);
 function docData(){
   const P=protocol();
   return {name:$('pName').value.trim()||'[ПІБ]',age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),refDoc:$('pRefDoc').value.trim(),
     num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.join(', '),eed:$('pEed').value.trim(),
-    study:S.study,urgent:!!S.urgent,status:statusOf(),head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
+    study:S.study,urgent:!!S.urgent,status:statusOf(),head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,docTitle:DOC_TITLE(),manual:S.manual};
 }
 function genText(P){P=P||protocol();return [P.head,P.ref,P.body.map(x=>x.t).join(' '),P.concl.t,P.rec,P.eed+'   '+P.doc].filter(Boolean).join('\n');}
 const protocolText=()=>S.manual!=null?S.manual:genText();
@@ -273,7 +275,7 @@ function autoStatus(){
 const statusOf=()=>S.status||autoStatus();
 /* незаповнені пропуски «__» (крім рядка ЕЕД / лікар) */
 function hasGaps(){
-  const t=S.manual!=null?String(S.manual).split('\n').filter(l=>!/^ЕЕД|^Лікар/.test(l.trim())).join(' '):protocol().body.map(x=>x.t).concat(conclItems(),recList()).join(' ');
+  const t=S.manual!=null?String(S.manual).split('\n').filter(l=>!/^ЕЕД|^Лікар/.test(l.trim())&&!l.trim().startsWith(DOC_TITLE())).join(' '):protocol().body.map(x=>x.t).concat(conclItems(),recList()).join(' ');
   return /_{2,}/.test(t);
 }
 /* перевірка перед підписом */

@@ -711,7 +711,8 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   <div class="card">
     <h2 data-ic="user">Лікар і вигляд</h2>
     <div class="fields">
-      <label class="f wide">Лікар-рентгенолог (для підпису)<input id="sDoctor" type="text"></label>
+      <label class="f wide">ПІБ лікаря (для підпису)<input id="sDoctor" type="text" placeholder="Прізвище І. Б."></label>
+      <label class="f">Посада в підписі<input id="sDocTitle" type="text" placeholder="Лікар-рентгенолог"></label>
       <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="grey">кабінет — темно-сіра</option><option value="dark">темна</option></select></label>
       <label class="f">Розмір шрифту<select id="sFont"><option value="s">менший</option><option value="m">звичайний</option><option value="l">більший</option><option value="xl">великий</option></select></label>
       <label class="f wide">Відділення (через кому)<input id="sDepts" type="text"></label>
@@ -1164,7 +1165,7 @@ const PACKS=[{
    Дрібні правки номер не змінюють. */
 const VERSION='0.4';
 const CHANGELOG=[
- ['0.4',['Нова іконка: рентгенограма кисті з обручкою — на згадку про перший рентгенівський знімок 1895 року. Вкладки досліджень — з рентгенівськими іконками: ОГК, ФГ, кістки, хребет, ОЧП, череп.','Архів тепер у сховищі браузера IndexedDB: раніше вміщалося близько 1800 протоколів, тепер — десятки тисяч; старий архів переноситься сам. Тисячі записів відкриваються миттєво (по 300, «Показати ще»).',
+ ['0.4',['Підпис однаковий у тексті протоколу і на всіх бланках: «Лікар-рентгенолог ______ ПІБ»; посаду можна змінити в «Налаштуваннях» (напр. «Лікар-радіолог»).','Нова іконка: рентгенограма кисті з обручкою — на згадку про перший рентгенівський знімок 1895 року. Вкладки досліджень — з рентгенівськими іконками: ОГК, ФГ, кістки, хребет, ОЧП, череп.','Архів тепер у сховищі браузера IndexedDB: раніше вміщалося близько 1800 протоколів, тепер — десятки тисяч; старий архів переноситься сам. Тисячі записів відкриваються миттєво (по 300, «Показати ще»).',
    'Дві вкладки з програмою не затирають архів одна одній; видалений протокол не повертається; попередження «відкрита в іншій вкладці».',
    'Без миші: «1…9» ставить фокус на кнопки зони, ←→ ↑↓ — по кнопках, пробіл — вибрати, фокус не губиться; Alt+Enter — прийняти підказки висновку; пошук Ctrl+K не губить першу літеру.',
    'Шрифти вбудовані у файл: без інтернету програма виглядає так само і не звертається до Google.',
@@ -1219,7 +1220,7 @@ const CHANGELOG=[
 /* ===== Сховища, налаштування, стан, генерація тексту ===== */
 const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1';
 let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Терапевтичне №2, Хірургічне, Неврологічне, Інфекційне, Педіатричне, Амбулаторно',
-  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},lists:{},conclNorm:{},
+  eed:{...DEF_EED},docTitle:'Лікар-рентгенолог',norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},lists:{},conclNorm:{},
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
 SET.eed=Object.assign({...DEF_EED},SET.eed||{});SET.norms=SET.norms||{};SET.my=SET.my||{};
 ['org','btn','btnAdd','btnOrder','lists','conclNorm'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
@@ -1272,6 +1273,8 @@ const THEME_LABEL={system:'Тема: авто',light:'Тема: світла',gr
 function applyLook(){const r=document.documentElement;if(SET.theme==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',SET.theme);
   r.style.setProperty('--fs',FONT[SET.font]||FONT.m);r.style.setProperty('--pfs',PFONT[SET.pfs]||PFONT.m);const tb=$('themeBtn');if(tb){tb.innerHTML=ic({system:'monitor',light:'sun',grey:'half',dark:'moon'}[SET.theme]||'monitor');tb.title=(THEME_LABEL[SET.theme]||THEME_LABEL.system)+' — натисніть, щоб змінити';tb.setAttribute('aria-label',tb.title);}}
 
+/* посада в підписі — однаково в тексті протоколу й на всіх бланках */
+const DOC_TITLE=()=>(SET.docTitle||'').trim()||'Лікар-рентгенолог';
 /* стан */
 const FIELDS=['pName','pAge','pSex','pNum','pDate','pEed','pDept','pRef','pRefDoc','pCount','conclFree','recFree'];
 let S,clicks=0,t0=null,tDone=null,editingId=null;
@@ -1435,14 +1438,14 @@ function protocol(){
   measResults().filter(x=>!x.bad).forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
   const dy=dynText();if(dy)body.push({t:dy,zone:'prev'});
   const eed=$('pEed').value.trim();
-  return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:SET.doctor?`Лікар: ${SET.doctor}`:'Лікар: ____________'};
+  return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()}: ${SET.doctor||'____________'}`};
 }
 const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографія ОГК',bone:`Rö-графія ${objPhrase()}`,spine:`Rö-графія ${deptGen()} відділу хребта`,abd:'Оглядова Rö-графія ОЧП',skull:`Rö-графія ${S.skull==='ppn'?'ППН':'черепа'}`}[S.study]);
 function docData(){
   const P=protocol();
   return {name:$('pName').value.trim()||'[ПІБ]',age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),refDoc:$('pRefDoc').value.trim(),
     num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.join(', '),eed:$('pEed').value.trim(),
-    study:S.study,urgent:!!S.urgent,status:statusOf(),head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
+    study:S.study,urgent:!!S.urgent,status:statusOf(),head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,docTitle:DOC_TITLE(),manual:S.manual};
 }
 function genText(P){P=P||protocol();return [P.head,P.ref,P.body.map(x=>x.t).join(' '),P.concl.t,P.rec,P.eed+'   '+P.doc].filter(Boolean).join('\n');}
 const protocolText=()=>S.manual!=null?S.manual:genText();
@@ -1491,7 +1494,7 @@ function autoStatus(){
 const statusOf=()=>S.status||autoStatus();
 /* незаповнені пропуски «__» (крім рядка ЕЕД / лікар) */
 function hasGaps(){
-  const t=S.manual!=null?String(S.manual).split('\n').filter(l=>!/^ЕЕД|^Лікар/.test(l.trim())).join(' '):protocol().body.map(x=>x.t).concat(conclItems(),recList()).join(' ');
+  const t=S.manual!=null?String(S.manual).split('\n').filter(l=>!/^ЕЕД|^Лікар/.test(l.trim())&&!l.trim().startsWith(DOC_TITLE())).join(' '):protocol().body.map(x=>x.t).concat(conclItems(),recList()).join(' ');
   return /_{2,}/.test(t);
 }
 /* перевірка перед підписом */
@@ -2247,7 +2250,7 @@ $('restoreFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)r
   const n=mergeArchive(list);saveA();renderNames();updCtrlBadge();toast(`Відновлено ${n} нових протоколів (усього ${A.length})`);renderArchive();}catch(err){toast('Це не файл копії архіву Skiagrama');}e.target.value='';};rd.readAsText(f);});
 $('demoA').onclick=()=>{
   const td=today();const mk=(o)=>{const r=Object.assign({id:'ex'+Math.random().toString(36).slice(2,8),ts:Date.now()+Math.random(),date:td,sex:'',eed:'0,35',printed:false,ctrlDue:'',ctrlDone:false,example:true,study:'ogk'},o);r.units=unitsFromText(r.text);return r;};
-  const d=SET.doctor?`Лікар: ${SET.doctor}`:'Лікар: ____________';
+  const d=`${DOC_TITLE()}: ${SET.doctor||'____________'}`;
   A.push(
    mk({num:'401',name:'Пацієнт А.',age:'27',what:'Rö-гр. ОГК',concl:'Гострий бронхіт.',ctrlDue:addDays(td,-1),date:addDays(td,-12),
      text:`Пацієнт А., 27 р.\nНа Rö-гр. ОГК від ${fmtD(addDays(td,-12))} р. № 401:\nІнфільтративних тіней не виявлено. Легеневий малюнок посилений, збагачений, більше зліва. Корені розширені, тяжисті, малоструктурні. Синуси вільні. Cor — R.N.\nRö-ч: Гострий бронхіт.\nРекомендовано: Rö-контроль через 10–14 днів.\nЕЕД 0,35 мЗв.   ${d}`}),
@@ -2294,7 +2297,8 @@ function manualBody(doc,keepHead){
   return unitsFromText(lines.join('\n')).map(u=>Object.assign(u,{p:'m'+u.p,c:keepHead?u.c:(u.c==='pt'?'':u.c)}));
 }
 const LOGO_SVG='<svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="20" fill="#1F4E79"/><g fill="none" stroke="#fff" stroke-linecap="round" stroke-width="7"><path d="M42 84 L36.6 22.5"/><path d="M50 84 L50 16.5"/><path d="M58 84 L64 23.5"/><path d="M65 85 L75 34"/><path d="M36 86 L17 48"/></g><g stroke="#1F4E79" stroke-width="2.4"><path d="M36 60 L44 60"/><path d="M46 58 L54 58"/><path d="M57 60 L65 60"/><path d="M66 64 L73 64"/><path d="M35 42 L42 42"/><path d="M46 38 L54 38"/><path d="M59 42 L67 42"/><path d="M69 50 L76 50"/><path d="M33 30 L41 30"/><path d="M46 25 L54 25"/><path d="M60 31 L67 31"/><path d="M23 70 L31 70"/><path d="M16 56 L24 56"/></g><ellipse cx="60.8" cy="54" rx="7" ry="2.8" transform="rotate(-8 60.8 54)" fill="none" stroke="#F2A65A" stroke-width="5"/></svg>';
-const SIGN=(doc,cmp)=>`<div class="bk-sign"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="bk-mp">М. П.</span></div>`;
+const DT=doc=>esc(doc.docTitle||DOC_TITLE());
+const SIGN=(doc,cmp)=>`<div class="bk-sign"><span>${DT(doc)} ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="bk-mp">М. П.</span></div>`;
 const BLANKS={
  C:{n:'компактний під штамп',sn:'під штамп',why:'звичний формат рентгенолога, рамка під штамп, найбільше місця під текст',
    build(doc,cmp){const o=ORG();
@@ -2304,7 +2308,7 @@ const BLANKS={
      if(doc.manual!=null)return u.concat(manualBody(doc,true));
      u.push({t:doc.head,p:'h',c:'pt'},{t:doc.refLine,p:'r'});doc.body.forEach(t=>u.push({t,p:'b'}));
      u.push({t:'Rö-ч: '+doc.concl,p:'c',c:'concl'});if(doc.rec)u.push({t:'Рекомендовано: '+doc.rec,p:'rc'});
-     u.push({h:`<div class="bk-foot"><span>ЕЕД ${esc(doc.eed||'___')} мЗв.</span><span>Лікар: ${esc(doc.doctor||'____________')}</span></div>`,blk:true});return u;}},
+     u.push({h:`<div class="bk-foot"><span>ЕЕД ${esc(doc.eed||'___')} мЗв.</span><span>${DT(doc)} ______________ ${esc(doc.doctor||'[ПІБ]')}</span></div>`,blk:true});return u;}},
  B:{n:'сучасний діловий',sn:'сучасний',why:'сучасний вигляд, дані пацієнта сіткою, розділи легко читати',
    build(doc,cmp){const o=ORG();
      const h=`<div class="bkB-h"><div class="bkB-org">${LOGO_SVG}<div><b>${esc(o.name||'[Назва закладу]')}</b><span>${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · '))}</span></div></div><div class="bkB-r"><small>ПРОТОКОЛ ДОСЛІДЖЕННЯ</small><b>${esc(doc.what)}</b><span>№ ${esc(doc.num||'___')} · ${dLong(doc.date)}</span></div></div><div class="bkB-bar"></div>`;
@@ -2313,7 +2317,7 @@ const BLANKS={
      const u=[{h,blk:true},{h:pt,blk:true}];
      if(doc.manual!=null)u.push({h:sec('ОПИС',unitsHTML(manualBody(doc))),blk:true});
      else{u.push({h:sec('ОПИС',`<p>${esc(doc.body.join(' '))}</p>`),blk:true},{h:sec('ВИСНОВОК',`<p><b>${esc(doc.concl)}</b></p>`),blk:true});if(doc.rec)u.push({h:sec('РЕКОМЕНДАЦІЇ',`<p>${esc(doc.rec)}</p>`),blk:true});}
-     u.push({h:`<div class="bkB-foot"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="d">Висновок не є діагнозом; оцінюється лікарем, що направив.</span></div>`,blk:true});return u;}},
+     u.push({h:`<div class="bkB-foot"><span>${DT(doc)} ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="d">Висновок не є діагнозом; оцінюється лікарем, що направив.</span></div>`,blk:true});return u;}},
  A:{n:'класичний офіційний',sn:'офіційний',why:'повні реквізити закладу — для пацієнта на руки або в іншу установу',
    build(doc,cmp){const o=ORG();
      const top=cmp?`<div class="bk-mini"><b>${esc(o.name||'[Назва закладу]')}</b> · ${esc(o.cab)}</div>`:
@@ -2639,7 +2643,7 @@ function openWelcome(){
     const tips=el('ol',{class:'steps'});[['Встановіть програму','у Chrome чи Edge — значок «Встановити» в адресному рядку або кнопка вгорі. Тоді вона відкривається як звичайна програма і оновлюється сама, коли є інтернет.'],['Оберіть папку даних','кнопка нижче, напр. «D:\\Skiagrama». Туди самі зберігатимуться архів, копії протоколів і налаштування.'],['Реквізити закладу','— у «Налаштуваннях» → «Бланк і реквізити закладу».']].forEach(([b,t])=>{const li=el('li');li.append(el('b',null,b+' '),document.createTextNode(t));tips.append(li);});box.append(tips);
     const f=el('div',{class:'fields'});
     const mk=(lab,val,ph,cls,mode)=>{const l=el('label',{class:'f'+(cls?' '+cls:'')},lab);const i=el('input',{type:'text',placeholder:ph||'',inputmode:mode||null});i.value=val||'';l.append(i);f.append(l);return i;};
-    const d=mk('Лікар-рентгенолог (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
+    const d=mk('ПІБ лікаря (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
     const e1=mk('ЕЕД ОГК, мЗв',SET.eed.ogk,'0,35',null,'decimal');const e2=mk('ЕЕД флюорографії, мЗв',SET.eed.fg,'',null,'decimal');
     box.append(f);
     const r=el('div',{class:'trow'});
@@ -2734,7 +2738,7 @@ $('navFeedback').onclick=openFeedback;
 /* --- 110-settings-boot.js --- */
 /* ===== Налаштування і запуск ===== */
 function renderSettings(){
-  $('sDoctor').value=SET.doctor;$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sFont').value=SET.font;
+  $('sDoctor').value=SET.doctor;$('sDocTitle').value=SET.docTitle||'';$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sFont').value=SET.font;
   $('sFlow').checked=!!SET.flow;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
   const e=$('sEed');e.textContent='';Object.keys(STUDIES).forEach(k=>{const l=el('label',{class:'f'},STUDIES[k].n);const i=el('input',{type:'text',inputmode:'decimal'});i.value=SET.eed[k]||'';i.addEventListener('input',()=>{SET.eed[k]=i.value.trim();saveSet();});l.append(i);e.append(l);});
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
@@ -2822,6 +2826,7 @@ $('phExport').onclick=()=>{
 $('phImport').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d||d.app!=='skiagrama-phrases')throw 0;openPackPreview(d);}catch(err){$('phMsg').textContent='Це не пакет фраз Skiagrama.';}e.target.value='';};rd.readAsText(f);});
 $('sNormReset').onclick=()=>{const k=$('sNormStudy').value;Object.keys(SET.norms).forEach(x=>{if(x.startsWith(k+'.'))delete SET.norms[x];});saveSet();renderNorms();toast('Стандартні фрази повернуто');};
 $('sDoctor').addEventListener('input',e=>{SET.doctor=e.target.value;saveSet();});
+$('sDocTitle').addEventListener('input',e=>{SET.docTitle=e.target.value.trim();saveSet();renderSide();});
 $('sDepts').addEventListener('input',e=>{SET.depts=e.target.value;saveSet();fillDepts();});
 $('sTheme').addEventListener('change',e=>{SET.theme=e.target.value;saveSet();applyLook();});
 $('sFont').addEventListener('change',e=>{SET.font=e.target.value;saveSet();applyLook();});

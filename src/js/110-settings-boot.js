@@ -1,6 +1,6 @@
 /* ===== Налаштування і запуск ===== */
 function renderSettings(){
-  $('sDoctor').value=SET.doctor;$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sFont').value=SET.font;
+  $('sDoctor').value=SET.doctor;$('sDocTitle').value=SET.docTitle||'';$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sFont').value=SET.font;
   $('sFlow').checked=!!SET.flow;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
   const e=$('sEed');e.textContent='';Object.keys(STUDIES).forEach(k=>{const l=el('label',{class:'f'},STUDIES[k].n);const i=el('input',{type:'text',inputmode:'decimal'});i.value=SET.eed[k]||'';i.addEventListener('input',()=>{SET.eed[k]=i.value.trim();saveSet();});l.append(i);e.append(l);});
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
@@ -88,6 +88,7 @@ $('phExport').onclick=()=>{
 $('phImport').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d||d.app!=='skiagrama-phrases')throw 0;openPackPreview(d);}catch(err){$('phMsg').textContent='Це не пакет фраз Skiagrama.';}e.target.value='';};rd.readAsText(f);});
 $('sNormReset').onclick=()=>{const k=$('sNormStudy').value;Object.keys(SET.norms).forEach(x=>{if(x.startsWith(k+'.'))delete SET.norms[x];});saveSet();renderNorms();toast('Стандартні фрази повернуто');};
 $('sDoctor').addEventListener('input',e=>{SET.doctor=e.target.value;saveSet();});
+$('sDocTitle').addEventListener('input',e=>{SET.docTitle=e.target.value.trim();saveSet();renderSide();});
 $('sDepts').addEventListener('input',e=>{SET.depts=e.target.value;saveSet();fillDepts();});
 $('sTheme').addEventListener('change',e=>{SET.theme=e.target.value;saveSet();applyLook();});
 $('sFont').addEventListener('change',e=>{SET.font=e.target.value;saveSet();applyLook();});

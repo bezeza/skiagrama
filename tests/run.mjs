@@ -262,6 +262,9 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   // налаштування скорочень і пакет
   await p.click('#navSettings');await p.fill('#sAbbrKey','.пп');await p.fill('#sAbbrVal','Правобічна пневмонія');await p.click('#sAbbrAdd');
   ok((await p.textContent('#sAbbr')).includes('.пп'),'своє скорочення додано в «Налаштуваннях»');
+  await p.fill('#sDocTitle','Лікар-радіолог');
+  ok(await p.evaluate(()=>{const K=window.__skg;const it=K.classify(K.currentItem());return JSON.stringify(it).includes('Лікар-радіолог');}),'посада в підписі береться з налаштувань');
+  await p.fill('#sDocTitle','');
   ok(await p.evaluate(()=>window.__skg.phrasePack().abbr['пп']==='Правобічна пневмонія'),'скорочення потрапляють у пакет фраз');
   await p.click('#view-settings [data-back]');
   // архів: статус, фільтр, CSV, підсумок дня

@@ -89,7 +89,7 @@ $('restoreFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)r
   const n=mergeArchive(list);saveA();renderNames();updCtrlBadge();toast(`Відновлено ${n} нових протоколів (усього ${A.length})`);renderArchive();}catch(err){toast('Це не файл копії архіву Skiagrama');}e.target.value='';};rd.readAsText(f);});
 $('demoA').onclick=()=>{
   const td=today();const mk=(o)=>{const r=Object.assign({id:'ex'+Math.random().toString(36).slice(2,8),ts:Date.now()+Math.random(),date:td,sex:'',eed:'0,35',printed:false,ctrlDue:'',ctrlDone:false,example:true,study:'ogk'},o);r.units=unitsFromText(r.text);return r;};
-  const d=SET.doctor?`Лікар: ${SET.doctor}`:'Лікар: ____________';
+  const d=`${DOC_TITLE()}: ${SET.doctor||'____________'}`;
   A.push(
    mk({num:'401',name:'Пацієнт А.',age:'27',what:'Rö-гр. ОГК',concl:'Гострий бронхіт.',ctrlDue:addDays(td,-1),date:addDays(td,-12),
      text:`Пацієнт А., 27 р.\nНа Rö-гр. ОГК від ${fmtD(addDays(td,-12))} р. № 401:\nІнфільтративних тіней не виявлено. Легеневий малюнок посилений, збагачений, більше зліва. Корені розширені, тяжисті, малоструктурні. Синуси вільні. Cor — R.N.\nRö-ч: Гострий бронхіт.\nРекомендовано: Rö-контроль через 10–14 днів.\nЕЕД 0,35 мЗв.   ${d}`}),

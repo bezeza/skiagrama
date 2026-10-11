@@ -23,7 +23,8 @@ function manualBody(doc,keepHead){
   return unitsFromText(lines.join('\n')).map(u=>Object.assign(u,{p:'m'+u.p,c:keepHead?u.c:(u.c==='pt'?'':u.c)}));
 }
 const LOGO_SVG='<svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="20" fill="#1F4E79"/><g fill="none" stroke="#fff" stroke-linecap="round" stroke-width="7"><path d="M42 84 L36.6 22.5"/><path d="M50 84 L50 16.5"/><path d="M58 84 L64 23.5"/><path d="M65 85 L75 34"/><path d="M36 86 L17 48"/></g><g stroke="#1F4E79" stroke-width="2.4"><path d="M36 60 L44 60"/><path d="M46 58 L54 58"/><path d="M57 60 L65 60"/><path d="M66 64 L73 64"/><path d="M35 42 L42 42"/><path d="M46 38 L54 38"/><path d="M59 42 L67 42"/><path d="M69 50 L76 50"/><path d="M33 30 L41 30"/><path d="M46 25 L54 25"/><path d="M60 31 L67 31"/><path d="M23 70 L31 70"/><path d="M16 56 L24 56"/></g><ellipse cx="60.8" cy="54" rx="7" ry="2.8" transform="rotate(-8 60.8 54)" fill="none" stroke="#F2A65A" stroke-width="5"/></svg>';
-const SIGN=(doc,cmp)=>`<div class="bk-sign"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="bk-mp">М. П.</span></div>`;
+const DT=doc=>esc(doc.docTitle||DOC_TITLE());
+const SIGN=(doc,cmp)=>`<div class="bk-sign"><span>${DT(doc)} ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="bk-mp">М. П.</span></div>`;
 const BLANKS={
  C:{n:'компактний під штамп',sn:'під штамп',why:'звичний формат рентгенолога, рамка під штамп, найбільше місця під текст',
    build(doc,cmp){const o=ORG();
@@ -33,7 +34,7 @@ const BLANKS={
      if(doc.manual!=null)return u.concat(manualBody(doc,true));
      u.push({t:doc.head,p:'h',c:'pt'},{t:doc.refLine,p:'r'});doc.body.forEach(t=>u.push({t,p:'b'}));
      u.push({t:'Rö-ч: '+doc.concl,p:'c',c:'concl'});if(doc.rec)u.push({t:'Рекомендовано: '+doc.rec,p:'rc'});
-     u.push({h:`<div class="bk-foot"><span>ЕЕД ${esc(doc.eed||'___')} мЗв.</span><span>Лікар: ${esc(doc.doctor||'____________')}</span></div>`,blk:true});return u;}},
+     u.push({h:`<div class="bk-foot"><span>ЕЕД ${esc(doc.eed||'___')} мЗв.</span><span>${DT(doc)} ______________ ${esc(doc.doctor||'[ПІБ]')}</span></div>`,blk:true});return u;}},
  B:{n:'сучасний діловий',sn:'сучасний',why:'сучасний вигляд, дані пацієнта сіткою, розділи легко читати',
    build(doc,cmp){const o=ORG();
      const h=`<div class="bkB-h"><div class="bkB-org">${LOGO_SVG}<div><b>${esc(o.name||'[Назва закладу]')}</b><span>${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · '))}</span></div></div><div class="bkB-r"><small>ПРОТОКОЛ ДОСЛІДЖЕННЯ</small><b>${esc(doc.what)}</b><span>№ ${esc(doc.num||'___')} · ${dLong(doc.date)}</span></div></div><div class="bkB-bar"></div>`;
@@ -42,7 +43,7 @@ const BLANKS={
      const u=[{h,blk:true},{h:pt,blk:true}];
      if(doc.manual!=null)u.push({h:sec('ОПИС',unitsHTML(manualBody(doc))),blk:true});
      else{u.push({h:sec('ОПИС',`<p>${esc(doc.body.join(' '))}</p>`),blk:true},{h:sec('ВИСНОВОК',`<p><b>${esc(doc.concl)}</b></p>`),blk:true});if(doc.rec)u.push({h:sec('РЕКОМЕНДАЦІЇ',`<p>${esc(doc.rec)}</p>`),blk:true});}
-     u.push({h:`<div class="bkB-foot"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="d">Висновок не є діагнозом; оцінюється лікарем, що направив.</span></div>`,blk:true});return u;}},
+     u.push({h:`<div class="bkB-foot"><span>${DT(doc)} ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="d">Висновок не є діагнозом; оцінюється лікарем, що направив.</span></div>`,blk:true});return u;}},
  A:{n:'класичний офіційний',sn:'офіційний',why:'повні реквізити закладу — для пацієнта на руки або в іншу установу',
    build(doc,cmp){const o=ORG();
      const top=cmp?`<div class="bk-mini"><b>${esc(o.name||'[Назва закладу]')}</b> · ${esc(o.cab)}</div>`:

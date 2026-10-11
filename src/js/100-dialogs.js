@@ -97,7 +97,7 @@ function openWelcome(){
     const tips=el('ol',{class:'steps'});[['Встановіть програму','у Chrome чи Edge — значок «Встановити» в адресному рядку або кнопка вгорі. Тоді вона відкривається як звичайна програма і оновлюється сама, коли є інтернет.'],['Оберіть папку даних','кнопка нижче, напр. «D:\\Skiagrama». Туди самі зберігатимуться архів, копії протоколів і налаштування.'],['Реквізити закладу','— у «Налаштуваннях» → «Бланк і реквізити закладу».']].forEach(([b,t])=>{const li=el('li');li.append(el('b',null,b+' '),document.createTextNode(t));tips.append(li);});box.append(tips);
     const f=el('div',{class:'fields'});
     const mk=(lab,val,ph,cls,mode)=>{const l=el('label',{class:'f'+(cls?' '+cls:'')},lab);const i=el('input',{type:'text',placeholder:ph||'',inputmode:mode||null});i.value=val||'';l.append(i);f.append(l);return i;};
-    const d=mk('Лікар-рентгенолог (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
+    const d=mk('ПІБ лікаря (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
     const e1=mk('ЕЕД ОГК, мЗв',SET.eed.ogk,'0,35',null,'decimal');const e2=mk('ЕЕД флюорографії, мЗв',SET.eed.fg,'',null,'decimal');
     box.append(f);
     const r=el('div',{class:'trow'});
