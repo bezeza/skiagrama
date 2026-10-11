@@ -477,3 +477,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .split .mpop{left:auto;right:0}
 :root:not([data-theme="dark"]):not([data-theme="grey"]) .vbadge{color:#9a520f}@media (prefers-color-scheme:dark){:root:not([data-theme]) .vbadge{color:var(--accent)}}
 .brand .blogo{display:block;border-radius:10px;flex:0 0 auto}
+/* вкладки досліджень з рентгенівськими іконками: іконка над підписом */
+.studytabs button{flex-direction:column;gap:4px;padding:8px 4px 7px}
+.studytabs button .simg{width:36px;height:36px;display:block;border-radius:50%;flex:none}
+.studytabs button[aria-selected="true"] .simg{box-shadow:0 0 0 2px rgba(255,255,255,.75)}
