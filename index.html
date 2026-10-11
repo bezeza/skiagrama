@@ -36,6 +36,12 @@
   --warn:#F2C26B; --warn-soft:#3A2F17; --bad:#FF8A80; --bad-soft:#3D1F1F; --ok:#7FD1A0; --ok-soft:#173326;
   --dot-n:#5CCB8A; --dot-c:#F2A65A; --dot-x:#6E7F8F; --dot-e:#FF6B61;
   --paper:#F4F1EA; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+:root[data-theme="grey"]{ /* «Кабінет»: нейтральний темно-сірий для притемненої кімнати */
+  --bg:#2A2B2D; --surface:#343538; --line:#4A4C50; --ink:#E6E6E6; --muted:#A8AAAE;
+  --blue:#9DB8CF; --blue-soft:#3E434A; --accent:#E0A35E; --accent-soft:#45392B;
+  --warn:#E8C27A; --warn-soft:#45402F; --bad:#F09A92; --bad-soft:#4A3232; --ok:#8FCFA6; --ok-soft:#2F4237;
+  --dot-n:#6CC08C; --dot-c:#E8A75C; --dot-x:#7C7F84; --dot-e:#F07A70;
+  --paper:#E9E9E6; --paper-ink:#1E1E1E; --flash:#E9D9A8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 html,body{margin:0}
@@ -229,6 +235,12 @@ table.j tr.ex td{color:var(--muted)}
 .empty{padding:28px;text-align:center;color:var(--muted)}
 .pill{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600;white-space:nowrap}
 .pill.w{background:var(--warn-soft);color:var(--warn)} .pill.b{background:var(--bad-soft);color:var(--bad)} .pill.o{background:var(--ok-soft);color:var(--ok)}
+.daynums{display:flex;flex-wrap:wrap;gap:10px}
+.daynums .dt{border:1px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--bg);display:flex;flex-direction:column;min-width:130px}
+.daynums .dt b{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.1}
+.daynums .dt span{font-size:12.5px;color:var(--muted)}
+.daynums .dt.w b{color:var(--warn)}.daynums .dt.o b{color:var(--ok)}
+.ageMsg{color:var(--ok);margin-top:-2px}
 .ctrl{display:flex;flex-direction:column;gap:6px}
 .ctrl .it{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .ctrl .it span.t{flex:1 1 240px;min-width:0}
@@ -418,12 +430,13 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   <div class="card pbar" id="sec-patient">
     <div class="prow">
       <label class="f pn">ПІБ<input id="pName" type="text" autocomplete="off" list="nameList" placeholder="Прізвище І. Б."></label>
-      <label class="f pa">Вік<input id="pAge" type="number" min="0" max="120" inputmode="numeric"></label>
+      <label class="f pa" title="Можна ввести вік або дату народження (12.03.1954 чи рік 1954) — вік порахується сам">Вік / д. н.<input id="pAge" type="text" inputmode="decimal" autocomplete="off" placeholder="72 або 12.03.1954"></label>
       <label class="f pnum">№ знімка<input id="pNum" type="text" inputmode="numeric"></label>
       <label class="f pd">Дата<input id="pDate" type="date"></label>
       <label class="f pe">ЕЕД, мЗв<input id="pEed" type="text" inputmode="decimal"></label>
     </div>
     <datalist id="nameList"></datalist>
+    <div class="msg ageMsg" id="ageMsg" hidden></div>
     <details class="more">
       <summary>Додатково: стать, відділення, е-направлення</summary>
       <div class="fields">
@@ -539,6 +552,10 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     </div>
   </div>
   <div class="tscroll"><table class="j" id="aTable"></table></div>
+  <div class="card" id="daySum">
+    <h2>Підсумок дня</h2>
+    <div id="dayBox"></div>
+  </div>
   <div class="card">
     <h2>Резервна копія</h2>
     <div class="trow">
@@ -563,7 +580,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <h2>Лікар і вигляд</h2>
     <div class="fields">
       <label class="f wide">Лікар-рентгенолог (для підпису)<input id="sDoctor" type="text"></label>
-      <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="dark">темна</option></select></label>
+      <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="grey">кабінет — темно-сіра</option><option value="dark">темна</option></select></label>
       <label class="f">Розмір шрифту<select id="sFont"><option value="s">менший</option><option value="m">звичайний</option><option value="l">більший</option><option value="xl">великий</option></select></label>
       <label class="f wide">Відділення (через кому)<input id="sDepts" type="text"></label>
     </div>
@@ -954,8 +971,9 @@ const MEAS={
 
 /* --- 030-version.js --- */
 /* ===== Версія і що нового ===== */
-const VERSION='2.2.1';
+const VERSION='2.2.2';
 const CHANGELOG=[
+ ['2.2.2',['Тема «Кабінет» — нейтральна темно-сіра для притемненого рентгенкабінету: кнопка «Тема» або «Налаштування» → «Тема».','Після «Новий пацієнт» курсор одразу в полі ПІБ; Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції.','У поле «Вік» можна ввести дату народження (12.03.1954) або рік — вік порахується сам на дату знімка.','Підсумок дня в архіві: скільки протоколів сьогодні, скільки не надруковано, кнопка «надрукувати сьогоднішні».']],
  ['2.2.1',['Дані пацієнта — першим блоком угорі: спершу кого обстежуємо, потім вид дослідження й опис.']],
  ['2.2',['Чотири бланки протоколу: A — офіційний, B — сучасний, C — компактний під штамп, D — форма з полями. Перемикач біля протоколу, бланк за замовчуванням і реквізити закладу — у «Налаштуваннях».',
    'Автопідгонка: довгий протокол ущільнюється до 11 pt, щоб уміститися в пів аркуша; якщо ні — друкується на цілому аркуші A4 з одного боку. Зворот половинки — лише як опція.',
@@ -998,7 +1016,7 @@ const saveSet=()=>{store.set(SET_KEY,SET);folderSoon();},saveTpl=()=>{store.set(
 
 /* тема і шрифт */
 const FONT={s:'14px',m:'15px',l:'16.5px',xl:'18px'},PFONT={s:'14.5px',m:'16px',l:'17.5px',xl:'19.5px'};
-const THEME_LABEL={system:'Тема: авто',light:'Тема: світла',dark:'Тема: темна'};
+const THEME_LABEL={system:'Тема: авто',light:'Тема: світла',grey:'Тема: кабінет',dark:'Тема: темна'};
 function applyLook(){const r=document.documentElement;if(SET.theme==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',SET.theme);
   r.style.setProperty('--fs',FONT[SET.font]||FONT.m);r.style.setProperty('--pfs',PFONT[SET.pfs]||PFONT.m);$('themeBtn').textContent=THEME_LABEL[SET.theme]||THEME_LABEL.system;}
 
@@ -1503,6 +1521,30 @@ $('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName')
   S.prevId=findPrev();renderPrev();renderSide();});
 ['pAge','pSex','pDept','pRefDoc','pNum','pDate','pCount','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
 ['conclFree','recFree'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();renderNav();}));
+/* вік із дати народження: «12.03.1954», «12031954» або рік «1954» */
+function ageFromBirth(v,ref){
+  v=String(v||'').trim();let d,m,y;let mt=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})$/.exec(v)||/^(\d{2})(\d{2})(\d{4})$/.exec(v);
+  const R=new Date((ref||today())+'T12:00:00');
+  if(mt){d=+mt[1];m=+mt[2];y=+mt[3];if(y<100)y+=y>R.getFullYear()%100?1900:2000;}
+  else if(/^(19|20)\d{2}$/.test(v)){y=+v;return {age:R.getFullYear()-y,approx:true,y};}
+  else return null;
+  if(m<1||m>12||d<1||d>31)return null;
+  let a=R.getFullYear()-y;if(R.getMonth()+1<m||(R.getMonth()+1===m&&R.getDate()<d))a--;
+  if(a<0||a>125)return null;return {age:a,d:`${pad(d)}.${pad(m)}.${y}`};
+}
+function applyBirth(){const i=$('pAge');const r=ageFromBirth(i.value,$('pDate').value);const msg=$('ageMsg');
+  if(!r)return false;i.value=String(r.age);msg.textContent=r.approx?`Вік ${r.age} р. — за роком народження ${r.y} (приблизно, ±1 рік)`:`Вік ${r.age} р. — дата народження ${r.d}`;msg.hidden=false;
+  tick('text');renderSide();return true;}
+$('pAge').addEventListener('blur',applyBirth);
+$('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
+/* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
+const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];
+function focusAfterPatient(){const pc=$('projChips');const c=!pc.hidden&&pc.querySelector('.chip');if(c){c.focus();c.scrollIntoView({block:'nearest'});return;}
+  const z=document.querySelector('#zones .seg button');if(z){z.focus();z.scrollIntoView({block:'nearest'});}}
+ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.isComposing)return;e.preventDefault();
+  if(id==='pAge')applyBirth();
+  const nx=ENTER_NEXT[i+1];if(nx){const n=$(nx);n.focus();if(n.select&&n.type!=='date')n.select();}else focusAfterPatient();}));
 $('flowChk').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const t=$(b.dataset.go);if(t)t.scrollIntoView({block:'start',behavior:'smooth'});}));
 
@@ -1513,7 +1555,8 @@ function newPatient(keep){
   S=blank(S.study);editingId=null;editZone=null;
   ['pName','pAge','pRef','pRefDoc','conclFree','recFree','pDept'].forEach(i=>$(i).value='');$('pSex').value='';$('pCount').value='1';
   $('pDate').value=date;setEedDefault();if(keep&&eedKeep)$('pEed').value=eedKeep;$('pNum').value=nextNum();$('refMsg').textContent='';
-  clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;renderAll();
+  clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;$('ageMsg').hidden=true;renderAll();
+  setTimeout(()=>{if(!$('view-desc').hidden&&window.innerWidth>760){$('pName').focus();}},0);
 }
 $('newPatient').onclick=()=>{pushHist('click');newPatient(false);toast('Новий пацієнт. Попередній стан можна повернути: Ctrl+Z');};
 $('navUndo').onclick=undo;$('navRedo').onclick=redo;
@@ -1531,7 +1574,7 @@ $('copyConcl').onclick=()=>{copyText(conclText().t.replace(/^Rö-ч:\s*/,''),'В
 $('copyRec').onclick=()=>{const t=recText();if(!t){toast('Рекомендацій немає');return;}copyText(t.replace(/^Рекомендовано:\s*/,''),'Рекомендації');};
 $('paperBtn').onclick=()=>{paperView=!paperView;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
 $('pfsBtn').onclick=()=>{const o=['s','m','l','xl'];SET.pfs=o[(o.indexOf(SET.pfs)+1)%o.length];saveSet();applyLook();toast({s:'Текст протоколу: менший',m:'Текст протоколу: звичайний',l:'Текст протоколу: більший',xl:'Текст протоколу: великий'}[SET.pfs]);if(paperView)renderSide();};
-$('themeBtn').onclick=()=>{const order=['system','light','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%3];saveSet();applyLook();};
+$('themeBtn').onclick=()=>{const order=['system','light','grey','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%order.length];saveSet();applyLook();};
 window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);window.__rz=setTimeout(renderSide,200);}});
 
 /* Word і LibreOffice */
@@ -1625,7 +1668,7 @@ function renderCtrl(){
 function startControl(r){newPatient(false);S=blank(r.study);$('pName').value=r.name;$('pAge').value=r.age||'';$('pSex').value=r.sex||'';setEedDefault();$('pNum').value=nextNum();
   S.prevId=r.id;showView('desc');renderAll();toast('Попереднє дослідження підтягнуто — «Як минулого разу» або новий опис');}
 function renderArchive(){
-  renderCtrl();
+  renderCtrl();renderDaySum();
   const bb=$('backupBanner');const fOk=folderOK();
   bb.hidden=fOk||!(A.length&&SET.lastBackup!==today());bb.textContent=SET.lastBackup?`Останню копію архіву збережено ${fmtD(SET.lastBackup)}. Збережіть сьогоднішню копію внизу сторінки або підключіть папку даних у «Налаштуваннях».`:'Копію архіву ще не зберігали. Збережіть її внизу сторінки або підключіть папку даних у «Налаштуваннях».';
   $('backupMsg').textContent=fOk?`Архів автоматично зберігається в папку даних «${folderName()}».`:'Архів зберігається лише в браузері цього пристрою. Раз на день зберігайте копію у файл або підключіть папку даних.';
@@ -1643,6 +1686,22 @@ function renderArchive(){
     const del=el('button',{type:'button',class:'btn sm danger'},'Видалити');del.onclick=()=>{if(del.dataset.c){A=A.filter(x=>x!==r);selected.delete(r.id);saveA();renderArchive();renderNames();updCtrlBadge();}else{del.dataset.c='1';del.textContent='Точно?';setTimeout(()=>{del.dataset.c='';del.textContent='Видалити';},3000);}};
     ta.append(o,document.createTextNode(' '),del);tr.append(ta);tb.append(tr);});
   updPrintBtn();
+}
+/* підсумок дня */
+const dayOf=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+function renderDaySum(){
+  const box=$('dayBox');box.textContent='';const td=today();
+  const todays=A.filter(r=>!r.example&&r.ts&&dayOf(r.ts)===td);const unpr=todays.filter(r=>!r.printed);const allUnpr=A.filter(r=>!r.example&&!r.printed);
+  if(!todays.length){box.append(el('p',{class:'note'},'Сьогодні протоколів ще немає.'+(allUnpr.length?` Ненадрукованих за весь час: ${allUnpr.length}.`:'')));return;}
+  const by={};todays.forEach(r=>{by[r.study]=(by[r.study]||0)+1;});
+  const row=el('div',{class:'daynums'});
+  const tile=(n,t,cls)=>{const d=el('div',{class:'dt'+(cls?' '+cls:'')});d.append(el('b',null,String(n)),el('span',null,t));row.append(d);};
+  tile(todays.length,'протоколів сьогодні');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
+  const ctl=todays.filter(r=>r.ctrlDue).length;if(ctl)tile(ctl,'на контроль');
+  box.append(row);
+  box.append(el('p',{class:'note'},Object.keys(by).map(k=>`${STUDY_SHORT[k]||k} — ${by[k]}`).join(' · ')));
+  if(unpr.length){const b=el('button',{type:'button',class:'btn primary'},`Вибрати й надрукувати сьогоднішні (${unpr.length})`);
+    b.onclick=()=>{selected=new Set(unpr.map(r=>r.id));renderArchive();$('aPrint').click();};const r=el('div',{class:'trow'});r.append(b);box.append(r);}
 }
 function updPrintBtn(){const n=[...selected].filter(id=>A.some(r=>r.id===id)).length;$('aPrint').textContent=n?`Друкувати вибрані (${n})`:'Друкувати вибрані';$('aPrint').disabled=!n;}
 function openRecord(r){
@@ -2102,6 +2161,7 @@ if(dr&&dr.S&&STUDIES[dr.S.study]){S=dr.S;S.zones=Object.assign(blankZones(S.stud
 else renderAll();
 setInterval(()=>{if(t0&&!tDone)renderMeter();},1000);
 folderBoot();
+if(SET.welcomed&&window.innerWidth>760&&!$('pName').value)setTimeout(()=>{if($('dlg').hidden)$('pName').focus();},50);
 if(!SET.welcomed)setTimeout(openWelcome,200);
 else if(SET.seenVersion!==VERSION)setTimeout(openWhatsNew,400);
 

@@ -22,7 +22,7 @@ function renderCtrl(){
 function startControl(r){newPatient(false);S=blank(r.study);$('pName').value=r.name;$('pAge').value=r.age||'';$('pSex').value=r.sex||'';setEedDefault();$('pNum').value=nextNum();
   S.prevId=r.id;showView('desc');renderAll();toast('Попереднє дослідження підтягнуто — «Як минулого разу» або новий опис');}
 function renderArchive(){
-  renderCtrl();
+  renderCtrl();renderDaySum();
   const bb=$('backupBanner');const fOk=folderOK();
   bb.hidden=fOk||!(A.length&&SET.lastBackup!==today());bb.textContent=SET.lastBackup?`Останню копію архіву збережено ${fmtD(SET.lastBackup)}. Збережіть сьогоднішню копію внизу сторінки або підключіть папку даних у «Налаштуваннях».`:'Копію архіву ще не зберігали. Збережіть її внизу сторінки або підключіть папку даних у «Налаштуваннях».';
   $('backupMsg').textContent=fOk?`Архів автоматично зберігається в папку даних «${folderName()}».`:'Архів зберігається лише в браузері цього пристрою. Раз на день зберігайте копію у файл або підключіть папку даних.';
@@ -40,6 +40,22 @@ function renderArchive(){
     const del=el('button',{type:'button',class:'btn sm danger'},'Видалити');del.onclick=()=>{if(del.dataset.c){A=A.filter(x=>x!==r);selected.delete(r.id);saveA();renderArchive();renderNames();updCtrlBadge();}else{del.dataset.c='1';del.textContent='Точно?';setTimeout(()=>{del.dataset.c='';del.textContent='Видалити';},3000);}};
     ta.append(o,document.createTextNode(' '),del);tr.append(ta);tb.append(tr);});
   updPrintBtn();
+}
+/* підсумок дня */
+const dayOf=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
+function renderDaySum(){
+  const box=$('dayBox');box.textContent='';const td=today();
+  const todays=A.filter(r=>!r.example&&r.ts&&dayOf(r.ts)===td);const unpr=todays.filter(r=>!r.printed);const allUnpr=A.filter(r=>!r.example&&!r.printed);
+  if(!todays.length){box.append(el('p',{class:'note'},'Сьогодні протоколів ще немає.'+(allUnpr.length?` Ненадрукованих за весь час: ${allUnpr.length}.`:'')));return;}
+  const by={};todays.forEach(r=>{by[r.study]=(by[r.study]||0)+1;});
+  const row=el('div',{class:'daynums'});
+  const tile=(n,t,cls)=>{const d=el('div',{class:'dt'+(cls?' '+cls:'')});d.append(el('b',null,String(n)),el('span',null,t));row.append(d);};
+  tile(todays.length,'протоколів сьогодні');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
+  const ctl=todays.filter(r=>r.ctrlDue).length;if(ctl)tile(ctl,'на контроль');
+  box.append(row);
+  box.append(el('p',{class:'note'},Object.keys(by).map(k=>`${STUDY_SHORT[k]||k} — ${by[k]}`).join(' · ')));
+  if(unpr.length){const b=el('button',{type:'button',class:'btn primary'},`Вибрати й надрукувати сьогоднішні (${unpr.length})`);
+    b.onclick=()=>{selected=new Set(unpr.map(r=>r.id));renderArchive();$('aPrint').click();};const r=el('div',{class:'trow'});r.append(b);box.append(r);}
 }
 function updPrintBtn(){const n=[...selected].filter(id=>A.some(r=>r.id===id)).length;$('aPrint').textContent=n?`Друкувати вибрані (${n})`:'Друкувати вибрані';$('aPrint').disabled=!n;}
 function openRecord(r){

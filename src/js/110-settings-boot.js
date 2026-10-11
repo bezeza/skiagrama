@@ -71,5 +71,6 @@ if(dr&&dr.S&&STUDIES[dr.S.study]){S=dr.S;S.zones=Object.assign(blankZones(S.stud
 else renderAll();
 setInterval(()=>{if(t0&&!tDone)renderMeter();},1000);
 folderBoot();
+if(SET.welcomed&&window.innerWidth>760&&!$('pName').value)setTimeout(()=>{if($('dlg').hidden)$('pName').focus();},50);
 if(!SET.welcomed)setTimeout(openWelcome,200);
 else if(SET.seenVersion!==VERSION)setTimeout(openWhatsNew,400);

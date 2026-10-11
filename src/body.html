@@ -30,12 +30,13 @@
   <div class="card pbar" id="sec-patient">
     <div class="prow">
       <label class="f pn">ПІБ<input id="pName" type="text" autocomplete="off" list="nameList" placeholder="Прізвище І. Б."></label>
-      <label class="f pa">Вік<input id="pAge" type="number" min="0" max="120" inputmode="numeric"></label>
+      <label class="f pa" title="Можна ввести вік або дату народження (12.03.1954 чи рік 1954) — вік порахується сам">Вік / д. н.<input id="pAge" type="text" inputmode="decimal" autocomplete="off" placeholder="72 або 12.03.1954"></label>
       <label class="f pnum">№ знімка<input id="pNum" type="text" inputmode="numeric"></label>
       <label class="f pd">Дата<input id="pDate" type="date"></label>
       <label class="f pe">ЕЕД, мЗв<input id="pEed" type="text" inputmode="decimal"></label>
     </div>
     <datalist id="nameList"></datalist>
+    <div class="msg ageMsg" id="ageMsg" hidden></div>
     <details class="more">
       <summary>Додатково: стать, відділення, е-направлення</summary>
       <div class="fields">
@@ -151,6 +152,10 @@
     </div>
   </div>
   <div class="tscroll"><table class="j" id="aTable"></table></div>
+  <div class="card" id="daySum">
+    <h2>Підсумок дня</h2>
+    <div id="dayBox"></div>
+  </div>
   <div class="card">
     <h2>Резервна копія</h2>
     <div class="trow">
@@ -175,7 +180,7 @@
     <h2>Лікар і вигляд</h2>
     <div class="fields">
       <label class="f wide">Лікар-рентгенолог (для підпису)<input id="sDoctor" type="text"></label>
-      <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="dark">темна</option></select></label>
+      <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="grey">кабінет — темно-сіра</option><option value="dark">темна</option></select></label>
       <label class="f">Розмір шрифту<select id="sFont"><option value="s">менший</option><option value="m">звичайний</option><option value="l">більший</option><option value="xl">великий</option></select></label>
       <label class="f wide">Відділення (через кому)<input id="sDepts" type="text"></label>
     </div>

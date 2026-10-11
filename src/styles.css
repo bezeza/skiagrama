@@ -20,6 +20,12 @@
   --warn:#F2C26B; --warn-soft:#3A2F17; --bad:#FF8A80; --bad-soft:#3D1F1F; --ok:#7FD1A0; --ok-soft:#173326;
   --dot-n:#5CCB8A; --dot-c:#F2A65A; --dot-x:#6E7F8F; --dot-e:#FF6B61;
   --paper:#F4F1EA; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+:root[data-theme="grey"]{ /* «Кабінет»: нейтральний темно-сірий для притемненої кімнати */
+  --bg:#2A2B2D; --surface:#343538; --line:#4A4C50; --ink:#E6E6E6; --muted:#A8AAAE;
+  --blue:#9DB8CF; --blue-soft:#3E434A; --accent:#E0A35E; --accent-soft:#45392B;
+  --warn:#E8C27A; --warn-soft:#45402F; --bad:#F09A92; --bad-soft:#4A3232; --ok:#8FCFA6; --ok-soft:#2F4237;
+  --dot-n:#6CC08C; --dot-c:#E8A75C; --dot-x:#7C7F84; --dot-e:#F07A70;
+  --paper:#E9E9E6; --paper-ink:#1E1E1E; --flash:#E9D9A8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 html,body{margin:0}
@@ -213,6 +219,12 @@ table.j tr.ex td{color:var(--muted)}
 .empty{padding:28px;text-align:center;color:var(--muted)}
 .pill{display:inline-block;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:600;white-space:nowrap}
 .pill.w{background:var(--warn-soft);color:var(--warn)} .pill.b{background:var(--bad-soft);color:var(--bad)} .pill.o{background:var(--ok-soft);color:var(--ok)}
+.daynums{display:flex;flex-wrap:wrap;gap:10px}
+.daynums .dt{border:1px solid var(--line);border-radius:12px;padding:8px 14px;background:var(--bg);display:flex;flex-direction:column;min-width:130px}
+.daynums .dt b{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.1}
+.daynums .dt span{font-size:12.5px;color:var(--muted)}
+.daynums .dt.w b{color:var(--warn)}.daynums .dt.o b{color:var(--ok)}
+.ageMsg{color:var(--ok);margin-top:-2px}
 .ctrl{display:flex;flex-direction:column;gap:6px}
 .ctrl .it{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .ctrl .it span.t{flex:1 1 240px;min-width:0}

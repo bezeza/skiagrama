@@ -13,6 +13,30 @@ $('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName')
   S.prevId=findPrev();renderPrev();renderSide();});
 ['pAge','pSex','pDept','pRefDoc','pNum','pDate','pCount','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
 ['conclFree','recFree'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();renderNav();}));
+/* вік із дати народження: «12.03.1954», «12031954» або рік «1954» */
+function ageFromBirth(v,ref){
+  v=String(v||'').trim();let d,m,y;let mt=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})$/.exec(v)||/^(\d{2})(\d{2})(\d{4})$/.exec(v);
+  const R=new Date((ref||today())+'T12:00:00');
+  if(mt){d=+mt[1];m=+mt[2];y=+mt[3];if(y<100)y+=y>R.getFullYear()%100?1900:2000;}
+  else if(/^(19|20)\d{2}$/.test(v)){y=+v;return {age:R.getFullYear()-y,approx:true,y};}
+  else return null;
+  if(m<1||m>12||d<1||d>31)return null;
+  let a=R.getFullYear()-y;if(R.getMonth()+1<m||(R.getMonth()+1===m&&R.getDate()<d))a--;
+  if(a<0||a>125)return null;return {age:a,d:`${pad(d)}.${pad(m)}.${y}`};
+}
+function applyBirth(){const i=$('pAge');const r=ageFromBirth(i.value,$('pDate').value);const msg=$('ageMsg');
+  if(!r)return false;i.value=String(r.age);msg.textContent=r.approx?`Вік ${r.age} р. — за роком народження ${r.y} (приблизно, ±1 рік)`:`Вік ${r.age} р. — дата народження ${r.d}`;msg.hidden=false;
+  tick('text');renderSide();return true;}
+$('pAge').addEventListener('blur',applyBirth);
+$('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
+/* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
+const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];
+function focusAfterPatient(){const pc=$('projChips');const c=!pc.hidden&&pc.querySelector('.chip');if(c){c.focus();c.scrollIntoView({block:'nearest'});return;}
+  const z=document.querySelector('#zones .seg button');if(z){z.focus();z.scrollIntoView({block:'nearest'});}}
+ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.isComposing)return;e.preventDefault();
+  if(id==='pAge')applyBirth();
+  const nx=ENTER_NEXT[i+1];if(nx){const n=$(nx);n.focus();if(n.select&&n.type!=='date')n.select();}else focusAfterPatient();}));
 $('flowChk').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const t=$(b.dataset.go);if(t)t.scrollIntoView({block:'start',behavior:'smooth'});}));
 
@@ -23,7 +47,8 @@ function newPatient(keep){
   S=blank(S.study);editingId=null;editZone=null;
   ['pName','pAge','pRef','pRefDoc','conclFree','recFree','pDept'].forEach(i=>$(i).value='');$('pSex').value='';$('pCount').value='1';
   $('pDate').value=date;setEedDefault();if(keep&&eedKeep)$('pEed').value=eedKeep;$('pNum').value=nextNum();$('refMsg').textContent='';
-  clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;renderAll();
+  clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;$('ageMsg').hidden=true;renderAll();
+  setTimeout(()=>{if(!$('view-desc').hidden&&window.innerWidth>760){$('pName').focus();}},0);
 }
 $('newPatient').onclick=()=>{pushHist('click');newPatient(false);toast('Новий пацієнт. Попередній стан можна повернути: Ctrl+Z');};
 $('navUndo').onclick=undo;$('navRedo').onclick=redo;
@@ -41,7 +66,7 @@ $('copyConcl').onclick=()=>{copyText(conclText().t.replace(/^Rö-ч:\s*/,''),'В
 $('copyRec').onclick=()=>{const t=recText();if(!t){toast('Рекомендацій немає');return;}copyText(t.replace(/^Рекомендовано:\s*/,''),'Рекомендації');};
 $('paperBtn').onclick=()=>{paperView=!paperView;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
 $('pfsBtn').onclick=()=>{const o=['s','m','l','xl'];SET.pfs=o[(o.indexOf(SET.pfs)+1)%o.length];saveSet();applyLook();toast({s:'Текст протоколу: менший',m:'Текст протоколу: звичайний',l:'Текст протоколу: більший',xl:'Текст протоколу: великий'}[SET.pfs]);if(paperView)renderSide();};
-$('themeBtn').onclick=()=>{const order=['system','light','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%3];saveSet();applyLook();};
+$('themeBtn').onclick=()=>{const order=['system','light','grey','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%order.length];saveSet();applyLook();};
 window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);window.__rz=setTimeout(renderSide,200);}});
 
 /* Word і LibreOffice */

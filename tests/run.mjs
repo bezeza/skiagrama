@@ -133,11 +133,28 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok(/^half/.test(kk.split(',')[0])&&kk.split(',')[2]==='full','classify(): коротко — пів аркуша, дуже довго — цілий аркуш ('+kk+')');
   ok(kk.includes('cmp')||adv,'автопідгонка ущільнює або радить інший бланк ('+kk+', порада: '+(adv||'—')+')');
   await p.evaluate(()=>{const it=window.__skg.currentItem();});
+  // новий пацієнт: курсор у ПІБ, Enter далі, вік з дати народження
+  await p.click('#newPatient');
+  ok(await p.evaluate(()=>document.activeElement.id==='pName'),'«Новий пацієнт» — курсор у полі ПІБ');
+  await p.keyboard.type('Петренко О. В.');await p.keyboard.press('Enter');
+  ok(await p.evaluate(()=>document.activeElement.id==='pAge'),'Enter: ПІБ → вік');
+  const born='15.06.1954';await p.keyboard.type(born);await p.keyboard.press('Enter');
+  const exp=await p.evaluate(b=>{const [d,m,y]=b.split('.').map(Number);const R=new Date(document.getElementById('pDate').value+'T12:00:00');let a=R.getFullYear()-y;if(R.getMonth()+1<m||(R.getMonth()+1===m&&R.getDate()<d))a--;return String(a);},born);
+  ok((await p.inputValue('#pAge'))===exp&&await p.evaluate(()=>document.activeElement.id==='pNum'),`дата народження ${born} → вік ${exp}, Enter → №`);
+  await p.keyboard.type('77');await p.keyboard.press('Enter');await p.keyboard.press('Enter');await p.keyboard.press('Enter');
+  ok(await p.evaluate(()=>!!document.activeElement.closest('#projChips')),'Enter після ЕЕД → проєкції');
+  await p.fill('#pAge','1960');await p.click('#pNum');ok((await p.inputValue('#pAge'))===String(new Date().getFullYear()-1960),'рік народження 1960 → вік');
+  // тема «Кабінет»
+  await p.click('#themeBtn');await p.click('#themeBtn');
+  ok((await p.textContent('#themeBtn'))==='Тема: кабінет'&&(await p.evaluate(()=>getComputedStyle(document.body).backgroundColor))==='rgb(42, 43, 45)','тема «Кабінет»: темно-сірий фон');
+  await p.click('#themeBtn');await p.click('#themeBtn');
   // памʼятка
   await p.click('#navHelp');await p.click('#dlg >> text=Памʼятка на 1 сторінку');ok((await p.textContent('#dlg')).includes('Протокол за 5 кроків'),'памʼятка відкривається з довідки');await p.click('#dlg >> text=Закрити');
   // збереження з бланком
   await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
   ok(await p.evaluate(()=>{const r=JSON.parse(localStorage.getItem('skiagrama.archive.v1')).slice(-1)[0];return !!(r.doc&&r.blank);}),'архів зберігає дані для бланка');
+  await p.click('#navArchive');const ds=await p.textContent('#dayBox');
+  ok(/1\s*протоколів сьогодні/.test(ds)&&ds.includes('не надруковано'),'підсумок дня в архіві: '+ds.replace(/\s+/g,' ').slice(0,80));
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }
