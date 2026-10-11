@@ -27,10 +27,17 @@ async function folderWrite(){
   try{
     await writeJSON(dirH,'архів.json',{app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
     await writeJSON(dirH,'налаштування.json',{app:'skiagrama-settings',v:2,settings:SET,templates:TPL});
+    await writeJSON(dirH,'пакет фраз.json',phrasePack());
+    /* архів ще й по місяцях: архів/2026/2026-10.json — зручно відкрити чи віддати один місяць */
+    const ad=await dirH.getDirectoryHandle('архів',{create:true});const byM={};
+    A.filter(r=>!r.example).forEach(r=>{const m=(r.date||today()).slice(0,7);(byM[m]=byM[m]||[]).push(r);});
+    const months=Object.keys(byM);const touch=months.filter(m=>!folderWrite.done||folderWrite.done[m]!==byM[m].length||m===today().slice(0,7));
+    for(const m of touch){const yd=await ad.getDirectoryHandle(m.slice(0,4),{create:true});await writeJSON(yd,m+'.json',{app:'skiagrama',v:2,month:m,archive:byM[m]});}
+    folderWrite.done=Object.fromEntries(months.map(m=>[m,byM[m].length]));
     const cp=await dirH.getDirectoryHandle('копії',{create:true});
     await writeJSON(cp,`архів-${today()}.json`,{app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
     if(SET.lastBackup!==today()){SET.lastBackup=today();store.set(SET_KEY,SET);}
-  }catch(e){dirOK=false;showFolderBanner('Не вдалося записати в папку даних. Натисніть, щоб дозволити знову.');}
+  }catch(e){console.warn('folderWrite',e);dirOK=false;showFolderBanner('Не вдалося записати в папку даних. Натисніть, щоб дозволити знову.');}
   folderBusy=false;
 }
 function folderSoon(){if(!folderOK())return;clearTimeout(folderT);folderT=setTimeout(folderWrite,800);}
@@ -52,7 +59,7 @@ function renderFolderInfo(){
   const i=$('folderInfo');if(!i)return;
   if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На компʼютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
   $('folderPick').hidden=false;$('folderForget').hidden=!dirH;
-  i.textContent=folderOK()?`Підключено: «${folderName()}». Архів, шаблони й налаштування зберігаються туди самі, а щоденна копія — у підпапку «копії». Після перевстановлення браузера або на іншому компʼютері просто оберіть цю папку знову.`
+  i.textContent=folderOK()?`Підключено: «${folderName()}». Туди самі зберігаються: налаштування, пакет фраз, архів (і по місяцях у «архів»), копія кожного протоколу як аркуша — у «протоколи», щоденна копія — у «копії». Після перевстановлення браузера або на іншому компʼютері просто оберіть цю папку знову.`
     :dirH?`Папка «${folderName()}» запамʼятована, але браузер просить дозвіл. Натисніть «Підключити папку» вгорі.`
     :`Програма створить папку «${DATA_DIR}» у вибраному місці (напр. «Документи») і сама зберігатиме туди архів, шаблони й налаштування.`;
 }
@@ -63,4 +70,19 @@ async function folderBoot(){
   try{const p=await h.queryPermission({mode:'readwrite'});if(p==='granted'){dirOK=true;await folderSync();}else showFolderBanner(`Папка даних «${h.name}» потребує дозволу браузера.`);}
   catch(e){showFolderBanner('Папка даних потребує дозволу браузера.');}
   renderFolderInfo();
+}
+
+/* копія протоколу як аркуша: протоколи/2026-10/Rö_Прізвище_2026-10-11_№1025.html */
+function printCSS(){const out=[];const re=/\.(pdoc|pslot|ppage|pstamp|bk[A-D]?-|bk-|cont|concl)/;
+  for(const sh of document.styleSheets){let rules;try{rules=sh.cssRules;}catch(e){continue;}for(const r of rules){if(r.selectorText&&re.test(r.selectorText))out.push(r.cssText);}}return out.join('\n');}
+async function folderSaveProtocol(rec){
+  if(!folderOK()||!rec)return;
+  try{const it=classify(recordItem(rec));const half=it.kind==='half';
+    const body=half?`<div class="ppage a5"><div class="pslot">${wrapDoc(it,it.units)}</div></div>`:`<div class="ppage full">${wrapDoc(it,it.units)}</div>`;
+    const title=`Rö ${rec.name||''} ${fmtD(rec.date)} № ${rec.num||''}`;
+    const html=`<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${esc(title)}</title><style>@page{size:${half?'A5 landscape':'A4'};margin:0}html,body{margin:0;background:#e9ecef}body{padding:12px}.ppage{margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,.2)}@media print{body{padding:0;background:#fff}.ppage{box-shadow:none}}\n${printCSS()}</style></head><body>${body}</body></html>`;
+    const pd=await dirH.getDirectoryHandle('протоколи',{create:true});const md=await pd.getDirectoryHandle((rec.date||today()).slice(0,7),{create:true});
+    const nm=`Rö_${(rec.name||'протокол').replace(/[^\p{L}\p{N}]+/gu,'_')}_${rec.date||today()}${rec.num?'_№'+String(rec.num).replace(/[^\p{L}\p{N}]+/gu,''):''}.html`;
+    const fh=await md.getFileHandle(nm,{create:true});const w=await fh.createWritable();await w.write(html);await w.close();
+  }catch(e){}
 }

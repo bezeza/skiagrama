@@ -110,7 +110,7 @@ function doSave(){
     ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
-  saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();
+  saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
   if(S.study==='fg'&&SET.flow){const nx=nextNum();closeSheet();newPatient(true);renderAll();$('pName').focus();toast(`Збережено. Наступний пацієнт${nx?' — № '+nx:''}`);return;}
   editingId=rec.id;tDone=Date.now();renderChecks();renderMeter();toast(i>=0?'Протокол оновлено в архіві':'Збережено в архів');
 }

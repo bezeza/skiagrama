@@ -63,7 +63,8 @@ function fillDepts(){const dl=$('deptList');dl.textContent='';SET.depts.split(',
 applyLook();$('vBadge').textContent=`v${VERSION} бета`;
 /* для автотестів: доступ до внутрішніх функцій (не впливає на роботу) */
 window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,phrasePack,
-  setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k)};
+  setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k),
+  async useFolder(h){dirH=h;dirOK=true;await folderWrite();}};
 fillDepts();renderNames();updCtrlBadge();
 $('pDate').value=today();setEedDefault();$('pNum').value=nextNum();
 const dr=store.get(DRAFT_KEY,null);

@@ -150,6 +150,16 @@ function doPrint(side){
 const currentItem=()=>({id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
 const recordItem=r=>r.doc?{id:r.id,name:r.name,doc:r.doc,blank:r.blank||SET.blank||'C'}:{id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')};
 $('printBtn').onclick=()=>openPrint([currentItem()]);
+/* PDF: «Зберегти як PDF» у вікні друку; назва файлу — з назви сторінки, половинка — A5 */
+function savePdf(){
+  const it=classify(currentItem());const half=it.kind==='half';
+  const pages=half?`<div class="ppage a5"><div class="pslot">${wrapDoc(it,it.units)}</div></div>`:(it.kind==='flip'?`<div class="ppage full">${wrapDoc(it,it.units)}</div>`:pageHTML({full:it},'front'));
+  const st=document.createElement('style');st.textContent=half?'@page{size:A5 landscape;margin:0}':'@page{size:A4;margin:0}';document.head.append(st);
+  const t0=document.title;document.title=fileBase();toast('У вікні друку виберіть «Зберегти як PDF»');
+  const back=()=>{document.title=t0;st.remove();window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
+  setTimeout(()=>{runPrint(pages);setTimeout(back,1500);},50);
+}
+$('pdfBtn').onclick=savePdf;
 function testSheet(){
   const half=(t,s)=>`<div class="ptest"><div>${t}</div><div style="font-size:13pt;font-weight:normal">${s}</div></div>`;
   const front=`<div class="ppage"><div class="pslot">${half('ЛИЦЬОВА · половина А ↑','Верх аркуша. Переверніть аркуш так, як робите завжди, і надрукуйте зворот.')}</div><div class="pslot cut">${half('ЛИЦЬОВА · половина Б ↑','Низ аркуша.')}</div></div>`;

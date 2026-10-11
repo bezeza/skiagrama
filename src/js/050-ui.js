@@ -1,9 +1,10 @@
 /* ===== Відображення: вкладки, розділи, зони, висновок, протокол ===== */
+const STUDY_IC={ogk:'lungs',fg:'fg',bone:'bone',spine:'spine',abd:'abd',skull:'skull'};
 const STUDY_SHORT={ogk:'ОГК',fg:'ФГ',bone:'Кістки',spine:'Хребет',abd:'ОЧП',skull:'Череп, ППН'};
 function switchStudy(k){if(S.study===k)return;tick();editZone=null;const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull,blank:S.blank};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
 function renderStudy(){
   const st=$('studyTabs');st.textContent='';
-  Object.keys(STUDIES).forEach(k=>{const b=el('button',{type:'button',role:'tab','aria-selected':String(S.study===k),title:STUDIES[k].n},STUDY_SHORT[k]||STUDIES[k].n);b.onclick=()=>switchStudy(k);st.append(b);});
+  Object.keys(STUDIES).forEach(k=>{const b=el('button',{type:'button',role:'tab','aria-selected':String(S.study===k),title:STUDIES[k].n});b.append(icEl(STUDY_IC[k]),document.createTextNode(STUDY_SHORT[k]||STUDIES[k].n));b.onclick=()=>switchStudy(k);st.append(b);});
   $('flowWrap').hidden=S.study!=='fg';$('flowChk').checked=!!SET.flow;
   const ex=$('studyExtra');ex.textContent='';
   if(S.study==='bone'){
@@ -52,7 +53,7 @@ function renderZones(){
     const z=S.zones[d.id];const zs=zoneState(d);const ed=editZone===d.id;
     const box=el('div',{class:'zone'+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
     const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));
-    const pen=el('button',{type:'button',class:'zpen','aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Редагувати кнопки зони: напис, фраза, порядок','aria-label':'Редагувати кнопки зони '+d.name},'✎');
+    const pen=el('button',{type:'button',class:'zpen','aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Редагувати кнопки зони: напис, фраза, порядок','aria-label':'Редагувати кнопки зони '+d.name});pen.append(icEl('pen'));
     pen.onclick=()=>{editZone=ed?null:d.id;S.focus=d.id;renderZones();if(!ed){const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}};
     h.append(pen);head.append(h);
     const seg=el('div',{class:'seg',role:'group','aria-label':d.name});
@@ -186,12 +187,8 @@ function renderChipList(kind){
     b.onclick=()=>{tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}renderAll();};root.append(b);};
   if(isC)chip(normConclOf(),null);
   effList(kind).forEach(x=>chip(x.t,x.k));
-  const add=el('div',{class:'myadd'});const inp=el('input',{type:'text',placeholder:isC?'+ свій висновок, напр. «Плевральні спайки справа»':'+ своя рекомендація','aria-label':isC?'Новий висновок':'Нова рекомендація'});
-  const ok=el('button',{type:'button',class:'btn sm'},'Додати');
-  const doAdd=()=>{tick();if(addToList(kind,inp.value)){renderAll();toast(isC?'Висновок додано як кнопку':'Рекомендацію додано як кнопку');}};
-  ok.onclick=doAdd;inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doAdd();}});add.append(inp,ok);
-  const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'},'✎ Редагувати кнопки');pen.onclick=()=>{editList=kind;renderChipList(kind);};
-  tools.append(add,pen);
+  const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'});pen.append(icEl('pen'),document.createTextNode('Редагувати кнопки'));pen.onclick=()=>{editList=kind;renderChipList(kind);};
+  tools.append(pen);
 }
 function renderListEditor(kind,box){
   const isC=kind==='concl';const key=listKeyOf(kind);const L=()=>SET.lists[key]||(SET.lists[key]={});
@@ -261,7 +258,6 @@ function renderPaper(){
   man.append(el('span',{class:'badge'},'відредаговано вручну'));
   const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();toast('Повернуто автоматичний текст');};
   man.append(rs,el('span',{class:'note'},'Кнопки зон тепер не змінюють текст — скиньте правку, щоб повернути автотекст.'));p.append(man);
-  p.append(el('div',{class:'stampspace'},'місце для штампу'));
   const tx=el('div',{id:'ptext',contenteditable:'true',spellcheck:'true',role:'textbox','aria-multiline':'true','aria-label':'Текст протоколу — можна правити прямо тут',title:'Клацніть і пишіть. Alt+клік по реченню — відкрити його зону.'});
   if(S.manual!=null){
     String(S.manual).split('\n').forEach((ln,i)=>{const d=el('div',{class:i===0?'pt':/^Rö-ч:/.test(ln)?'concl':''});if(ln)d.textContent=ln;else d.append(el('br'));tx.append(d);});
@@ -322,7 +318,10 @@ function renderChecks(saveMode){
   if(saveMode&&w.length){box.open=true;const b=el('button',{type:'button',class:'btn sm'},'Зберегти все одно');b.onclick=()=>doSave();act.append(b);}
   updBar(w);
 }
+const REQ_FIELDS=[['pName','Не вказано ПІБ.'],['pAge','Не вказано вік.'],['pNum','Не вказано № знімка.'],['pDate','Не вказано дату знімка.'],['pEed','Не вказано ЕЕД.']];
 function updBar(w){
+  const c=$('doneCnt');c.hidden=!w.length;c.textContent=w.length?String(w.length):'';$('doneBtn').title=w.length?'Перед збереженням: '+w.join(' '):'Зберегти в архів (Ctrl+S)';
+  const touched=!!t0||!!$('pName').value.trim();REQ_FIELDS.forEach(([id,msg])=>$(id).classList.toggle('miss',touched&&w.includes(msg)));
   $('mbarConcl').textContent=S.manual!=null?'Текст змінено вручну':conclText().t;
   const mw=$('mbarWarn');mw.textContent='';if(w&&w.length)mw.append(el('span',{class:'pill w',title:w.join(' ')},'⚠ '+w.length));
 }

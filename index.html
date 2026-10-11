@@ -54,17 +54,21 @@ a{color:var(--blue)}
 header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .appnav{display:flex;gap:4px;margin:0 auto 0 18px}
+.appnav button .ic{width:17px;height:17px}
 .appnav button{border:0;background:none;padding:8px 14px;border-radius:10px;font-weight:500;font-size:15px;min-height:40px;display:inline-flex;align-items:center;gap:6px}
 .appnav button:hover{background:var(--blue-soft)}
 .appnav button.on{background:var(--blue-soft);color:var(--blue)}
 .btn.search{color:var(--muted);min-width:190px;display:inline-flex;justify-content:space-between;align-items:center;gap:16px;font-weight:400}
+.btn.search>span{display:inline-flex;align-items:center;gap:8px}
 .btn.search kbd{font-family:var(--body);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px}
 .brand .bn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .brand h1{font-family:var(--display);font-weight:600;font-size:24px;margin:0;letter-spacing:-.3px}
 .brand small{display:block;color:var(--muted);font-size:12.5px}
 .vbadge{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
 .hbtns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 13px;min-height:42px;font-weight:500}
+.ic{width:18px;height:18px;flex:none;vertical-align:-3px}
+.btn .ic+span,.btn .ic{margin-right:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 13px;min-height:42px;font-weight:500}
 .btn:hover{border-color:var(--blue)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--surface)}
 .btn.norm{border-color:var(--ok);color:var(--ok)}
@@ -81,7 +85,9 @@ header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;fle
 @media (max-width:1180px){.wrap{gap:12px;padding-inline:12px;grid-template-columns:minmax(0,1fr) minmax(320px,.8fr)}.side{padding:12px}}
 .form{min-width:0;display:flex;flex-direction:column;gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-width:0;scroll-margin-top:12px}
+.card h2,.view .vh h2,.side .sh h2{display:flex;align-items:center;gap:8px}
 .card h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0}
+h2 .ic{color:var(--blue);width:20px;height:20px}
 
 /* study tabs + section nav */
 .zhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
@@ -90,6 +96,13 @@ header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;fle
 .zhead .nz{display:contents}
 .zhead .sep{width:1px;height:20px;background:var(--line);margin:0 6px}
 .ztools{display:flex;gap:6px;align-items:center}
+.cnt{background:var(--warn);color:var(--surface);border-radius:999px;font-size:12px;font-weight:700;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px}
+input.miss{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset;background:var(--warn-soft)}
+.zpen{opacity:.35;transition:opacity .15s}
+.zone:hover .zpen,.zpen:focus-visible,.zpen[aria-pressed="true"]{opacity:1}
+@media (hover:none){.zpen{opacity:1}}
+.ppage.a5{width:210mm;height:148.5mm}
+.mpop b{font-weight:600}
 .actbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .split{display:inline-flex}
 .split>.btn{border-radius:10px 0 0 10px}
@@ -104,12 +117,13 @@ details.menu[open]>summary{background:var(--blue-soft);border-color:var(--blue)}
 .mpop button:hover{background:var(--blue-soft)}
 .mpop .note{padding:6px 12px 2px}
 .viewbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vbtn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;min-height:34px;font-size:13px}
+.vbtn .ic{width:15px;height:15px}
+.vbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;min-height:34px;font-size:13px}
 .vbtn:hover{border-color:var(--blue)}
 .vbtn[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
 .viewbar label.bsel select{min-height:34px;padding:4px 8px;font-size:13px;width:auto}
 .studytabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.studytabs button{border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
+.studytabs button{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
 .studytabs button+button{border-left:1px solid var(--line)}
 .studytabs button[aria-selected="true"]{background:var(--blue);color:var(--surface)}
 .navrow{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
@@ -159,7 +173,8 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 .zone:not(.wide) .zone-head h3{min-width:0;flex:1 1 auto}
 .zone:not(.wide) .zone-head .phrase{flex-basis:100%;font-size:12.5px}
 .zone.focus{box-shadow:0 0 0 2px var(--accent)}
-.zpen{border:1px solid transparent;background:none;border-radius:6px;padding:0 5px;min-height:26px;font-size:13px;color:var(--muted);margin-left:2px}
+.zpen{border:1px solid transparent;background:none;border-radius:6px;padding:0 4px;min-height:26px;color:var(--muted);margin-left:2px;display:inline-flex;align-items:center}
+.zpen .ic{width:15px;height:15px}
 .zpen:hover{border-color:var(--line);color:var(--blue)}
 .zpen[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
 .zone.editing{border-color:var(--blue);border-style:dashed}
@@ -311,6 +326,13 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   .studytabs button:nth-child(n+4){border-top:1px solid var(--line)}
   #sec-zones .navrow{display:none}
   .appnav,.btn.search{display:none}
+  .hide-m{display:none}
+  .zone .zone-head h3{flex-basis:100%}
+  .btn.norm{white-space:nowrap}
+  .studytabs button{font-size:13px;gap:5px;padding:9px 4px}
+  .studytabs button .ic{width:16px;height:16px}
+  #mbar .mb .btn{padding:7px 6px;gap:5px;font-size:14.5px}
+  #mbar .mb .btn .ic{width:16px;height:16px}
   .viewbar label.bsel{font-size:0;gap:0}.viewbar label.bsel select{max-width:150px}
   .stepper{display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:15;background:var(--surface);padding:6px 0}
   .stepper .sn{flex:1;text-align:center;font-weight:600;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);min-height:42px}
@@ -447,15 +469,15 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     </div>
   </div>
   <nav class="appnav" aria-label="Розділи програми">
-    <button type="button" id="navDesc" class="on">Опис</button>
-    <button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button>
+    <button type="button" id="navDesc" class="on" data-ic="sheet">Опис</button>
+    <button type="button" id="navArchive" data-ic="archive">Архів<span id="ctrlBadge"></span></button>
   </nav>
   <div class="hbtns">
     <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
-    <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span>Пошук…</span><kbd>Ctrl K</kbd></button>
-    <button class="btn" id="newPatient" type="button">+ Новий<span class="hide-m"> пацієнт</span></button>
-    <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування">⚙</button>
-    <button class="btn icon" id="navHelp" type="button" title="Довідка" aria-label="Довідка">?</button>
+    <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>Пошук…</span><kbd>Ctrl K</kbd></button>
+    <button class="btn" id="newPatient" type="button"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>Новий<span class="hide-m"> пацієнт</span></button>
+    <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
+    <button class="btn icon" id="navHelp" type="button" title="Довідка" aria-label="Довідка"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6"/><path d="M12 17.2v.1"/></svg></button>
   </div>
 </header>
 <div class="banners noprint">
@@ -500,9 +522,9 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 
   <div class="card" id="sec-zones">
     <div class="zhead">
-      <h2>Опис</h2>
+      <h2 data-ic="sheet">Опис</h2>
       <div class="navrow"><span class="nz" id="navZones"></span><span class="sep" aria-hidden="true"></span><span id="prevNav"></span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
-      <div class="ztools"><button class="btn sm icon" id="navUndo" type="button" title="Скасувати (Ctrl+Z)" aria-label="Скасувати">↶</button><button class="btn sm icon" id="navRedo" type="button" title="Повторити (Ctrl+Y)" aria-label="Повторити">↷</button><button class="btn norm" id="allNorm" type="button" title="Alt+N">Норма всюди</button></div>
+      <div class="ztools"><button class="btn sm icon" id="navUndo" type="button" title="Скасувати (Ctrl+Z)" aria-label="Скасувати"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button><button class="btn sm icon" id="navRedo" type="button" title="Повторити (Ctrl+Y)" aria-label="Повторити"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></svg></button><button class="btn sm" id="saveTpl" type="button" title="Зберегти поточний опис як шаблон"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6l-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg><span class="hide-m">Шаблон</span></button><button class="btn norm" id="allNorm" type="button" title="Alt+N" data-ic="ok">Норма всюди</button></div>
     </div>
     <div class="stepper" id="stepper"><button class="btn icon" id="stPrev" type="button" aria-label="Попередня зона">‹</button><button class="sn" id="stName" type="button"></button><button class="btn icon" id="stNext" type="button" aria-label="Наступна зона">›</button></div>
     <div class="trow" id="tplRow"></div>
@@ -515,49 +537,49 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   </div>
 
   <div class="card" id="measPanel">
-    <h2>Вимірювання</h2>
+    <h2 data-ic="ruler">Вимірювання</h2>
     <p class="note">Виміряйте в переглядачі знімків і введіть число — програма визначить ступінь і додасть фразу в опис.</p>
     <div class="meas" id="meas"></div>
   </div>
 
   <div class="card" id="sec-concl">
-    <h2>Висновок</h2>
+    <h2 data-ic="concl">Висновок</h2>
     <div id="sugs" class="chosen"></div>
     <div class="chosen" id="chosen"></div>
     <div class="chips" id="conclChips"></div>
     <div class="ltools" id="conclTools"></div>
-    <div class="freerow"><label class="f">Свій текст висновку<input id="conclFree" type="text" autocomplete="off"></label><button class="btn sm" id="conclKeep" type="button" title="Додати цей текст як кнопку висновку для цього виду дослідження">Запамʼятати як кнопку</button></div>
+    <div class="freerow"><label class="f">Свій висновок — пишіть, і він одразу йде в протокол<input id="conclFree" type="text" autocomplete="off" placeholder="напр. Плевральні спайки справа"></label><button class="btn sm" id="conclKeep" type="button" title="Додати цей текст як кнопку висновку для цього виду дослідження"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6l-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg>Запамʼятати як кнопку</button></div>
   </div>
 
   <div class="card" id="sec-rec">
-    <h2>Рекомендації</h2>
+    <h2 data-ic="rec">Рекомендації</h2>
     <div class="chips" id="recChips"></div>
     <div class="ltools" id="recTools"></div>
-    <div class="freerow"><label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label><button class="btn sm" id="recKeep" type="button" title="Додати цей текст як кнопку рекомендації">Запамʼятати як кнопку</button></div>
+    <div class="freerow"><label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label><button class="btn sm" id="recKeep" type="button" title="Додати цей текст як кнопку рекомендації"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6l-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/></svg>Запамʼятати як кнопку</button></div>
   </div>
 </section>
 
 <aside class="side" id="side" aria-label="Протокол">
   <div class="sh noprint">
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
-    <div class="shh"><h2>Протокол</h2><div class="psum" id="pSum"></div></div>
+    <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
   </div>
   <div class="actbar noprint">
-    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)">Готово</button>
+    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>Готово</span><span class="cnt" id="doneCnt" hidden></span></button>
     <div class="split">
-      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)">Копіювати</button>
+      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></svg>Копіювати</button>
       <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
         <div class="mpop"><span class="note">Для h24 частинами:</span><button id="copyDesc" type="button">Опис</button><button id="copyConcl" type="button">Висновок</button><button id="copyRec" type="button">Рекомендації</button></div></details>
     </div>
-    <button class="btn" id="printBtn" type="button" title="Ctrl+P">Друк</button>
-    <details class="menu"><summary class="btn icon" title="Ще" aria-label="Ще дії">⋯</summary>
-      <div class="mpop right"><button id="wordBtn" type="button">Зберегти як Word</button><button id="odtBtn" type="button">Зберегти для LibreOffice</button><button id="saveTpl" type="button">Зберегти як шаблон</button></div></details>
+    <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6H7z"/></svg>Друк</button>
+    <details class="menu"><summary class="btn" title="Зберегти протокол у файл"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><path d="M8 20v-6h8v6"/></svg>Зберегти як ▾</summary>
+      <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.doc)</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.fodt)</button></div></details>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
   <div class="viewbar noprint">
     <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
-    <button class="vbtn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
+    <button class="vbtn" id="paperBtn" type="button" aria-pressed="false" data-ic="sheet" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
     <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
   </div>
   <div class="pscroll"><article class="paper" id="paper"></article></div>
@@ -567,10 +589,10 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 
 <!-- ============ АРХІВ ============ -->
 <section class="view noprint" id="view-archive" hidden>
-  <div class="vh"><button class="btn" data-back type="button">← До опису</button><h2>Архів протоколів</h2></div>
+  <div class="vh"><button class="btn" data-back type="button">← До опису</button><h2 data-ic="archive">Архів протоколів</h2></div>
   <div class="banner" id="backupBanner" hidden></div>
   <div class="card">
-    <h2>На контроль</h2>
+    <h2 data-ic="clock">На контроль</h2>
     <div class="ctrl" id="ctrlList"></div>
   </div>
   <div class="card">
@@ -585,21 +607,21 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
       <button class="btn" id="aClear" type="button">Усі дати</button>
       <span style="flex:1"></span>
       <button class="btn" id="aSelUnprinted" type="button">Вибрати ненадруковані</button>
-      <button class="btn primary" id="aPrint" type="button">Друкувати вибрані</button>
+      <button class="btn primary" id="aPrint" type="button" data-ic="print">Друкувати вибрані</button>
     </div>
   </div>
   <div class="tscroll"><table class="j" id="aTable"></table></div>
   <div class="card" id="daySum">
-    <h2>Підсумок дня</h2>
+    <h2 data-ic="chart">Підсумок дня</h2>
     <div id="dayBox"></div>
   </div>
   <div class="card">
-    <h2>Резервна копія</h2>
+    <h2 data-ic="down">Резервна копія</h2>
     <div class="trow">
-      <button class="btn" id="backupBtn" type="button">Зберегти копію архіву</button>
-      <label class="btn" for="restoreFile" style="display:inline-flex;align-items:center">Відновити з файлу</label>
+      <button class="btn" id="backupBtn" type="button" data-ic="down">Зберегти копію архіву</button>
+      <label class="btn" for="restoreFile" style="display:inline-flex;align-items:center" data-ic="up">Відновити з файлу</label>
       <input id="restoreFile" type="file" accept=".json,application/json" hidden>
-      <button class="btn" id="demoA" type="button">Додати приклади</button>
+      <button class="btn" id="demoA" type="button" data-ic="plus">Додати приклади</button>
     </div>
     <p class="note" id="backupMsg"></p>
   </div>
@@ -607,14 +629,14 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 
 <!-- ============ НАЛАШТУВАННЯ ============ -->
 <section class="view noprint" id="view-settings" hidden>
-  <div class="vh"><button class="btn" data-back type="button">← До опису</button><h2>Налаштування</h2></div>
+  <div class="vh"><button class="btn" data-back type="button">← До опису</button><h2 data-ic="gear">Налаштування</h2></div>
   <div class="card">
-    <h2>Папка даних</h2>
+    <h2 data-ic="folder">Папка даних</h2>
     <p class="note" id="folderInfo"></p>
-    <div class="trow"><button class="btn primary" id="folderPick" type="button">Створити / обрати папку даних</button><button class="btn" id="folderForget" type="button" hidden>Від'єднати папку</button></div>
+    <div class="trow"><button class="btn primary" id="folderPick" type="button" data-ic="folder">Створити / обрати папку даних</button><button class="btn" id="folderForget" type="button" hidden>Від'єднати папку</button></div>
   </div>
   <div class="card">
-    <h2>Лікар і вигляд</h2>
+    <h2 data-ic="user">Лікар і вигляд</h2>
     <div class="fields">
       <label class="f wide">Лікар-рентгенолог (для підпису)<input id="sDoctor" type="text"></label>
       <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="grey">кабінет — темно-сіра</option><option value="dark">темна</option></select></label>
@@ -623,13 +645,13 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     </div>
   </div>
   <div class="card">
-    <h2>Робота</h2>
+    <h2 data-ic="work">Робота</h2>
     <label class="chk"><input type="checkbox" id="sFlow"> Потоковий режим для флюорографії: після «Готово» одразу наступний пацієнт</label>
     <label class="chk"><input type="checkbox" id="sFreq"> Часті фрази першими (порядок кнопок оновлюється раз на день)</label>
     <div class="trow"><button class="btn" id="sFreqReset" type="button">Скинути статистику фраз</button></div>
   </div>
   <div class="card">
-    <h2>Бланк і реквізити закладу</h2>
+    <h2 data-ic="hosp">Бланк і реквізити закладу</h2>
     <div class="fields">
       <label class="f wide">Бланк за замовчуванням<select id="sBlank"></select></label>
     </div>
@@ -647,7 +669,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <p class="note">Реквізити друкуються в шапці бланків A, B, C і D. Зберігаються на цьому ПК і в папці даних.</p>
   </div>
   <div class="card">
-    <h2>Друк</h2>
+    <h2 data-ic="print">Друк</h2>
     <div class="fields">
       <label class="f wide">Довгий протокол (не вміщається в пів аркуша навіть ущільнено)<select id="sPrintMode">
         <option value="full">друкувати на цілому аркуші A4 з одного боку (рекомендовано)</option>
@@ -657,41 +679,41 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
         <option value="short">знизу догори (верх стає внизу)</option></select></label>
     </div>
     <label class="chk"><input type="checkbox" id="sRevBacks"> Друкувати звороти у зворотному порядку</label>
-    <div class="trow"><button class="btn" id="sTest" type="button">Пробний аркуш для перевірки перевертання</button></div>
+    <div class="trow"><button class="btn" id="sTest" type="button" data-ic="print">Пробний аркуш для перевірки перевертання</button></div>
     <p class="note">Зробіть пробний аркуш один раз: надрукуйте лицьову сторону, переверніть аркуш, як звикли, і надрукуйте зворот.</p>
   </div>
   <div class="card">
-    <h2>Типові ЕЕД за видом дослідження, мЗв</h2>
+    <h2 data-ic="rad">Типові ЕЕД за видом дослідження, мЗв</h2>
     <div class="fields" id="sEed"></div>
     <p class="note">Таблицю затверджує лікарня. Значення підставляється в нове дослідження.</p>
   </div>
   <div class="card">
-    <h2>Фрази норми</h2>
+    <h2 data-ic="pen">Фрази норми</h2>
     <div class="fields"><label class="f">Вид дослідження<select id="sNormStudy"></select></label></div>
     <div class="form" id="sNorms"></div>
     <div class="trow"><button class="btn" id="sNormReset" type="button">Повернути стандартні фрази</button><button class="btn" id="sBtnReset" type="button">Повернути кнопки цього дослідження як були</button></div>
     <p class="note">Напис і фразу кожної кнопки можна змінити прямо в зоні: олівець ✎ біля назви зони.</p>
   </div>
   <div class="card">
-    <h2>Мої кнопки</h2>
+    <h2 data-ic="star">Мої кнопки</h2>
     <p class="note">Власні фрази додаються прямо в зоні: розгорніть зону → «+ своя фраза». Тут можна переглянути й видалити всі.</p>
     <div id="sMy"></div>
   </div>
   <div class="card">
-    <h2>Пакет фраз</h2>
+    <h2 data-ic="box">Пакет фраз</h2>
     <p class="note">Один файл з фразами норми, змінами кнопок зон, висновків і рекомендацій, «Моїми кнопками» і шаблонами — щоб перенести на інший ПК або дати колезі на заміні. Архів пацієнтів у пакет не потрапляє.</p>
     <div class="trow">
-      <button class="btn" id="phExport" type="button">Зберегти пакет фраз</button>
-      <label class="btn" for="phImport" style="display:inline-flex;align-items:center">Завантажити пакет фраз</label>
+      <button class="btn" id="phExport" type="button" data-ic="down">Зберегти пакет фраз</button>
+      <label class="btn" for="phImport" style="display:inline-flex;align-items:center" data-ic="up">Завантажити пакет фраз</label>
       <input id="phImport" type="file" accept=".json,application/json" hidden>
     </div>
     <p class="note" id="phMsg"></p>
   </div>
   <div class="card">
-    <h2>Налаштування у файл</h2>
+    <h2 data-ic="down">Налаштування у файл</h2>
     <div class="trow">
-      <button class="btn" id="sExport" type="button">Зберегти налаштування й шаблони</button>
-      <label class="btn" for="sImport" style="display:inline-flex;align-items:center">Завантажити з файлу</label>
+      <button class="btn" id="sExport" type="button" data-ic="down">Зберегти налаштування й шаблони</button>
+      <label class="btn" for="sImport" style="display:inline-flex;align-items:center" data-ic="up">Завантажити з файлу</label>
       <input id="sImport" type="file" accept=".json,application/json" hidden>
       <button class="btn" id="sWelcome" type="button">Знайомство: дані лікаря</button>
     </div>
@@ -703,9 +725,9 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 <div id="mbar" class="noprint">
   <button class="mt" id="mbarText" type="button"><span id="mbarWarn"></span><span class="mtx"><small id="mbarPat"></small><b id="mbarConcl">Rö-ч: …</b></span></button>
   <div class="mb">
-    <button class="btn" id="mbarNav" type="button">☰ Розділи</button>
-    <button class="btn" id="mbarOpen" type="button">Протокол</button>
-    <button class="btn primary" id="mbarCopy" type="button">Копіювати</button>
+    <button class="btn" id="mbarNav" type="button" data-ic="list">Розділи</button>
+    <button class="btn" id="mbarOpen" type="button" data-ic="sheet">Протокол</button>
+    <button class="btn primary" id="mbarCopy" type="button" data-ic="copy">Копіювати</button>
   </div>
 </div>
 
@@ -804,6 +826,42 @@ function download(name,content,type){
 }
 const typing=e=>{const t=e.target;return t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable);};
 
+
+/* ---------- іконки (один лінійний стиль, колір — від тексту) ---------- */
+const ICO={
+ sheet:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/>',
+ archive:'<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9"/><path d="M10 13h4"/>',
+ lungs:'<path d="M12 4v8"/><path d="M12 9.5c-1.6 0-2.4-2-4.2-2C5.3 7.5 4 11.5 4 15.3c0 2.6 1.4 4.2 3.4 4.2 2.3 0 3.6-1.6 3.6-4.5V12"/><path d="M12 9.5c1.6 0 2.4-2 4.2-2 2.5 0 3.8 4 3.8 7.8 0 2.6-1.4 4.2-3.4 4.2-2.3 0-3.6-1.6-3.6-4.5V12"/>',
+ fg:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M12 6.5v6"/><path d="M11 10c-2.6 0-3.8 3-3.8 6.5H11z"/><path d="M13 10c2.6 0 3.8 3 3.8 6.5H13z"/>',
+ bone:'<path d="M8.6 6.8a2.3 2.3 0 1 0-3.3 1.9 2.3 2.3 0 1 0 2.1 3.2l4.7 4.7a2.3 2.3 0 1 0 3.2 2.1 2.3 2.3 0 1 0 1.9-3.3 2.3 2.3 0 1 0-3.2-2.1L9.3 8.6a2.3 2.3 0 0 0-.7-1.8z"/>',
+ spine:'<rect x="8.5" y="2.5" width="7" height="4" rx="1.4"/><rect x="8" y="10" width="8" height="4" rx="1.4"/><rect x="8.5" y="17.5" width="7" height="4" rx="1.4"/><path d="M5.5 4.5h3M15.5 4.5h3M5 12h3M16 12h3M5.5 19.5h3M15.5 19.5h3"/>',
+ abd:'<rect x="4" y="4" width="16" height="16" rx="6"/><path d="M8 9.5h8"/><path d="M8 13.5c1.3 0 1.3 2 2.7 2s1.3-2 2.6-2 1.4 2 2.7 2"/>',
+ skull:'<path d="M12 3a8 8 0 0 0-8 8c0 2.6 1.1 4.3 2.6 5.3V20h10.8v-3.7c1.5-1 2.6-2.7 2.6-5.3a8 8 0 0 0-8-8z"/><circle cx="9" cy="11.5" r="1.7"/><circle cx="15" cy="11.5" r="1.7"/><path d="M10.5 20v-2.5M13.5 20v-2.5"/>',
+ ruler:'<path d="M3 17L17 3l4 4L7 21z"/><path d="M7.5 12.5l2 2M10.5 9.5l2 2M13.5 6.5l2 2"/>',
+ concl:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4"/><path d="M9 13l2 2 4-4"/>',
+ rec:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/><path d="M9 15h6M13 13l2 2-2 2"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+ pen:'<path d="M4 20l4-1L19 8l-3-3L5 16z"/><path d="M14 7l3 3"/>',
+ list:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
+ copy:'<rect x="8" y="8" width="11" height="12" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',
+ print:'<path d="M7 9V4h10v5"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v6H7z"/>',
+ folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ chart:'<path d="M5 20V11M12 20V5M19 20v-7"/>',
+ down:'<path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/>',
+ up:'<path d="M12 16V5M7 10l5-5 5 5"/><path d="M5 20h14"/>',
+ ok:'<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.6 2.6L16 9.5"/>',
+ star:'<path d="M12 4l2.4 5 5.6.8-4 3.9.9 5.5L12 16.6l-4.9 2.6.9-5.5-4-3.9 5.6-.8z"/>',
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+ rad:'<circle cx="12" cy="12" r="1.8"/><path d="M12 3.5a8.5 8.5 0 0 1 7.4 4.3L14 11M12 3.5a8.5 8.5 0 0 0-7.4 4.3L10 11M5 16.3a8.5 8.5 0 0 0 14 0L13.3 13.4M10.7 13.4"/>',
+ box:'<path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5l9 4.5 9-4.5M12 12v9"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ work:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5h6v2M3 12h18"/>',
+ hosp:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 7v6M9 10h6M9 21v-4h6v4"/>'
+};
+const ic=n=>ICO[n]?`<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICO[n]}</svg>`:'';
+const icEl=n=>{const t=document.createElement('template');t.innerHTML=ic(n);return t.content.firstChild;};
+document.querySelectorAll('[data-ic]').forEach(e=>e.insertAdjacentHTML('afterbegin',ic(e.dataset.ic)));
 
 /* --- 020-data.js --- */
 /* ===== Довідкові дані: зони, обʼєкти, вимірювання ===== */
@@ -1010,8 +1068,14 @@ const MEAS={
 /* ===== Версія і що нового =====
    До пілоту в кабінеті — 0.x бета; перша робоча версія після пілоту — 1.0.
    Дрібні правки номер не змінюють. */
-const VERSION='0.3.1';
+const VERSION='0.3.2';
 const CHANGELOG=[
+ ['0.3.2',['Новий порядок екрана: угорі розділи Опис · Архів, пошук, «Новий пацієнт», налаштування й довідка; далі пацієнт → дослідження з проєкціями → опис → висновок.',
+   'Над протоколом один ряд: Готово · Копіювати ▾ (частинами для h24) · Друк · Зберегти як ▾ (PDF, Word, LibreOffice).',
+   'PDF у вибраному бланку: половинка — A5, довгий — A4; назва файлу з прізвища й дати.',
+   'Папка даних: архів ще й по місяцях, копія кожного протоколу як аркуша в «протоколи», пакет фраз.',
+   'Іконки по всій програмі; порожні обовʼязкові поля підсвічуються, на «Готово» — кількість зауважень.',
+   'Одне поле для свого висновку (одразу в протокол) і «Запамʼятати як кнопку»; без рамки штампу на екрані.']],
  ['0.3.1',['Свої висновки: «+ свій висновок» під кнопками або «Запамʼятати як кнопку» біля поля «Свій текст висновку».',
    '«✎ Редагувати кнопки» у висновку й рекомендаціях: змінити текст, сховати, переставити, «Повернути як було».',
    'Висновок норми («Без патологічних змін» тощо) можна змінити для кожного виду дослідження.',
@@ -1270,11 +1334,12 @@ function countUse(d,g,k){const key=useKey(d.id,g.id,k);USE.counts[key]=(USE.coun
 
 /* --- 050-ui.js --- */
 /* ===== Відображення: вкладки, розділи, зони, висновок, протокол ===== */
+const STUDY_IC={ogk:'lungs',fg:'fg',bone:'bone',spine:'spine',abd:'abd',skull:'skull'};
 const STUDY_SHORT={ogk:'ОГК',fg:'ФГ',bone:'Кістки',spine:'Хребет',abd:'ОЧП',skull:'Череп, ППН'};
 function switchStudy(k){if(S.study===k)return;tick();editZone=null;const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull,blank:S.blank};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
 function renderStudy(){
   const st=$('studyTabs');st.textContent='';
-  Object.keys(STUDIES).forEach(k=>{const b=el('button',{type:'button',role:'tab','aria-selected':String(S.study===k),title:STUDIES[k].n},STUDY_SHORT[k]||STUDIES[k].n);b.onclick=()=>switchStudy(k);st.append(b);});
+  Object.keys(STUDIES).forEach(k=>{const b=el('button',{type:'button',role:'tab','aria-selected':String(S.study===k),title:STUDIES[k].n});b.append(icEl(STUDY_IC[k]),document.createTextNode(STUDY_SHORT[k]||STUDIES[k].n));b.onclick=()=>switchStudy(k);st.append(b);});
   $('flowWrap').hidden=S.study!=='fg';$('flowChk').checked=!!SET.flow;
   const ex=$('studyExtra');ex.textContent='';
   if(S.study==='bone'){
@@ -1323,7 +1388,7 @@ function renderZones(){
     const z=S.zones[d.id];const zs=zoneState(d);const ed=editZone===d.id;
     const box=el('div',{class:'zone'+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
     const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));
-    const pen=el('button',{type:'button',class:'zpen','aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Редагувати кнопки зони: напис, фраза, порядок','aria-label':'Редагувати кнопки зони '+d.name},'✎');
+    const pen=el('button',{type:'button',class:'zpen','aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Редагувати кнопки зони: напис, фраза, порядок','aria-label':'Редагувати кнопки зони '+d.name});pen.append(icEl('pen'));
     pen.onclick=()=>{editZone=ed?null:d.id;S.focus=d.id;renderZones();if(!ed){const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}};
     h.append(pen);head.append(h);
     const seg=el('div',{class:'seg',role:'group','aria-label':d.name});
@@ -1457,12 +1522,8 @@ function renderChipList(kind){
     b.onclick=()=>{tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}renderAll();};root.append(b);};
   if(isC)chip(normConclOf(),null);
   effList(kind).forEach(x=>chip(x.t,x.k));
-  const add=el('div',{class:'myadd'});const inp=el('input',{type:'text',placeholder:isC?'+ свій висновок, напр. «Плевральні спайки справа»':'+ своя рекомендація','aria-label':isC?'Новий висновок':'Нова рекомендація'});
-  const ok=el('button',{type:'button',class:'btn sm'},'Додати');
-  const doAdd=()=>{tick();if(addToList(kind,inp.value)){renderAll();toast(isC?'Висновок додано як кнопку':'Рекомендацію додано як кнопку');}};
-  ok.onclick=doAdd;inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doAdd();}});add.append(inp,ok);
-  const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'},'✎ Редагувати кнопки');pen.onclick=()=>{editList=kind;renderChipList(kind);};
-  tools.append(add,pen);
+  const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'});pen.append(icEl('pen'),document.createTextNode('Редагувати кнопки'));pen.onclick=()=>{editList=kind;renderChipList(kind);};
+  tools.append(pen);
 }
 function renderListEditor(kind,box){
   const isC=kind==='concl';const key=listKeyOf(kind);const L=()=>SET.lists[key]||(SET.lists[key]={});
@@ -1532,7 +1593,6 @@ function renderPaper(){
   man.append(el('span',{class:'badge'},'відредаговано вручну'));
   const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();toast('Повернуто автоматичний текст');};
   man.append(rs,el('span',{class:'note'},'Кнопки зон тепер не змінюють текст — скиньте правку, щоб повернути автотекст.'));p.append(man);
-  p.append(el('div',{class:'stampspace'},'місце для штампу'));
   const tx=el('div',{id:'ptext',contenteditable:'true',spellcheck:'true',role:'textbox','aria-multiline':'true','aria-label':'Текст протоколу — можна правити прямо тут',title:'Клацніть і пишіть. Alt+клік по реченню — відкрити його зону.'});
   if(S.manual!=null){
     String(S.manual).split('\n').forEach((ln,i)=>{const d=el('div',{class:i===0?'pt':/^Rö-ч:/.test(ln)?'concl':''});if(ln)d.textContent=ln;else d.append(el('br'));tx.append(d);});
@@ -1593,7 +1653,10 @@ function renderChecks(saveMode){
   if(saveMode&&w.length){box.open=true;const b=el('button',{type:'button',class:'btn sm'},'Зберегти все одно');b.onclick=()=>doSave();act.append(b);}
   updBar(w);
 }
+const REQ_FIELDS=[['pName','Не вказано ПІБ.'],['pAge','Не вказано вік.'],['pNum','Не вказано № знімка.'],['pDate','Не вказано дату знімка.'],['pEed','Не вказано ЕЕД.']];
 function updBar(w){
+  const c=$('doneCnt');c.hidden=!w.length;c.textContent=w.length?String(w.length):'';$('doneBtn').title=w.length?'Перед збереженням: '+w.join(' '):'Зберегти в архів (Ctrl+S)';
+  const touched=!!t0||!!$('pName').value.trim();REQ_FIELDS.forEach(([id,msg])=>$(id).classList.toggle('miss',touched&&w.includes(msg)));
   $('mbarConcl').textContent=S.manual!=null?'Текст змінено вручну':conclText().t;
   const mw=$('mbarWarn');mw.textContent='';if(w&&w.length)mw.append(el('span',{class:'pill w',title:w.join(' ')},'⚠ '+w.length));
 }
@@ -1732,7 +1795,7 @@ function doSave(){
     ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
-  saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();
+  saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
   if(S.study==='fg'&&SET.flow){const nx=nextNum();closeSheet();newPatient(true);renderAll();$('pName').focus();toast(`Збережено. Наступний пацієнт${nx?' — № '+nx:''}`);return;}
   editingId=rec.id;tDone=Date.now();renderChecks();renderMeter();toast(i>=0?'Протокол оновлено в архіві':'Збережено в архів');
 }
@@ -2005,6 +2068,16 @@ function doPrint(side){
 const currentItem=()=>({id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
 const recordItem=r=>r.doc?{id:r.id,name:r.name,doc:r.doc,blank:r.blank||SET.blank||'C'}:{id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')};
 $('printBtn').onclick=()=>openPrint([currentItem()]);
+/* PDF: «Зберегти як PDF» у вікні друку; назва файлу — з назви сторінки, половинка — A5 */
+function savePdf(){
+  const it=classify(currentItem());const half=it.kind==='half';
+  const pages=half?`<div class="ppage a5"><div class="pslot">${wrapDoc(it,it.units)}</div></div>`:(it.kind==='flip'?`<div class="ppage full">${wrapDoc(it,it.units)}</div>`:pageHTML({full:it},'front'));
+  const st=document.createElement('style');st.textContent=half?'@page{size:A5 landscape;margin:0}':'@page{size:A4;margin:0}';document.head.append(st);
+  const t0=document.title;document.title=fileBase();toast('У вікні друку виберіть «Зберегти як PDF»');
+  const back=()=>{document.title=t0;st.remove();window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
+  setTimeout(()=>{runPrint(pages);setTimeout(back,1500);},50);
+}
+$('pdfBtn').onclick=savePdf;
 function testSheet(){
   const half=(t,s)=>`<div class="ptest"><div>${t}</div><div style="font-size:13pt;font-weight:normal">${s}</div></div>`;
   const front=`<div class="ppage"><div class="pslot">${half('ЛИЦЬОВА · половина А ↑','Верх аркуша. Переверніть аркуш так, як робите завжди, і надрукуйте зворот.')}</div><div class="pslot cut">${half('ЛИЦЬОВА · половина Б ↑','Низ аркуша.')}</div></div>`;
@@ -2049,10 +2122,17 @@ async function folderWrite(){
   try{
     await writeJSON(dirH,'архів.json',{app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
     await writeJSON(dirH,'налаштування.json',{app:'skiagrama-settings',v:2,settings:SET,templates:TPL});
+    await writeJSON(dirH,'пакет фраз.json',phrasePack());
+    /* архів ще й по місяцях: архів/2026/2026-10.json — зручно відкрити чи віддати один місяць */
+    const ad=await dirH.getDirectoryHandle('архів',{create:true});const byM={};
+    A.filter(r=>!r.example).forEach(r=>{const m=(r.date||today()).slice(0,7);(byM[m]=byM[m]||[]).push(r);});
+    const months=Object.keys(byM);const touch=months.filter(m=>!folderWrite.done||folderWrite.done[m]!==byM[m].length||m===today().slice(0,7));
+    for(const m of touch){const yd=await ad.getDirectoryHandle(m.slice(0,4),{create:true});await writeJSON(yd,m+'.json',{app:'skiagrama',v:2,month:m,archive:byM[m]});}
+    folderWrite.done=Object.fromEntries(months.map(m=>[m,byM[m].length]));
     const cp=await dirH.getDirectoryHandle('копії',{create:true});
     await writeJSON(cp,`архів-${today()}.json`,{app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
     if(SET.lastBackup!==today()){SET.lastBackup=today();store.set(SET_KEY,SET);}
-  }catch(e){dirOK=false;showFolderBanner('Не вдалося записати в папку даних. Натисніть, щоб дозволити знову.');}
+  }catch(e){console.warn('folderWrite',e);dirOK=false;showFolderBanner('Не вдалося записати в папку даних. Натисніть, щоб дозволити знову.');}
   folderBusy=false;
 }
 function folderSoon(){if(!folderOK())return;clearTimeout(folderT);folderT=setTimeout(folderWrite,800);}
@@ -2074,7 +2154,7 @@ function renderFolderInfo(){
   const i=$('folderInfo');if(!i)return;
   if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На компʼютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
   $('folderPick').hidden=false;$('folderForget').hidden=!dirH;
-  i.textContent=folderOK()?`Підключено: «${folderName()}». Архів, шаблони й налаштування зберігаються туди самі, а щоденна копія — у підпапку «копії». Після перевстановлення браузера або на іншому компʼютері просто оберіть цю папку знову.`
+  i.textContent=folderOK()?`Підключено: «${folderName()}». Туди самі зберігаються: налаштування, пакет фраз, архів (і по місяцях у «архів»), копія кожного протоколу як аркуша — у «протоколи», щоденна копія — у «копії». Після перевстановлення браузера або на іншому компʼютері просто оберіть цю папку знову.`
     :dirH?`Папка «${folderName()}» запамʼятована, але браузер просить дозвіл. Натисніть «Підключити папку» вгорі.`
     :`Програма створить папку «${DATA_DIR}» у вибраному місці (напр. «Документи») і сама зберігатиме туди архів, шаблони й налаштування.`;
 }
@@ -2087,6 +2167,20 @@ async function folderBoot(){
   renderFolderInfo();
 }
 
+/* копія протоколу як аркуша: протоколи/2026-10/Rö_Прізвище_2026-10-11_№1025.html */
+function printCSS(){const out=[];const re=/\.(pdoc|pslot|ppage|pstamp|bk[A-D]?-|bk-|cont|concl)/;
+  for(const sh of document.styleSheets){let rules;try{rules=sh.cssRules;}catch(e){continue;}for(const r of rules){if(r.selectorText&&re.test(r.selectorText))out.push(r.cssText);}}return out.join('\n');}
+async function folderSaveProtocol(rec){
+  if(!folderOK()||!rec)return;
+  try{const it=classify(recordItem(rec));const half=it.kind==='half';
+    const body=half?`<div class="ppage a5"><div class="pslot">${wrapDoc(it,it.units)}</div></div>`:`<div class="ppage full">${wrapDoc(it,it.units)}</div>`;
+    const title=`Rö ${rec.name||''} ${fmtD(rec.date)} № ${rec.num||''}`;
+    const html=`<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${esc(title)}</title><style>@page{size:${half?'A5 landscape':'A4'};margin:0}html,body{margin:0;background:#e9ecef}body{padding:12px}.ppage{margin:0 auto;box-shadow:0 2px 12px rgba(0,0,0,.2)}@media print{body{padding:0;background:#fff}.ppage{box-shadow:none}}\n${printCSS()}</style></head><body>${body}</body></html>`;
+    const pd=await dirH.getDirectoryHandle('протоколи',{create:true});const md=await pd.getDirectoryHandle((rec.date||today()).slice(0,7),{create:true});
+    const nm=`Rö_${(rec.name||'протокол').replace(/[^\p{L}\p{N}]+/gu,'_')}_${rec.date||today()}${rec.num?'_№'+String(rec.num).replace(/[^\p{L}\p{N}]+/gu,''):''}.html`;
+    const fh=await md.getFileHandle(nm,{create:true});const w=await fh.createWritable();await w.write(html);await w.close();
+  }catch(e){}
+}
 /* --- 100-dialogs.js --- */
 /* ===== Вікна: пошук Ctrl+K, розділи (телефон), довідка, знайомство, що нового ===== */
 let dlgOnClose=null;
@@ -2270,7 +2364,8 @@ function fillDepts(){const dl=$('deptList');dl.textContent='';SET.depts.split(',
 applyLook();$('vBadge').textContent=`v${VERSION} бета`;
 /* для автотестів: доступ до внутрішніх функцій (не впливає на роботу) */
 window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,phrasePack,
-  setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k)};
+  setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k),
+  async useFolder(h){dirH=h;dirOK=true;await folderWrite();}};
 fillDepts();renderNames();updCtrlBadge();
 $('pDate').value=today();setEedDefault();$('pNum').value=nextNum();
 const dr=store.get(DRAFT_KEY,null);

@@ -38,17 +38,21 @@ a{color:var(--blue)}
 header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .appnav{display:flex;gap:4px;margin:0 auto 0 18px}
+.appnav button .ic{width:17px;height:17px}
 .appnav button{border:0;background:none;padding:8px 14px;border-radius:10px;font-weight:500;font-size:15px;min-height:40px;display:inline-flex;align-items:center;gap:6px}
 .appnav button:hover{background:var(--blue-soft)}
 .appnav button.on{background:var(--blue-soft);color:var(--blue)}
 .btn.search{color:var(--muted);min-width:190px;display:inline-flex;justify-content:space-between;align-items:center;gap:16px;font-weight:400}
+.btn.search>span{display:inline-flex;align-items:center;gap:8px}
 .btn.search kbd{font-family:var(--body);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px}
 .brand .bn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .brand h1{font-family:var(--display);font-weight:600;font-size:24px;margin:0;letter-spacing:-.3px}
 .brand small{display:block;color:var(--muted);font-size:12.5px}
 .vbadge{border:1px solid var(--accent);color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
 .hbtns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 13px;min-height:42px;font-weight:500}
+.ic{width:18px;height:18px;flex:none;vertical-align:-3px}
+.btn .ic+span,.btn .ic{margin-right:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 13px;min-height:42px;font-weight:500}
 .btn:hover{border-color:var(--blue)}
 .btn.primary{background:var(--blue);border-color:var(--blue);color:var(--surface)}
 .btn.norm{border-color:var(--ok);color:var(--ok)}
@@ -65,7 +69,9 @@ header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;fle
 @media (max-width:1180px){.wrap{gap:12px;padding-inline:12px;grid-template-columns:minmax(0,1fr) minmax(320px,.8fr)}.side{padding:12px}}
 .form{min-width:0;display:flex;flex-direction:column;gap:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-width:0;scroll-margin-top:12px}
+.card h2,.view .vh h2,.side .sh h2{display:flex;align-items:center;gap:8px}
 .card h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0}
+h2 .ic{color:var(--blue);width:20px;height:20px}
 
 /* study tabs + section nav */
 .zhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
@@ -74,6 +80,13 @@ header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;fle
 .zhead .nz{display:contents}
 .zhead .sep{width:1px;height:20px;background:var(--line);margin:0 6px}
 .ztools{display:flex;gap:6px;align-items:center}
+.cnt{background:var(--warn);color:var(--surface);border-radius:999px;font-size:12px;font-weight:700;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px}
+input.miss{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset;background:var(--warn-soft)}
+.zpen{opacity:.35;transition:opacity .15s}
+.zone:hover .zpen,.zpen:focus-visible,.zpen[aria-pressed="true"]{opacity:1}
+@media (hover:none){.zpen{opacity:1}}
+.ppage.a5{width:210mm;height:148.5mm}
+.mpop b{font-weight:600}
 .actbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .split{display:inline-flex}
 .split>.btn{border-radius:10px 0 0 10px}
@@ -88,12 +101,13 @@ details.menu[open]>summary{background:var(--blue-soft);border-color:var(--blue)}
 .mpop button:hover{background:var(--blue-soft)}
 .mpop .note{padding:6px 12px 2px}
 .viewbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vbtn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;min-height:34px;font-size:13px}
+.vbtn .ic{width:15px;height:15px}
+.vbtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;min-height:34px;font-size:13px}
 .vbtn:hover{border-color:var(--blue)}
 .vbtn[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
 .viewbar label.bsel select{min-height:34px;padding:4px 8px;font-size:13px;width:auto}
 .studytabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.studytabs button{border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
+.studytabs button{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
 .studytabs button+button{border-left:1px solid var(--line)}
 .studytabs button[aria-selected="true"]{background:var(--blue);color:var(--surface)}
 .navrow{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
@@ -143,7 +157,8 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 .zone:not(.wide) .zone-head h3{min-width:0;flex:1 1 auto}
 .zone:not(.wide) .zone-head .phrase{flex-basis:100%;font-size:12.5px}
 .zone.focus{box-shadow:0 0 0 2px var(--accent)}
-.zpen{border:1px solid transparent;background:none;border-radius:6px;padding:0 5px;min-height:26px;font-size:13px;color:var(--muted);margin-left:2px}
+.zpen{border:1px solid transparent;background:none;border-radius:6px;padding:0 4px;min-height:26px;color:var(--muted);margin-left:2px;display:inline-flex;align-items:center}
+.zpen .ic{width:15px;height:15px}
 .zpen:hover{border-color:var(--line);color:var(--blue)}
 .zpen[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
 .zone.editing{border-color:var(--blue);border-style:dashed}
@@ -295,6 +310,13 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   .studytabs button:nth-child(n+4){border-top:1px solid var(--line)}
   #sec-zones .navrow{display:none}
   .appnav,.btn.search{display:none}
+  .hide-m{display:none}
+  .zone .zone-head h3{flex-basis:100%}
+  .btn.norm{white-space:nowrap}
+  .studytabs button{font-size:13px;gap:5px;padding:9px 4px}
+  .studytabs button .ic{width:16px;height:16px}
+  #mbar .mb .btn{padding:7px 6px;gap:5px;font-size:14.5px}
+  #mbar .mb .btn .ic{width:16px;height:16px}
   .viewbar label.bsel{font-size:0;gap:0}.viewbar label.bsel select{max-width:150px}
   .stepper{display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:15;background:var(--surface);padding:6px 0}
   .stepper .sn{flex:1;text-align:center;font-weight:600;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);min-height:42px}
