@@ -63,6 +63,84 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }
+
+/* ---------- 2.2: модульні перевірки й нові функції (ПК) ---------- */
+{
+  console.log('\nМодульні перевірки і 2.2');
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');await p.click('text=Пропустити — заповню пізніше');
+  // захист шаблонів: усі зони, усі кнопки
+  const bad=await p.evaluate(()=>{const K=window.__skg;const out=[];let n=0;
+    for(const st of Object.keys(K.STUDIES)){K.study(st);
+      for(const mode of ['ppn','cherep']){if(st==='skull'){K.S.skull=mode;}
+        for(const d of K.STUDIES[st].zones){if(d.mode&&d.mode!==K.S.skull)continue;
+          const base={};d.groups.forEach(g=>{if(g.req&&g.type!=='text')base[g.id]=g.many?[g.o[0][0]]:g.o[0][0];if(g.type==='text'&&g.req)base[g.id]='1';});
+          const variants=[{}, base];
+          d.groups.forEach(g=>{if(g.type==='text'){variants.push(Object.assign({},base,{[g.id]:'тест'}));return;}
+            g.o.forEach(o=>variants.push(Object.assign({},base,{[g.id]:g.many?[o[0]]:o[0]})));
+            if(g.many)variants.push(Object.assign({},base,{[g.id]:g.o.map(o=>o[0])}));});
+          const all={};d.groups.forEach(g=>{all[g.id]=g.type==='text'?'тест':g.many?g.o.map(o=>o[0]):g.o[g.o.length-1][0];});variants.push(all);
+          for(const sel of variants){K.S.zones[d.id]={st:'c',sel:JSON.parse(JSON.stringify(sel))};const t=K.zoneText(d);n++;
+            if(/[{}|]|\.\.|  | ,|\s\.$/.test(t)||!t.trim())out.push(st+'.'+d.id+': «'+t+'»');}
+          K.S.zones[d.id]={st:'n',sel:{}};}
+        if(st!=='skull')break;}}
+    return {n,out:out.slice(0,8),cnt:out.length};});
+  ok(bad.cnt===0,`шаблони зон: ${bad.n} варіантів без «{», «|», «..», подвійних пробілів`+(bad.cnt?' — '+bad.out.join(' / '):''));
+  // suggestions()
+  await p.evaluate(()=>{const K=window.__skg;K.study('ogk');K.setZones({infil:{st:'c',sel:{side:'права',loc:'нижні',char:'інфільтр',seg:['S9','S10']}}});});
+  const sg=await p.evaluate(()=>window.__skg.suggestions().map(x=>x[0]));
+  ok(sg.includes('Правобічна пневмонія (S9, S10)'),'suggestions(): правобічна пневмонія (S9, S10)');
+  // вимірювання поза межами
+  await p.click('#studyTabs >> text=Хребет');await p.fill('#meas-cobb input >> nth=0','300');
+  ok(!(await paper(p)).includes('300')&&(await p.textContent('#checkList')).includes('поза можливими межами'),'Кобб 300° — не в протоколі, попередження');
+  await p.fill('#meas-cobb input >> nth=0','');
+  // повтор дії
+  await p.click('#studyTabs >> text=ОГК');await p.click('#allNorm');
+  await p.click('#zone-sinus .seg button:nth-child(3)');
+  const t1=await paper(p);await p.keyboard.press('Control+z');const t2=await paper(p);await p.keyboard.press('Control+y');const t3=await paper(p);
+  ok(t1!==t2&&t1===t3,'Ctrl+Z, потім Ctrl+Y повертає дію');
+  await p.keyboard.press('Control+z');await p.keyboard.press('Control+Shift+z');ok((await paper(p))===t1,'Ctrl+Shift+Z теж повторює');
+  // рядок пацієнта
+  await p.fill('#pName','Коваленко Марія Іванівна');await p.fill('#pAge','72');await p.fill('#pNum','1025');
+  ok((await p.textContent('#pSum')).startsWith('Коваленко М. І., 72 р. · № 1025 · '),'рядок пацієнта: '+await p.textContent('#pSum'));
+  // правка прямо в тексті
+  await p.click('#ptext .concl');await p.keyboard.press('End');await p.keyboard.type(' Додано вручну.');
+  ok(await p.isVisible('#pman')&&(await p.evaluate(()=>window.__skg.S.manual||'')).includes('Додано вручну.'),'правка прямо в тексті позначається «відредаговано вручну»');
+  await p.click('#pman button');ok(!(await paper(p)).includes('Додано вручну.')&&await p.isHidden('#pman'),'«Скинути правку» повертає автотекст');
+  // Alt+клік відкриває зону
+  await p.click('#ptext [data-zone="roots"]',{modifiers:['Alt']});ok(await p.isVisible('#zone-roots .myadd'),'Alt+клік по реченню відкриває зону');
+  // редагування кнопок
+  await p.click('#zone-infil .zpen');
+  await p.fill('#zone-infil .erow[data-k="права"] input.elb','справа ✓');await p.fill('#zone-infil .erow[data-k="права"] input.eph','правої легені (ред.)');
+  await p.click('#zone-infil .trow >> text=Готово');
+  await p.click('#zone-infil .seg button:nth-child(2)');
+  ok(await p.isVisible('#zone-infil .chip >> text=справа ✓'),'олівець: новий напис кнопки');
+  await p.click('#zone-infil .chip >> text=справа ✓');ok((await paper(p)).includes('правої легені (ред.)'),'олівець: нова фраза йде в протокол');
+  await p.click('#zone-infil .zpen');await p.fill('#zone-infil .egroup:nth-of-type(3) .erow.add input.elb','обидві базально').catch(()=>{});
+  const pack=await p.evaluate(()=>JSON.stringify(window.__skg.phrasePack()));
+  await p.click('#zone-infil .trow >> text=Повернути як було');await p.click('#zone-infil .trow >> text=Точно');
+  ok(await p.isHidden('#zone-infil .zpen[aria-pressed="false"]').then(()=>true)&&!(await p.evaluate(()=>Object.keys(window.__skg.SET.btn).length)),'«Повернути як було» скидає зміни зони');
+  await p.evaluate(s=>window.__skg.applyPhrasePack(JSON.parse(s)),pack);
+  ok(await p.evaluate(()=>!!window.__skg.SET.btn['ogk.infil.side.права']),'пакет фраз: експорт → імпорт повертає зміни кнопок');
+  await p.evaluate(()=>{window.__skg.SET.btn={};window.__skg.renderAll();});
+  // бланки й автопідгонка
+  await p.click('#allNorm');
+  for(const bl of ['A','B','C','D']){await p.selectOption('#blankSel',bl);await p.click('#paperBtn');
+    const tx=await paper(p);ok(tx.includes('Бланк '+bl)&&tx.includes('пів аркуша A4 ✓'),`бланк ${bl}: коротка норма вміщається в пів аркуша`);await p.click('#paperBtn');}
+  const kinds=await p.evaluate(()=>{const K=window.__skg;const it=K.currentItem();const long=n=>({...it,doc:{...it.doc,body:Array(n).fill('Легеневий малюнок посилений, збагачений, деформований за рахунок інтерстиційного компонента в базальних відділах обох легень.')}});
+    return [8,13,40].map(n=>{const c=K.classify(long(n));return c.kind+(c.cmp?'-cmp':'');}).join(',')+'|'+((K.blankAdvice({...long(13),blank:'A'})||{}).b||'');});
+  const [kk,adv]=kinds.split('|');
+  ok(/^half/.test(kk.split(',')[0])&&kk.split(',')[2]==='full','classify(): коротко — пів аркуша, дуже довго — цілий аркуш ('+kk+')');
+  ok(kk.includes('cmp')||adv,'автопідгонка ущільнює або радить інший бланк ('+kk+', порада: '+(adv||'—')+')');
+  await p.evaluate(()=>{const it=window.__skg.currentItem();});
+  // памʼятка
+  await p.click('#navHelp');await p.click('#dlg >> text=Памʼятка на 1 сторінку');ok((await p.textContent('#dlg')).includes('Протокол за 5 кроків'),'памʼятка відкривається з довідки');await p.click('#dlg >> text=Закрити');
+  // збереження з бланком
+  await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
+  ok(await p.evaluate(()=>{const r=JSON.parse(localStorage.getItem('skiagrama.archive.v1')).slice(-1)[0];return !!(r.doc&&r.blank);}),'архів зберігає дані для бланка');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);
 process.exit(fail?1:0);

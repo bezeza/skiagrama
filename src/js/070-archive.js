@@ -51,7 +51,7 @@ function openRecord(r){
 $('aToday').onclick=()=>{$('aFrom').value=today();$('aTo').value=today();renderArchive();};
 $('aClear').onclick=()=>{['aSearch','aFrom','aTo'].forEach(i=>$(i).value='');$('aStudy').value='';renderArchive();};
 $('aSelUnprinted').onclick=()=>{selected=new Set(aFiltered().filter(r=>!r.printed).map(r=>r.id));renderArchive();if(!selected.size)toast('Ненадрукованих протоколів у вибірці немає');};
-$('aPrint').onclick=()=>{const items=A.filter(r=>selected.has(r.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts).map(r=>({id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')}));if(items.length)openPrint(items);};
+$('aPrint').onclick=()=>{const items=A.filter(r=>selected.has(r.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts).map(recordItem);if(items.length)openPrint(items);};
 $('backupBtn').onclick=()=>{const ok=download(`Skiagrama_архів_${today()}.json`,JSON.stringify({app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A},null,1),'application/json');
   if(ok){SET.lastBackup=today();saveSet();}toast(ok?`Копію архіву (${A.length}) збережено у файл`:'Не вдалося зберегти файл');renderArchive();};
 function mergeArchive(list){const byId=new Map(A.map(r=>[r.id,r]));let n=0;list.forEach(r=>{if(!r||!r.id)return;const o=byId.get(r.id);if(!o){A.push(r);byId.set(r.id,r);n++;}else if((r.ts||0)>(o.ts||0)){Object.assign(o,r);}});return n;}

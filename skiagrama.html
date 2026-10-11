@@ -6,6 +6,7 @@
 <title>Skiagrama</title>
 <meta name="description" content="АРМ лікаря-рентгенолога: протокол рентгенологічного дослідження кнопками. Працює без інтернету.">
 <meta name="theme-color" content="#0B1C2A">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" rx="22" fill="%230B1C2A"/%3E%3Cg fill="none" stroke="%23DCE8F3" stroke-linecap="round" stroke-width="7"%3E%3Cpath d="M42 84 L36.6 22.5"/%3E%3Cpath d="M50 84 L50 16.5"/%3E%3Cpath d="M58 84 L64 23.5"/%3E%3Cpath d="M65 85 L75 34"/%3E%3Cpath d="M36 86 L17 48"/%3E%3C/g%3E%3Cg stroke="%230B1C2A" stroke-width="2.4"%3E%3Cpath d="M36 60 L44 60"/%3E%3Cpath d="M46 58 L54 58"/%3E%3Cpath d="M57 60 L65 60"/%3E%3Cpath d="M66 64 L73 64"/%3E%3Cpath d="M35 42 L42 42"/%3E%3Cpath d="M46 38 L54 38"/%3E%3Cpath d="M59 42 L67 42"/%3E%3Cpath d="M69 50 L76 50"/%3E%3Cpath d="M33 30 L41 30"/%3E%3Cpath d="M46 25 L54 25"/%3E%3Cpath d="M60 31 L67 31"/%3E%3Cpath d="M23 70 L31 70"/%3E%3Cpath d="M16 56 L24 56"/%3E%3C/g%3E%3Cellipse cx="60.8" cy="54" rx="7" ry="2.8" transform="rotate%28-8 60.8 54%29" fill="none" stroke="%23F2A65A" stroke-width="5"/%3E%3C/svg%3E">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
@@ -96,6 +97,14 @@ details.more[open] summary{margin-bottom:8px}
 .note{font-size:12.5px;color:var(--muted);margin:0}
 label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:var(--muted);min-height:36px}
 
+/* patient bar: one line, always visible on PC */
+.pbar{gap:6px;padding:10px 14px}
+.prow{display:grid;grid-template-columns:minmax(160px,2.4fr) minmax(58px,.55fr) minmax(76px,.8fr) minmax(128px,1.15fr) minmax(70px,.7fr);gap:8px}
+.prow input{min-height:38px;padding:6px 8px}
+.pbar details.more summary{font-size:12.5px;padding:0}
+@media (min-width:761px){.pbar{position:sticky;top:0;z-index:20;box-shadow:0 6px 14px rgba(11,28,42,.06)}}
+@media (max-width:560px){.prow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.prow .pn{grid-column:1/-1}}
+
 /* chips & zones */
 .chips,.group{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .group .gl{font-size:12px;color:var(--muted);width:96px;flex:none}
@@ -112,6 +121,19 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 .zone:not(.wide) .zone-head h3{min-width:0;flex:1 1 auto}
 .zone:not(.wide) .zone-head .phrase{flex-basis:100%;font-size:12.5px}
 .zone.focus{box-shadow:0 0 0 2px var(--accent)}
+.zpen{border:1px solid transparent;background:none;border-radius:6px;padding:0 5px;min-height:26px;font-size:13px;color:var(--muted);margin-left:2px}
+.zpen:hover{border-color:var(--line);color:var(--blue)}
+.zpen[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
+.zone.editing{border-color:var(--blue);border-style:dashed}
+.egroup{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:8px}
+.egroup .eh{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.erow{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border-radius:8px;padding:2px}
+.erow .grip{cursor:grab;color:var(--muted);font-size:12px;letter-spacing:-2px;width:14px}
+.erow input.elb{flex:1 1 140px;max-width:220px;min-height:34px;padding:4px 8px}
+.erow input.eph{flex:2 1 220px;min-height:34px;padding:4px 8px;font-family:var(--doc)}
+.erow.hid input{opacity:.5;text-decoration:line-through}
+.erow.drag{opacity:.4}.erow.over{box-shadow:inset 0 2px 0 var(--accent)}
+.erow.add{border-top:1px dashed var(--line);padding-top:6px;margin-left:20px}
 .zone-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .zone-head h3{margin:0;font-size:14.5px;font-weight:600;min-width:160px;display:flex;gap:7px;align-items:center}
 .zone-head h3 kbd{font-family:var(--body);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px}
@@ -143,7 +165,14 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 /* protocol panel */
 .side{position:sticky;top:10px;height:calc(100vh - 20px);display:flex;flex-direction:column;gap:10px;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
 .side .sh{display:flex;align-items:center;gap:8px}
-.side .sh h2{font-family:var(--display);font-weight:500;font-size:19px;margin:0;margin-right:auto}
+.side .sh h2{font-family:var(--display);font-weight:500;font-size:19px;margin:0}
+.side .shh{margin-right:auto;min-width:0;display:flex;flex-direction:column}
+.psum{font-size:13.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.psum.empty{color:var(--muted);font-weight:400}
+label.bsel{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+label.bsel select{width:auto;min-height:42px}
+.advice{display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;border:1.5px dashed var(--accent);background:var(--accent-soft);border-radius:10px;padding:7px 10px;font-size:13.5px}
+.advice span{flex:1 1 220px;min-width:0}
 .mclose{display:none}
 details.check{border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:13.5px}
 details.check summary{cursor:pointer;color:var(--muted)}
@@ -164,8 +193,16 @@ details.check ul{margin:6px 0 2px;padding-left:18px;color:var(--warn)}
 .paper .z:hover{background:rgba(31,95,139,.10)}
 .paper .flash{background:var(--flash)}
 @media (prefers-reduced-motion:no-preference){.paper .z{transition:background 1.2s ease}}
-.paper .manual{white-space:pre-wrap}
-.paper textarea{font-family:var(--doc);font-size:inherit;line-height:1.55;min-height:360px;background:#fff;color:#1B2B3C}
+#ptext{white-space:pre-wrap;outline:none;border-radius:4px;min-height:120px;caret-color:#1F5F8B}
+#ptext:focus{box-shadow:0 0 0 2px rgba(31,95,139,.25)}
+#ptext .pt{font-weight:500}
+#ptext .body{margin-top:6px}
+#ptext .concl{margin-top:10px;font-weight:500}
+#ptext .recs{margin-top:6px}
+#ptext .foot{margin-top:14px;font-size:.94em}
+.pman{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;font-family:var(--body)}
+.pman .note{flex-basis:100%}
+.phint{margin-top:12px;font-family:var(--body);color:#6B7C8C}
 .badge{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;background:var(--warn-soft);color:var(--warn)}
 .zone>.btn.sm{align-self:flex-start}
 .sheetview{font-family:var(--body);display:flex;flex-direction:column;gap:10px;align-items:flex-start}
@@ -234,7 +271,10 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   .mclose{display:inline-flex}
   #mbar{display:flex;flex-direction:column;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line);padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 8px);box-shadow:0 -6px 18px rgba(11,28,42,.10)}
   #mbar .mt{display:flex;gap:8px;align-items:center;border:0;background:none;text-align:left;padding:0 4px;min-width:0}
-  #mbar .mt b{font-family:var(--doc);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+  #mbar .mt .mtx{display:flex;flex-direction:column;flex:1;min-width:0}
+  #mbar .mt small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #mbar .mt b{font-family:var(--doc);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .phint{display:none}
   #mbar .mb{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .group .gl{width:100%}
   .mrow{grid-template-columns:minmax(0,1fr)}
@@ -255,6 +295,67 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .pdoc .concl{font-weight:bold;margin-top:2mm}
 .pdoc .foot{margin-top:4mm}
 .pdoc .cont{font-style:italic;color:#444;margin-bottom:2.5mm}
+.pdoc.cmp{font-size:11pt;line-height:1.3}
+.pdoc.cmp p{margin-bottom:.8mm}
+.pdoc.bA p,.pdoc.bC p,.pdoc.bD p,.pdoc.bB .bkB-sec p{text-align:justify}
+/* бланк C — компактний під штамп */
+.bkC-h{display:flex;justify-content:space-between;align-items:flex-start;gap:5mm;margin-bottom:2.5mm}
+.bkC-stamp{width:62mm;height:23mm;border:1.2px dashed #A9B4BF;border-radius:1.5mm;flex:none;display:flex;align-items:center;justify-content:center;text-align:center;font:7.5pt/1.3 Arial,sans-serif;color:#8A96A2;padding:1mm}
+.cmp .bkC-stamp{height:19mm}
+.bkC-org{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:.6mm;font-family:Arial,sans-serif;min-width:0}
+.bkC-org b{font-size:9pt;letter-spacing:.02em}
+.bkC-org span{font-size:8pt;color:#4A5866}
+.bkC-org .bkC-tag{margin-top:1.4mm;border:1.5px solid #2D5F8A;color:#2D5F8A;font-size:11pt;font-weight:bold;letter-spacing:.1em;padding:.5mm 3mm}
+.cmp .bkC-org .bkC-tag{font-size:9.5pt;margin-top:.8mm}
+.bk-foot{display:flex;justify-content:space-between;gap:6mm;margin-top:3.5mm}
+/* бланк B — сучасний діловий */
+.pdoc.bB{font-family:Cambria,Georgia,'Times New Roman',serif}
+.bkB-h{display:flex;justify-content:space-between;align-items:flex-end;gap:5mm}
+.bkB-org{display:flex;gap:3mm;align-items:center;min-width:0}
+.bkB-org svg{width:10.5mm;height:10.5mm;flex:none}
+.bkB-org>div,.bkB-r{display:flex;flex-direction:column;font-family:Calibri,'Segoe UI',Arial,sans-serif;min-width:0}
+.bkB-org b{font-size:11.5pt;color:#1F4E79}
+.bkB-org span{font-size:8.5pt;color:#4A5866}
+.bkB-r{align-items:flex-end;text-align:right;flex:none}
+.bkB-r small{font-size:7.5pt;letter-spacing:.14em;color:#4A5866}
+.bkB-r b{font-size:12.5pt}
+.bkB-r span{font-size:9pt;color:#4A5866}
+.bkB-bar{height:.8mm;background:#1F4E79;border-radius:.5mm;margin:2.2mm 0}
+.bkB-pt{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1.2mm 2mm;font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10pt;margin-bottom:2mm}
+.bkB-pt>div{display:flex;flex-direction:column;min-width:0}
+.bkB-pt .w{grid-column:span 2}
+.bkB-pt small{font-size:7pt;letter-spacing:.12em;color:#4A5866}
+.bkB-sec{display:grid;grid-template-columns:25mm minmax(0,1fr);column-gap:3.5mm;padding-top:1.2mm}
+.bkB-pt+.bkB-sec{border-top:1px solid #C9D3DD;padding-top:2.2mm}
+.bkB-sec>span{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:7.5pt;letter-spacing:.12em;color:#1F4E79;padding-top:.8mm}
+.bkB-sec p{margin:0 0 .8mm}
+.bkB-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:9.5pt;border-top:1px solid #C9D3DD;padding-top:1.8mm;margin-top:2.5mm}
+.bkB-foot .d{color:#4A5866;font-size:8pt;text-align:right}
+.cmp .bkB-bar{margin:1.4mm 0}.cmp .bkB-pt{margin-bottom:1.2mm}
+/* бланк A — класичний офіційний */
+.bkA-h{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.3mm}
+.bkA-h .s{font-size:8.5pt;color:#3E4A56}
+.bkA-h .s:first-child{letter-spacing:.06em;text-transform:uppercase}
+.bkA-h .n{font-size:12pt;font-weight:bold;letter-spacing:.02em}
+.bkA-rule{border-top:2px solid #16202A;border-bottom:.75px solid #16202A;height:2px;margin:2mm 0}
+.bkA-t{display:flex;flex-direction:column;align-items:center;margin-bottom:2mm}
+.bkA-t b{font-size:11.5pt;letter-spacing:.08em}
+.bkA-t span{font-size:10pt}
+.bk-grid{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:2.5mm;row-gap:.3mm;font-size:10.5pt;margin-bottom:2mm}
+.bk-grid .l{color:#3E4A56}
+.bk-mini{text-align:center;font-size:10pt;border-bottom:1px solid #16202A;padding-bottom:1mm;margin-bottom:1.5mm}
+.bk-sign{display:flex;justify-content:space-between;align-items:flex-end;gap:5mm;margin-top:3.5mm;font-size:10.5pt}
+.bk-mp{width:18mm;height:18mm;border:1px dashed #9AA6B2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8pt;color:#7A8794;flex:none}
+.cmp .bk-mp{width:13mm;height:13mm}
+/* бланк D — форма з полями */
+.bkD-req{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);border:1px solid #111A22;font-size:8.5pt;line-height:1.3;margin-bottom:2mm}
+.bkD-req>div{padding:1.3mm 2.5mm;display:flex;flex-direction:column;gap:.3mm;min-width:0}
+.bkD-req>div:first-child{border-right:1px solid #111A22}
+.bkD-req>div:last-child{align-items:center;justify-content:center;text-align:center}
+.bkD-req>div:last-child b{letter-spacing:.06em}
+.bkD-t{text-align:center;font-weight:bold;letter-spacing:.06em;font-size:11pt;margin-bottom:2mm}
+.bkD-f{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content minmax(0,.7fr);column-gap:2mm;row-gap:.8mm;align-items:end;font-size:10.5pt;margin-bottom:2mm}
+.bkD-f .u{border-bottom:1px solid #111A22;min-height:1.2em}
 .pstamp{height:22mm}
 .pstamp.show{border:1px dashed #bbb;border-radius:2mm;display:flex;align-items:center;justify-content:center;font:9pt Arial,sans-serif;color:#999}
 .ptest{font-family:Arial,sans-serif;font-size:20pt;font-weight:bold;color:#111;display:flex;flex-direction:column;gap:4mm}
@@ -266,20 +367,29 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   body.printing-batch .wrap{display:none !important}
   body.printing-batch #printArea{display:block !important}
 }
+/* памʼятка на 1 сторінку A4 */
+.memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
+.memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
+.memo .mh b{font-size:18pt;color:#1F4E79}
+.memo .mh span{font-size:9.5pt;color:#4A5866}
+.memo h3{font-size:11.5pt;color:#1F4E79;margin:3mm 0 1mm}
+.memo ul,.memo ol{margin:0;padding-left:6mm}
+.memo li{margin:.6mm 0}
+.memo .mk{display:grid;grid-template-columns:38mm 1fr;gap:.8mm 3mm}
+.memo .mk span:nth-child(odd){font-weight:bold}
+.memo .mf{margin-top:4mm;border-top:1px solid #C9D3DD;padding-top:1.5mm;font-size:9pt;color:#4A5866}
+.memo-view{background:#fff;color:#111;border-radius:8px;padding:12px;overflow:auto}
+.memo-view .memo{width:auto;max-width:186mm}
 </style>
 </head>
 <body>
 <header class="top noprint">
   <div class="brand">
     <svg width="42" height="42" viewBox="0 0 100 100" aria-hidden="true">
-      <rect x="2" y="2" width="96" height="96" rx="22" fill="#0B1C2A"></rect>
-      <g fill="none" stroke="#DCE8F3" stroke-width="6.5" stroke-linecap="round">
-        <path d="M40 82 L37 56"></path><path d="M36 50 L34 30"></path>
-        <path d="M50 82 L50 52"></path><path d="M50 46 L50 18"></path>
-        <path d="M60 82 L63 56"></path><path d="M64 50 L66 32"></path>
-        <path d="M69 84 L76 64"></path><path d="M33 86 L24 70"></path>
-      </g>
-      <ellipse cx="63.8" cy="45" rx="8" ry="3" fill="none" stroke="#F2A65A" stroke-width="4.5"></ellipse>
+      <rect width="100" height="100" rx="22" fill="#0B1C2A"></rect>
+      <g fill="none" stroke="#DCE8F3" stroke-linecap="round" stroke-width="7"><path d="M42 84 L36.6 22.5"></path><path d="M50 84 L50 16.5"></path><path d="M58 84 L64 23.5"></path><path d="M65 85 L75 34"></path><path d="M36 86 L17 48"></path></g>
+      <g stroke="#0B1C2A" stroke-width="2.4"><path d="M36 60 L44 60"></path><path d="M46 58 L54 58"></path><path d="M57 60 L65 60"></path><path d="M66 64 L73 64"></path><path d="M35 42 L42 42"></path><path d="M46 38 L54 38"></path><path d="M59 42 L67 42"></path><path d="M69 50 L76 50"></path><path d="M33 30 L41 30"></path><path d="M46 25 L54 25"></path><path d="M60 31 L67 31"></path><path d="M23 70 L31 70"></path><path d="M16 56 L24 56"></path></g>
+      <ellipse cx="60.8" cy="54" rx="7" ry="2.8" transform="rotate(-8 60.8 54)" fill="none" stroke="#F2A65A" stroke-width="5"></ellipse>
     </svg>
     <div>
       <div class="bn"><h1>Skiagrama</h1><button class="vbadge" id="vBadge" type="button" title="Що нового"></button></div>
@@ -307,22 +417,19 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <div class="navrow"><span class="nk">Пацієнт</span><button type="button" data-go="sec-patient">Дані і знімок</button><span id="prevNav"></span></div>
     <div class="navrow" id="navZones"><span class="nk">Опис</span></div>
     <div class="navrow"><span class="nk">Висновок</span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
-    <div class="navrow"><span class="nk">Інструменти</span><button type="button" id="navUndo" title="Ctrl+Z">↶ Скасувати</button><button type="button" id="navSearch" title="Ctrl+K">Пошук</button><button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button><button type="button" id="navSettings">Налаштування</button><button type="button" id="navHelp">Довідка</button></div>
+    <div class="navrow"><span class="nk">Інструменти</span><button type="button" id="navUndo" title="Ctrl+Z">↶ Скасувати</button><button type="button" id="navRedo" title="Ctrl+Y або Ctrl+Shift+Z">↷ Повторити</button><button type="button" id="navSearch" title="Ctrl+K">Пошук</button><button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button><button type="button" id="navSettings">Налаштування</button><button type="button" id="navHelp">Довідка</button></div>
     <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
   </div>
 
-  <div class="card" id="sec-patient">
-    <h2>Пацієнт і знімок</h2>
-    <div class="fields">
-      <label class="f wide">ПІБ<input id="pName" type="text" autocomplete="off" list="nameList" placeholder="Прізвище І. Б."></label>
-      <label class="f">Вік, років<input id="pAge" type="number" min="0" max="120" inputmode="numeric"></label>
-      <label class="f">№ знімка<input id="pNum" type="text" inputmode="numeric"></label>
-      <label class="f">Дата знімка<input id="pDate" type="date"></label>
-      <label class="f">ЕЕД, мЗв<input id="pEed" type="text" inputmode="decimal"></label>
+  <div class="card pbar" id="sec-patient">
+    <div class="prow">
+      <label class="f pn">ПІБ<input id="pName" type="text" autocomplete="off" list="nameList" placeholder="Прізвище І. Б."></label>
+      <label class="f pa">Вік<input id="pAge" type="number" min="0" max="120" inputmode="numeric"></label>
+      <label class="f pnum">№ знімка<input id="pNum" type="text" inputmode="numeric"></label>
+      <label class="f pd">Дата<input id="pDate" type="date"></label>
+      <label class="f pe">ЕЕД, мЗв<input id="pEed" type="text" inputmode="decimal"></label>
     </div>
     <datalist id="nameList"></datalist>
-    <div class="fields" id="studyExtra"></div>
-    <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
     <details class="more">
       <summary>Додатково: стать, відділення, е-направлення</summary>
       <div class="fields">
@@ -334,6 +441,11 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
       </div>
     </details>
     <datalist id="deptList"></datalist>
+  </div>
+
+  <div class="card" id="sec-study">
+    <div class="fields" id="studyExtra"></div>
+    <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
     <div class="prev" id="prevBox" hidden></div>
   </div>
 
@@ -372,25 +484,28 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 <aside class="side" id="side" aria-label="Протокол">
   <div class="sh noprint">
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
-    <h2>Протокол</h2>
+    <div class="shh"><h2>Протокол</h2><div class="psum" id="pSum"></div></div>
     <button class="btn primary" id="copyAll" type="button" title="Ctrl+Enter">Копіювати</button>
   </div>
   <div class="trow noprint">
     <button class="btn icon" id="pfsBtn" type="button" title="Розмір тексту протоколу">Aa</button>
-    <button class="btn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на пів аркуша A4">Як на папері</button>
+    <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
+    <button class="btn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
     <button class="btn" id="printBtn" type="button" title="Ctrl+P">Друк</button>
-    <button class="btn" id="wordBtn" type="button">Word</button>
-    <button class="btn" id="odtBtn" type="button">LibreOffice</button>
   </div>
   <div class="trow noprint">
     <button class="btn primary" id="doneBtn" type="button" title="Ctrl+S">Готово</button>
-    <button class="btn" id="editBtn" type="button">Правити текст</button>
+    <button class="btn" id="wordBtn" type="button">Word</button>
+    <button class="btn" id="odtBtn" type="button">LibreOffice</button>
+    <button class="btn" id="saveTpl" type="button">Як шаблон</button>
+  </div>
+  <div class="trow noprint">
     <span class="note">Для h24:</span>
     <button class="btn sm" id="copyDesc" type="button">Опис</button>
     <button class="btn sm" id="copyConcl" type="button">Висновок</button>
     <button class="btn sm" id="copyRec" type="button">Рекомендації</button>
-    <button class="btn sm" id="saveTpl" type="button">Як шаблон</button>
   </div>
+  <div class="advice noprint" id="blankAdvice" hidden></div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
   <div class="pscroll"><article class="paper" id="paper"></article></div>
   <div class="meter noprint" id="meter"></div>
@@ -457,11 +572,29 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <div class="trow"><button class="btn" id="sFreqReset" type="button">Скинути статистику фраз</button></div>
   </div>
   <div class="card">
+    <h2>Бланк і реквізити закладу</h2>
+    <div class="fields">
+      <label class="f wide">Бланк за замовчуванням<select id="sBlank"></select></label>
+    </div>
+    <p class="note" id="sBlankWhy"></p>
+    <div class="fields">
+      <label class="f wide">Назва закладу<input id="sOrgName" type="text" placeholder="КНП «…»"></label>
+      <label class="f wide">Підпорядкування<input id="sOrgSub" type="text" placeholder="… міської ради"></label>
+      <label class="f wide">Підрозділ<input id="sOrgCab" type="text"></label>
+      <label class="f wide">Адреса<input id="sOrgAddr" type="text"></label>
+      <label class="f">Телефон<input id="sOrgTel" type="text"></label>
+      <label class="f">Код ЄДРПОУ<input id="sOrgEdrpou" type="text" inputmode="numeric"></label>
+      <label class="f">№ форми (бланк D)<input id="sOrgForm" type="text" placeholder="напр. 050/о"></label>
+      <label class="f wide">Наказ МОЗ (бланк D)<input id="sOrgOrder" type="text" placeholder="затверджено наказом МОЗ …"></label>
+    </div>
+    <p class="note">Реквізити друкуються в шапці бланків A, B, C і D. Зберігаються на цьому ПК і в папці даних.</p>
+  </div>
+  <div class="card">
     <h2>Друк</h2>
     <div class="fields">
-      <label class="f wide">Довгий протокол (не вміщається в пів аркуша)<select id="sPrintMode">
-        <option value="flip">продовжити на звороті тієї ж половинки (перевертаю аркуш вручну)</option>
-        <option value="full">друкувати на цілому аркуші</option></select></label>
+      <label class="f wide">Довгий протокол (не вміщається в пів аркуша навіть ущільнено)<select id="sPrintMode">
+        <option value="full">друкувати на цілому аркуші A4 з одного боку (рекомендовано)</option>
+        <option value="flip">продовжити на звороті тієї ж половинки (перевертаю аркуш вручну)</option></select></label>
       <label class="f wide">Як перевертаєте аркуш<select id="sFlipEdge">
         <option value="long">як сторінку книги (верх лишається вгорі)</option>
         <option value="short">знизу догори (верх стає внизу)</option></select></label>
@@ -479,12 +612,23 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <h2>Фрази норми</h2>
     <div class="fields"><label class="f">Вид дослідження<select id="sNormStudy"></select></label></div>
     <div class="form" id="sNorms"></div>
-    <div class="trow"><button class="btn" id="sNormReset" type="button">Повернути стандартні фрази</button></div>
+    <div class="trow"><button class="btn" id="sNormReset" type="button">Повернути стандартні фрази</button><button class="btn" id="sBtnReset" type="button">Повернути кнопки цього дослідження як були</button></div>
+    <p class="note">Напис і фразу кожної кнопки можна змінити прямо в зоні: олівець ✎ біля назви зони.</p>
   </div>
   <div class="card">
     <h2>Мої кнопки</h2>
     <p class="note">Власні фрази додаються прямо в зоні: розгорніть зону → «+ своя фраза». Тут можна переглянути й видалити всі.</p>
     <div id="sMy"></div>
+  </div>
+  <div class="card">
+    <h2>Пакет фраз</h2>
+    <p class="note">Один файл з фразами норми, змінами кнопок, «Моїми кнопками» і шаблонами — щоб перенести на інший ПК або дати колезі на заміні. Архів пацієнтів у пакет не потрапляє.</p>
+    <div class="trow">
+      <button class="btn" id="phExport" type="button">Зберегти пакет фраз</button>
+      <label class="btn" for="phImport" style="display:inline-flex;align-items:center">Завантажити пакет фраз</label>
+      <input id="phImport" type="file" accept=".json,application/json" hidden>
+    </div>
+    <p class="note" id="phMsg"></p>
   </div>
   <div class="card">
     <h2>Налаштування у файл</h2>
@@ -500,7 +644,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 </section>
 
 <div id="mbar" class="noprint">
-  <button class="mt" id="mbarText" type="button"><span id="mbarWarn"></span><b id="mbarConcl">Rö-ч: …</b></button>
+  <button class="mt" id="mbarText" type="button"><span id="mbarWarn"></span><span class="mtx"><small id="mbarPat"></small><b id="mbarConcl">Rö-ч: …</b></span></button>
   <div class="mb">
     <button class="btn" id="mbarNav" type="button">☰ Розділи</button>
     <button class="btn" id="mbarOpen" type="button">Протокол</button>
@@ -519,8 +663,57 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 </div>
 <div class="modal noprint" id="dlg" hidden><div class="box narrow" role="dialog" aria-modal="true" id="dlgBox"></div></div>
 <div id="printArea"></div>
-<div id="measure" class="pdoc" aria-hidden="true"></div>
+<div id="measure" class="pdoc" aria-hidden="true" style="position:absolute;left:-10000px;top:0;visibility:hidden;pointer-events:none"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<template id="memoTpl"><div class="memo">
+  <div class="mh"><b>Skiagrama</b><span>памʼятка рентгенолога й лаборанта · бета</span></div>
+
+  <h3>1. Встановлення (один раз)</h3>
+  <ul>
+    <li>Відкрийте <b>bezeza.github.io/skiagrama</b> у Chrome або Edge → «Встановити». Без інтернету програма теж працює.</li>
+    <li>Або скопіюйте файл <b>skiagrama.html</b> на ПК і відкривайте його.</li>
+    <li>«Налаштування» → ПІБ лікаря, реквізити закладу, бланк за замовчуванням, <b>папка даних</b> (архів зберігається на диск сам).</li>
+  </ul>
+
+  <h3>2. Протокол за 5 кроків</h3>
+  <ol>
+    <li>Вид дослідження вгорі: ОГК, ФГ, кістки, хребет, ОЧП, череп.</li>
+    <li>Рядок пацієнта: ПІБ · вік · № · дата · ЕЕД (ЕЕД підставляється сама).</li>
+    <li><b>Норма всюди</b>, потім у зміненій зоні — «Зміни» і кнопки.</li>
+    <li>Висновок: прийміть підказку або виберіть свій. Текст можна правити прямо в протоколі.</li>
+    <li><b>Готово</b> (Ctrl+S) — в архів; <b>Копіювати</b> (Ctrl+Enter) — для h24; <b>Друк</b> (Ctrl+P).</li>
+  </ol>
+
+  <h3>3. Бланк і друк</h3>
+  <ul>
+    <li>Бланки: <b>A</b> офіційний · <b>B</b> сучасний · <b>C</b> компактний під штамп · <b>D</b> форма з полями. Перемикач — біля протоколу.</li>
+    <li>Протокол друкується на <b>пів аркуша A4</b>; довгий — ущільнюється до 11 pt; якщо й так не вміщається — <b>цілий аркуш</b> з одного боку.</li>
+    <li>Програма підкаже, у якому бланку протокол вміститься, — кнопка «Застосувати».</li>
+    <li>Пачкою: «Архів» → «Вибрати ненадруковані» → «Друкувати вибрані». Розріжте по ✂.</li>
+  </ul>
+
+  <h3>4. Резервна копія</h3>
+  <ul>
+    <li>З папкою даних копії робляться самі (папка «копії»).</li>
+    <li>Без папки: «Архів» → «Зберегти копію архіву» — щодня.</li>
+    <li>Свої фрази й кнопки на інший ПК — «Налаштування» → «Пакет фраз».</li>
+  </ul>
+
+  <h3>5. Гарячі клавіші</h3>
+  <div class="mk">
+    <span>Ctrl+Enter</span><span>копіювати протокол</span>
+    <span>Ctrl+S</span><span>готово — в архів</span>
+    <span>Ctrl+P</span><span>друк</span>
+    <span>Ctrl+K</span><span>пошук зони, висновку, дії</span>
+    <span>Ctrl+Z / Ctrl+Y</span><span>скасувати / повторити</span>
+    <span>Alt+N</span><span>норма всюди</span>
+    <span>1…9</span><span>зона: норма ↔ зміни</span>
+    <span>Alt+клік</span><span>по реченню — відкрити його зону</span>
+  </div>
+
+  <p class="mf">Програма готує текст; перевіряє й підписує лікар. Помилки та ідеї — розробнику (bezeza).</p>
+</div>
+</template>
 <script>
 (function(){
 'use strict';
@@ -557,6 +750,15 @@ const typing=e=>{const t=e.target;return t&&(t.tagName==='INPUT'||t.tagName==='T
 
 /* --- 020-data.js --- */
 /* ===== Довідкові дані: зони, обʼєкти, вимірювання ===== */
+/* Як читати зону (для навчання):
+   {id:'infil', name:'Інфільтрація', norm:'фраза, коли зона в нормі', groups:[…], tpl:'шаблон речення'}
+   група: {id:'side', l:'Бік' (підпис рядка), req:1 (обовʼязкова), many:1 (можна кілька), o:[[ключ,'фраза в протокол','напис на кнопці'], …]}
+   шаблон: {side} — значення групи (порожньо → «…»), {, |extra} — «, » + значення, лише якщо щось вибрано.
+   Завдання для тебе 1: у зоні «Інфільтрація» додай у групу «Ще» кнопку ['порожн','з порожниною розпаду','порожнина'],
+     збери (node build.mjs) і перевір, що фраза зʼявилася в протоколі.
+   Завдання для тебе 2: те саме зроби без коду — олівцем ✎ біля зони в програмі. Порівняй: олівець пише в
+     налаштування (SET.btnAdd), а код — для всіх користувачів одразу.
+   Завдання для тебе 3: запусти тести (node tests/run.mjs) — тест «шаблони зон» перевірить твою кнопку сам. */
 const OGK_ZONES=[
  {id:'infil',name:'Інфільтрація',norm:'Інфільтративних тіней не виявлено.',groups:[
    {id:'side',l:'Бік',req:1,o:[['обидві','обох легень','обидві'],['права','правої легені','права'],['ліва','лівої легені','ліва']]},
@@ -733,24 +935,34 @@ const DEF_EED={ogk:'0,35',fg:'',bone:'',spine:'',abd:'',skull:''};
 /* measurement definitions: value -> {ok, ph (phrase), c (conclusion), tbd} */
 const ST4=v=>v<=10?'I':v<=25?'II':v<=50?'III':'IV';
 const MEAS={
- kti:{n:'Кардіоторакальний індекс',kind:'kti',grade:(v)=>v<=0.5?{ok:1,ph:`КТІ ${fx(v,2)}.`}:{ph:`КТІ ${fx(v,2)} — розширення тіні серця.`,c:'Розширення тіні серця'},norm:'≤ 0,50'},
- cobb:{n:'Кут Кобба',u:'°',dir:1,grade:(v,m)=>{const st=ST4(v);const d=m.dir?m.dir+' ':'';return {ok:v<=10?0:0,ph:`Кут Кобба ${fx(v,0)}° — ${d}сколіоз ${st} ступеня (за Чакліним).`,c:`${cap(d||'')}${d?'сколіоз':'Сколіоз'} ${st} ступеня`};},norm:'I ≤10°, II 11–25°, III 26–50°, IV >50°'},
- kyph:{n:'Грудний кіфоз (Th4–Th12)',u:'°',grade:v=>v<20?{ph:`Грудний кіфоз ${fx(v,0)}° — сплощений.`,c:'Сплощення грудного кіфозу'}:v>40?{ph:`Грудний кіфоз ${fx(v,0)}° — посилений.`,c:'Гіперкіфоз'}:{ok:1,ph:`Грудний кіфоз ${fx(v,0)}°.`},norm:'20–40°'},
- lord:{n:'Поперековий лордоз (L1–S1)',u:'°',grade:v=>v<40?{ph:`Поперековий лордоз ${fx(v,0)}° — сплощений.`,c:'Сплощення поперекового лордозу'}:v>60?{ph:`Поперековий лордоз ${fx(v,0)}° — посилений.`,c:'Гіперлордоз'}:{ok:1,ph:`Поперековий лордоз ${fx(v,0)}°.`},norm:'40–60°'},
- genant:{n:'Зниження висоти тіла (Genant)',u:'%',lvl:1,grade:(v,m)=>{const l=m.lvl||'…';if(v<20)return {ok:1,ph:`Висота тіла хребця ${l} знижена на ${fx(v,0)}% — без значущої деформації.`};const g=v<=25?'легка':v<=40?'помірна':'тяжка';return {ph:`Висота тіла хребця ${l} знижена на ${fx(v,0)}% — ${g} компресійна деформація (за Genant).`,c:`Компресійна деформація тіла хребця ${l} (${g}, за Genant)`};},norm:'легка 20–25%, помірна 25–40%, тяжка >40%'},
- hva:{n:'Кут вальгусу I пальця (HVA)',u:'°',tbd:1,grade:v=>v<=15?{ok:1,ph:`Кут вальгусного відхилення I пальця ${fx(v,0)}°.`}:{ph:`Кут вальгусного відхилення I пальця ${fx(v,0)}°.`,c:`Hallux valgus ${v<=20?'I':v<=40?'II':'III'} ступеня`},norm:'≤ 15°'},
- ima:{n:'Міжплесневий кут (IMA)',u:'°',grade:v=>v<=9?{ok:1,ph:`Міжплесневий кут ${fx(v,0)}°.`}:{ph:`Міжплесневий кут ${fx(v,0)}° — збільшений.`},norm:'≤ 9°'},
- bogd:{n:'Кут склепіння (Богданов)',u:'°',grade:v=>{if(v<=130)return {ok:1,ph:`Кут поздовжнього склепіння ${fx(v,0)}°.`};const st=v<=140?'I':v<=155?'II':'III';return {ph:`Кут поздовжнього склепіння ${fx(v,0)}° — поздовжня плоскостопість ${st} ступеня.`,c:`Поздовжня плоскостопість ${st} ступеня`};},norm:'125–130°'},
- boehler:{n:'Кут Белера',u:'°',grade:v=>v>=20?{ok:1,ph:`Кут Белера ${fx(v,0)}°.`}:{ph:`Кут Белера ${fx(v,0)}° — зменшений, ознака компресії пʼяткової кістки.`,c:'Компресійний перелом пʼяткової кістки'},norm:'20–40°'},
- ccd:{n:'Шийково-діафізарний кут',u:'°',grade:v=>v<120?{ph:`Шийково-діафізарний кут ${fx(v,0)}° — coxa vara.`,c:'Coxa vara'}:v>140?{ph:`Шийково-діафізарний кут ${fx(v,0)}° — coxa valga.`,c:'Coxa valga'}:{ok:v>=125&&v<=135?1:0,ph:`Шийково-діафізарний кут ${fx(v,0)}°.`},norm:'125–135°'},
- ce:{n:'Кут Віберга (CE)',u:'°',grade:v=>v>25?{ok:1,ph:`Кут Віберга ${fx(v,0)}°.`}:v>=20?{ph:`Кут Віберга ${fx(v,0)}° — межове значення.`}:{ph:`Кут Віберга ${fx(v,0)}° — ознака дисплазії кульшового суглоба.`,c:'Дисплазія кульшового суглоба'},norm:'> 25° (дорослі)'}
+ kti:{lim:[0.3,0.85],n:'Кардіоторакальний індекс',kind:'kti',grade:(v)=>v<=0.5?{ok:1,ph:`КТІ ${fx(v,2)}.`}:{ph:`КТІ ${fx(v,2)} — розширення тіні серця.`,c:'Розширення тіні серця'},norm:'≤ 0,50'},
+ cobb:{lim:[0,120],n:'Кут Кобба',u:'°',dir:1,grade:(v,m)=>{const st=ST4(v);const d=m.dir?m.dir+' ':'';return {ok:v<=10?0:0,ph:`Кут Кобба ${fx(v,0)}° — ${d}сколіоз ${st} ступеня (за Чакліним).`,c:`${cap(d||'')}${d?'сколіоз':'Сколіоз'} ${st} ступеня`};},norm:'I ≤10°, II 11–25°, III 26–50°, IV >50°'},
+ kyph:{lim:[0,100],n:'Грудний кіфоз (Th4–Th12)',u:'°',grade:v=>v<20?{ph:`Грудний кіфоз ${fx(v,0)}° — сплощений.`,c:'Сплощення грудного кіфозу'}:v>40?{ph:`Грудний кіфоз ${fx(v,0)}° — посилений.`,c:'Гіперкіфоз'}:{ok:1,ph:`Грудний кіфоз ${fx(v,0)}°.`},norm:'20–40°'},
+ lord:{lim:[0,100],n:'Поперековий лордоз (L1–S1)',u:'°',grade:v=>v<40?{ph:`Поперековий лордоз ${fx(v,0)}° — сплощений.`,c:'Сплощення поперекового лордозу'}:v>60?{ph:`Поперековий лордоз ${fx(v,0)}° — посилений.`,c:'Гіперлордоз'}:{ok:1,ph:`Поперековий лордоз ${fx(v,0)}°.`},norm:'40–60°'},
+ genant:{lim:[0,100],n:'Зниження висоти тіла (Genant)',u:'%',lvl:1,grade:(v,m)=>{const l=m.lvl||'…';if(v<20)return {ok:1,ph:`Висота тіла хребця ${l} знижена на ${fx(v,0)}% — без значущої деформації.`};const g=v<=25?'легка':v<=40?'помірна':'тяжка';return {ph:`Висота тіла хребця ${l} знижена на ${fx(v,0)}% — ${g} компресійна деформація (за Genant).`,c:`Компресійна деформація тіла хребця ${l} (${g}, за Genant)`};},norm:'легка 20–25%, помірна 25–40%, тяжка >40%'},
+ hva:{lim:[0,90],n:'Кут вальгусу I пальця (HVA)',u:'°',tbd:1,grade:v=>v<=15?{ok:1,ph:`Кут вальгусного відхилення I пальця ${fx(v,0)}°.`}:{ph:`Кут вальгусного відхилення I пальця ${fx(v,0)}°.`,c:`Hallux valgus ${v<=20?'I':v<=40?'II':'III'} ступеня`},norm:'≤ 15°'},
+ ima:{lim:[0,45],n:'Міжплесневий кут (IMA)',u:'°',grade:v=>v<=9?{ok:1,ph:`Міжплесневий кут ${fx(v,0)}°.`}:{ph:`Міжплесневий кут ${fx(v,0)}° — збільшений.`},norm:'≤ 9°'},
+ bogd:{lim:[90,200],n:'Кут склепіння (Богданов)',u:'°',grade:v=>{if(v<=130)return {ok:1,ph:`Кут поздовжнього склепіння ${fx(v,0)}°.`};const st=v<=140?'I':v<=155?'II':'III';return {ph:`Кут поздовжнього склепіння ${fx(v,0)}° — поздовжня плоскостопість ${st} ступеня.`,c:`Поздовжня плоскостопість ${st} ступеня`};},norm:'125–130°'},
+ boehler:{lim:[0,60],n:'Кут Белера',u:'°',grade:v=>v>=20?{ok:1,ph:`Кут Белера ${fx(v,0)}°.`}:{ph:`Кут Белера ${fx(v,0)}° — зменшений, ознака компресії пʼяткової кістки.`,c:'Компресійний перелом пʼяткової кістки'},norm:'20–40°'},
+ ccd:{lim:[90,170],n:'Шийково-діафізарний кут',u:'°',grade:v=>v<120?{ph:`Шийково-діафізарний кут ${fx(v,0)}° — coxa vara.`,c:'Coxa vara'}:v>140?{ph:`Шийково-діафізарний кут ${fx(v,0)}° — coxa valga.`,c:'Coxa valga'}:{ok:v>=125&&v<=135?1:0,ph:`Шийково-діафізарний кут ${fx(v,0)}°.`},norm:'125–135°'},
+ ce:{lim:[-30,60],n:'Кут Віберга (CE)',u:'°',grade:v=>v>25?{ok:1,ph:`Кут Віберга ${fx(v,0)}°.`}:v>=20?{ph:`Кут Віберга ${fx(v,0)}° — межове значення.`}:{ph:`Кут Віберга ${fx(v,0)}° — ознака дисплазії кульшового суглоба.`,c:'Дисплазія кульшового суглоба'},norm:'> 25° (дорослі)'}
 };
 
 
 /* --- 030-version.js --- */
 /* ===== Версія і що нового ===== */
-const VERSION='2.1.1';
+const VERSION='2.2';
 const CHANGELOG=[
+ ['2.2',['Чотири бланки протоколу: A — офіційний, B — сучасний, C — компактний під штамп, D — форма з полями. Перемикач біля протоколу, бланк за замовчуванням і реквізити закладу — у «Налаштуваннях».',
+   'Автопідгонка: довгий протокол ущільнюється до 11 pt, щоб уміститися в пів аркуша; якщо ні — друкується на цілому аркуші A4 з одного боку. Зворот половинки — лише як опція.',
+   'Порада щодо бланка з поясненням і кнопкою «Застосувати».',
+   'Рядок пацієнта зверху в одну лінію: ПІБ · вік · № · дата · ЕЕД; над протоколом — «Коваленко М. І., 72 р. · № 1025 · 11.10.26».',
+   'Протокол правиться прямо в тексті — без кнопки «Правити текст». «Скинути правку» повертає автотекст. Alt+клік по реченню відкриває зону.',
+   'Олівець ✎ біля зони: напис і фраза кожної кнопки, сховати, переставити, додати свою в будь-яку групу, «Повернути як було».',
+   'Пакет фраз: фрази норми, кнопки й шаблони одним файлом — на інший ПК або колезі.',
+   'Нова іконка: усі фаланги на місці, обручка на основній фаланзі безіменного.',
+   'Перевірка вимірювань: неможливі значення (напр. Кобб 300°) підсвічуються і не йдуть у протокол.',
+   'Ctrl+Y / Ctrl+Shift+Z — повторити дію. Памʼятка на 1 сторінку в «Довідці».']],
  ['2.1.1',['Протокол збоку на ПК і на вужчих екранах (ноутбук, масштаб Windows 125–150 %).','Зони в нормі — компактними плитками, змінені — на всю ширину.','Сегменти S1–S10 в інфільтрації; нові зони ОГК: діафрагма, середостіння, кістки грудної клітки (у нормі не описуються).']],
  ['2.1',['Компонування як у «Первинному огляді»: протокол праворуч на всю висоту, розділи з кольоровими крапками стану.',
    '«Як на папері» — видно, чи протокол вміститься в пів аркуша A4 або піде на зворот.',
@@ -767,9 +979,12 @@ const CHANGELOG=[
 /* ===== Сховища, налаштування, стан, генерація тексту ===== */
 const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1';
 let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Терапевтичне №2, Хірургічне, Неврологічне, Інфекційне, Педіатричне, Амбулаторно',
-  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'flip',flipEdge:'long',revBacks:false,
+  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
 SET.eed=Object.assign({...DEF_EED},SET.eed||{});SET.norms=SET.norms||{};SET.my=SET.my||{};
+['org','btn','btnAdd','btnOrder'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
+/* 2.2: за замовчуванням довгий протокол — на цілий аркуш (зворот половинки — лише опція) */
+if(!SET.v22){SET.printMode='full';SET.v22=true;store.set(SET_KEY,SET);}
 let TPL=store.get(TPL_KEY,[]);
 let A=store.get(A_KEY,null);
 if(!A){const old=store.get('skiagrama.journal.v1',[]);A=Array.isArray(old)?old:[];}
@@ -799,19 +1014,36 @@ const myKey=d=>S.study+'.'+d.id;
 const myList=d=>SET.my[myKey(d)]||[];
 
 /* скасування */
-let hist=[],lastKind='',lastT=0;
+let hist=[],future=[],lastKind='',lastT=0;
 function snapshot(){return {S:clone(S),f:fieldsObj(),editingId};}
 function pushHist(kind){const now=Date.now();if(kind==='text'&&lastKind==='text'&&now-lastT<1500){lastT=now;return;}hist.push(snapshot());if(hist.length>80)hist.shift();lastKind=kind;lastT=now;}
-function tick(kind){pushHist(kind||'click');clicks++;if(!t0)t0=Date.now();tDone=null;}
-function undo(){const s=hist.pop();if(!s){toast('Немає що скасовувати');return;}S=s.S;setFields(s.f);editingId=s.editingId;lastKind='';renderAll();toast('Скасовано');}
+function tick(kind){pushHist(kind||'click');future=[];clicks++;if(!t0)t0=Date.now();tDone=null;}
+function undo(){const s=hist.pop();if(!s){toast('Немає що скасовувати');return;}future.push(snapshot());S=s.S;setFields(s.f);editingId=s.editingId;lastKind='';renderAll();toast('Скасовано');}
+function redo(){const s=future.pop();if(!s){toast('Немає що повторювати');return;}hist.push(snapshot());S=s.S;setFields(s.f);editingId=s.editingId;lastKind='';renderAll();toast('Повторено');}
+
+/* кнопки з урахуванням правок лікаря (олівець ✎ біля зони)
+   SET.btn['ogk.infil.side.права']={label,phrase,hidden} — зміна стандартної кнопки
+   SET.btnAdd['ogk.infil.side']=[{k,label,phrase,hidden}] — додані кнопки
+   SET.btnOrder['ogk.infil.side']=['права','обидві',…] — свій порядок */
+const gKey=(d,g)=>`${S.study}.${d.id}.${g.id}`;
+function effOpts(d,g,all){
+  const gk=gKey(d,g),ov=SET.btn||{};
+  let list=g.o.map((o,i)=>{const x=ov[gk+'.'+o[0]]||{};return {k:o[0],ph:x.phrase!=null&&x.phrase!==''?x.phrase:o[1],lb:x.label!=null&&x.label!==''?x.label:o[2],hid:!!x.hidden,i,added:false};});
+  ((SET.btnAdd||{})[gk]||[]).forEach((a,j)=>list.push({k:a.k,ph:a.phrase,lb:a.label||a.phrase,hid:!!a.hidden,i:1000+j,added:true}));
+  const ord=(SET.btnOrder||{})[gk];
+  if(ord&&ord.length){const pos=k=>{const i=ord.indexOf(k);return i<0?9999:i;};list.sort((a,b)=>pos(a.k)-pos(b.k)||a.i-b.i);}
+  else if(SET.freq){const r=USE.rank||{};list.sort((a,b)=>(r[useKey(d.id,g.id,b.k)]||0)-(r[useKey(d.id,g.id,a.k)]||0)||a.i-b.i);}
+  return all?list:list.filter(x=>!x.hid);
+}
+const optPhrase=(d,g,k)=>{const o=effOpts(d,g,true).find(x=>x.k===k);return o?o.ph:'';};
 
 /* генерація тексту */
 function groupVal(d,z,gid,showReq){
   const g=d.groups.find(x=>x.id===gid);if(!g)return '';
   const v=z.sel[gid];
   if(g.type==='text'){const t=String(v||'').trim();return t||(showReq&&g.req?'…':'');}
-  if(g.many){const a=(v||[]).map(k=>(g.o.find(x=>x[0]===k)||[])[1]).filter(Boolean);return a.length?a.join(g.join||', '):(showReq&&g.req?'…':'');}
-  const o=g.o.find(x=>x[0]===v);return o?o[1]:(showReq&&g.req?'…':'');
+  if(g.many){const a=(v||[]).map(k=>optPhrase(d,g,k)).filter(Boolean);return a.length?a.join(g.join||', '):(showReq&&g.req?'…':'');}
+  const ph=v?optPhrase(d,g,v):'';return ph||(showReq&&g.req?'…':'');
 }
 const hasStd=(d,z)=>d.groups.some(g=>groupVal(d,z,g.id,false));
 const sentence=t=>{t=String(t).trim();if(!t)return '';t=cap(t);return /[.!?]$/.test(t)?t:t+'.';};
@@ -850,7 +1082,7 @@ function measResults(){
   const out=[];
   activeMeas().forEach(id=>{const def=MEAS[id];const m=S.meas[id]||{};let v;
     if(def.kind==='kti'){const a=num(m.a),b=num(m.b);v=(a>0&&b>0)?a/b:num(m.v);}else v=num(m.v);
-    if(!isFinite(v))return;out.push({id,def,v,r:def.grade(v,m)});});
+    if(!isFinite(v))return;if(def.lim&&(v<def.lim[0]||v>def.lim[1])){out.push({id,def,v,bad:true,r:{ok:1,ph:''}});return;}out.push({id,def,v,r:def.grade(v,m)});});
   return out;
 }
 function allNormal(){return visibleZones().every(d=>S.zones[d.id].st!=='c')&&measResults().every(x=>x.r.ok);}
@@ -907,10 +1139,17 @@ function dynText(){if(!S.dyn||!S.prevId)return '';const p=A.find(r=>r.id===S.pre
 function protocol(){
   const name=$('pName').value.trim()||'[ПІБ]',age=$('pAge').value.trim();
   const body=visibleZones().map(d=>({t:zoneText(d),tbd:d.tbd&&S.zones[d.id].st==='n'&&!isNormOverridden(d),zone:d.id})).filter(x=>x.t);
-  measResults().forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
+  measResults().filter(x=>!x.bad).forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
   const dy=dynText();if(dy)body.push({t:dy,zone:'prev'});
   const eed=$('pEed').value.trim();
   return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:SET.doctor?`Лікар: ${SET.doctor}`:'Лікар: ____________'};
+}
+const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографія ОГК',bone:`Rö-графія ${objPhrase()}`,spine:`Rö-графія ${deptGen()} відділу хребта`,abd:'Оглядова Rö-графія ОЧП',skull:`Rö-графія ${S.skull==='ppn'?'ППН':'черепа'}`}[S.study]);
+function docData(){
+  const P=protocol();
+  return {name:$('pName').value.trim()||'[ПІБ]',age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),refDoc:$('pRefDoc').value.trim(),
+    num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.join(', '),eed:$('pEed').value.trim(),
+    study:S.study,head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
 }
 function genText(P){P=P||protocol();return [P.head,P.ref,P.body.map(x=>x.t).join(' '),P.concl.t,P.rec,P.eed+'   '+P.doc].filter(Boolean).join('\n');}
 const protocolText=()=>S.manual!=null?S.manual:genText();
@@ -937,19 +1176,18 @@ function checks(){
   const items=conclItems();const normRe=/без патолог|патології не|без кістково/i;
   if(allNormal()&&items.length&&!items.every(i=>normRe.test(i)))w.push('Усі зони в нормі, а у висновку патологія — перевірте.');
   if(!allNormal()&&items.some(i=>normRe.test(i)))w.push('Є зміни в описі, а висновок «без патології» — перевірте.');
-  measResults().forEach(x=>{if(x.r.c&&!S.concl.includes(x.r.c))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
+  measResults().forEach(x=>{if(x.bad)w.push(`${x.def.n}: значення ${fx(x.v,x.def.kind==='kti'?2:0)} поза можливими межами — перевірте.`);if(x.r.c&&!S.concl.includes(x.r.c))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
   return w;
 }
 
 /* часті фрази першими */
 const useKey=(z,g,k)=>`${S.study}.${z}.${g}.${k}`;
-function orderOpts(d,g){if(!SET.freq)return g.o;const r=USE.rank||{};return g.o.map((o,i)=>({o,i,n:r[useKey(d.id,g.id,o[0])]||0})).sort((a,b)=>b.n-a.n||a.i-b.i).map(x=>x.o);}
 function countUse(d,g,k){const key=useKey(d.id,g.id,k);USE.counts[key]=(USE.counts[key]||0)+1;saveUse();}
 
 /* --- 050-ui.js --- */
 /* ===== Відображення: вкладки, розділи, зони, висновок, протокол ===== */
 const STUDY_SHORT={ogk:'ОГК',fg:'ФГ',bone:'Кістки',spine:'Хребет',abd:'ОЧП',skull:'Череп, ППН'};
-function switchStudy(k){if(S.study===k)return;tick();const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
+function switchStudy(k){if(S.study===k)return;tick();editZone=null;const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull,blank:S.blank};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
 function renderStudy(){
   const st=$('studyTabs');st.textContent='';
   Object.keys(STUDIES).forEach(k=>{const b=el('button',{type:'button',role:'tab','aria-selected':String(S.study===k),title:STUDIES[k].n},STUDY_SHORT[k]||STUDIES[k].n);b.onclick=()=>switchStudy(k);st.append(b);});
@@ -990,11 +1228,20 @@ function renderStepper(){const vz=visibleZones();let i=vz.findIndex(d=>d.id===S.
   $('stPrev').onclick=()=>gotoZone(vz[Math.max(0,i-1)].id);$('stNext').onclick=()=>gotoZone(vz[Math.min(vz.length-1,i+1)].id);}
 function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z)z.scrollIntoView({block:'start',behavior:'smooth'});}}
 
+/* Кнопки зони: звичайний режим і редагування (олівець ✎).
+   Завдання для тебе: знайди в 020-data.js зону «Інфільтрація» (id:'infil') і подивись,
+   як кнопка «права» записана в коді: ['права','правої легені','права'] — ключ, фраза в протокол, напис.
+   Олівець робить те саме без коду: зміни зберігаються в SET.btn / SET.btnAdd / SET.btnOrder (040-core.js → effOpts). */
+let editZone=null;
 function renderZones(){
   const root=$('zones');root.textContent='';
   visibleZones().forEach((d,i)=>{
-    const z=S.zones[d.id];const zs=zoneState(d);const box=el('div',{class:'zone'+(z.st==='c'?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
-    const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));head.append(h);
+    const z=S.zones[d.id];const zs=zoneState(d);const ed=editZone===d.id;
+    const box=el('div',{class:'zone'+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
+    const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));
+    const pen=el('button',{type:'button',class:'zpen','aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Редагувати кнопки зони: напис, фраза, порядок','aria-label':'Редагувати кнопки зони '+d.name},'✎');
+    pen.onclick=()=>{editZone=ed?null:d.id;S.focus=d.id;renderZones();if(!ed){const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}};
+    h.append(pen);head.append(h);
     const seg=el('div',{class:'seg',role:'group','aria-label':d.name});
     [['n','Норма'],['c','Зміни'],['x','—']].forEach(([st,l])=>{const b=el('button',{type:'button','aria-pressed':String(z.st===st),class:st==='n'?'n':'',title:st==='x'?'Не згадувати в протоколі':st==='n'?(normOf(d)||'У нормі не описується'):null},l);
       b.onclick=()=>{tick();z.st=st;S.focus=d.id;S.open=st==='c'?d.id:(S.open===d.id?null:S.open);renderAll();};seg.append(b);});
@@ -1004,12 +1251,13 @@ function renderZones(){
       (t||(z.st==='n'?'(у нормі не описується)':'(не згадується)'))+(z.st==='c'&&!isOpen?'  ✎':''));
     ph.onclick=()=>{if(z.st!=='c'){tick();z.st='c';}S.open=isOpen?null:d.id;S.focus=d.id;renderAll();};
     head.append(ph);box.append(head);
-    if(isOpen){
+    if(ed)renderZoneEditor(d,box);
+    else if(isOpen){
       d.groups.forEach(g=>{const row=el('div',{class:'group'});row.append(el('span',{class:'gl'},g.l));
         if(g.type==='text'){const inp=el('input',{class:'t',type:'text',placeholder:g.ph||'','aria-label':d.name+': '+g.l});inp.value=z.sel[g.id]||'';
           inp.addEventListener('input',()=>{tick('text');z.sel[g.id]=inp.value;ph.textContent=zoneText(d);renderSide();renderConcl();renderNav();});row.append(inp);}
-        else orderOpts(d,g).forEach(([k,phrase,label])=>{const on=g.many?(z.sel[g.id]||[]).includes(k):z.sel[g.id]===k;
-          const b=el('button',{type:'button',class:'chip','aria-pressed':String(on),title:'У протокол: «'+phrase+'»'},label);
+        else effOpts(d,g).forEach(o=>{const k=o.k;const on=g.many?(z.sel[g.id]||[]).includes(k):z.sel[g.id]===k;
+          const b=el('button',{type:'button',class:'chip','aria-pressed':String(on),title:'У протокол: «'+o.ph+'»'},o.lb);
           b.onclick=()=>{tick();if(!on)countUse(d,g,k);if(g.many){const a=z.sel[g.id]||(z.sel[g.id]=[]);const i=a.indexOf(k);i>=0?a.splice(i,1):a.push(k);}else z.sel[g.id]=on?null:k;renderAll();};row.append(b);});
         box.append(row);});
       /* мої кнопки */
@@ -1027,6 +1275,51 @@ function renderZones(){
       const done=el('button',{type:'button',class:'btn sm'},'Згорнути');done.onclick=()=>{S.open=null;renderZones();renderNav();};box.append(done);
     }
     root.append(box);});
+}
+/* редактор кнопок зони */
+const zonePrefix=d=>`${S.study}.${d.id}.`;
+function zoneHasEdits(d){const p=zonePrefix(d);return [SET.btn,SET.btnAdd,SET.btnOrder].some(o=>Object.keys(o||{}).some(k=>k.startsWith(p)))||isNormOverridden(d);}
+function resetZoneButtons(d){const p=zonePrefix(d);[SET.btn,SET.btnAdd,SET.btnOrder].forEach(o=>Object.keys(o).forEach(k=>{if(k.startsWith(p))delete o[k];}));delete SET.norms[S.study+'.'+d.id];saveSet();}
+function setBtn(gk,k,patch){const key=gk+'.'+k;const o=Object.assign({},SET.btn[key]||{},patch);Object.keys(o).forEach(x=>{if(o[x]===''||o[x]===false||o[x]==null)delete o[x];});if(Object.keys(o).length)SET.btn[key]=o;else delete SET.btn[key];saveSet();}
+function setAdded(gk,k,patch){const a=SET.btnAdd[gk]||[];const x=a.find(y=>y.k===k);if(x)Object.assign(x,patch);saveSet();}
+function moveBtn(d,g,k,to){const list=effOpts(d,g,true).map(o=>o.k);const i=list.indexOf(k);if(i<0)return;list.splice(i,1);list.splice(Math.max(0,Math.min(list.length,to)),0,k);SET.btnOrder[gKey(d,g)]=list;saveSet();}
+function renderZoneEditor(d,box){
+  box.append(el('p',{class:'note'},'Режим редагування кнопок. Напис — що на кнопці, фраза — що піде в протокол. Порядок: стрілки ↑↓ або перетягніть рядок. Зміни зберігаються одразу.'));
+  const nr=el('div',{class:'egroup'});nr.append(el('div',{class:'eh'},'Фраза норми'));
+  const ni=el('input',{type:'text','aria-label':'Фраза норми зони '+d.name,placeholder:'(у нормі не описується)'});ni.value=normOf(d);
+  ni.addEventListener('input',()=>{SET.norms[S.study+'.'+d.id]=ni.value;saveSet();renderSide();});nr.append(ni);box.append(nr);
+  d.groups.filter(g=>g.type!=='text').forEach(g=>{
+    const gk=gKey(d,g);const wrap=el('div',{class:'egroup'});wrap.append(el('div',{class:'eh'},g.l));
+    const list=effOpts(d,g,true);
+    list.forEach((o,idx)=>{
+      const r=el('div',{class:'erow'+(o.hid?' hid':''),draggable:'true'});r.dataset.k=o.k;
+      r.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',o.k);r.classList.add('drag');});
+      r.addEventListener('dragend',()=>r.classList.remove('drag'));
+      r.addEventListener('dragover',e=>{e.preventDefault();r.classList.add('over');});
+      r.addEventListener('dragleave',()=>r.classList.remove('over'));
+      r.addEventListener('drop',e=>{e.preventDefault();const k=e.dataTransfer.getData('text/plain');if(k&&k!==o.k){moveBtn(d,g,k,idx);renderZones();renderSide();}});
+      const up=el('button',{type:'button',class:'btn sm icon','aria-label':'Вище: '+o.lb,disabled:idx===0?'':null},'↑');up.onclick=()=>{moveBtn(d,g,o.k,idx-1);renderZones();};
+      const dn=el('button',{type:'button',class:'btn sm icon','aria-label':'Нижче: '+o.lb,disabled:idx===list.length-1?'':null},'↓');dn.onclick=()=>{moveBtn(d,g,o.k,idx+1);renderZones();};
+      const lb=el('input',{type:'text',class:'elb','aria-label':'Напис кнопки',placeholder:'Напис'});lb.value=o.lb;
+      const ph=el('input',{type:'text',class:'eph','aria-label':'Фраза в протокол',placeholder:'Фраза в протокол'});ph.value=o.ph;
+      const upd=(f,v)=>{o.added?setAdded(gk,o.k,{[f]:v}):setBtn(gk,o.k,{[f]:v});renderSide();renderNav();};
+      lb.addEventListener('input',()=>upd('label',lb.value.trim()));ph.addEventListener('input',()=>upd('phrase',ph.value.trim()));
+      const hd=el('button',{type:'button',class:'btn sm','aria-pressed':String(o.hid)},o.hid?'Показати':'Сховати');
+      hd.onclick=()=>{o.added?setAdded(gk,o.k,{hidden:!o.hid}):setBtn(gk,o.k,{hidden:!o.hid});renderZones();};
+      r.append(el('span',{class:'grip','aria-hidden':'true'},'⋮⋮'),up,dn,lb,ph,hd);
+      if(o.added){const x=el('button',{type:'button',class:'btn sm danger','aria-label':'Видалити кнопку '+o.lb},'×');
+        x.onclick=()=>{if(x.dataset.c){SET.btnAdd[gk]=(SET.btnAdd[gk]||[]).filter(y=>y.k!==o.k);if(!SET.btnAdd[gk].length)delete SET.btnAdd[gk];saveSet();renderZones();renderSide();}else{x.dataset.c='1';x.textContent='видалити?';setTimeout(()=>{x.dataset.c='';x.textContent='×';},3000);}};r.append(x);}
+      wrap.append(r);});
+    const ar=el('div',{class:'erow add'});const al=el('input',{type:'text',class:'elb',placeholder:'Напис нової кнопки','aria-label':'Напис нової кнопки в групі '+g.l});const ap=el('input',{type:'text',class:'eph',placeholder:'Фраза в протокол','aria-label':'Фраза нової кнопки в групі '+g.l});
+    const ab=el('button',{type:'button',class:'btn sm'},'+ Додати');
+    ab.onclick=()=>{const phrase=ap.value.trim()||al.value.trim();if(!phrase){ap.focus();return;}const a=SET.btnAdd[gk]||(SET.btnAdd[gk]=[]);a.push({k:'u'+Date.now().toString(36),label:al.value.trim()||phrase,phrase});saveSet();renderZones();toast('Кнопку додано в «'+g.l+'»');};
+    ap.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ab.click();}});
+    ar.append(al,ap,ab);wrap.append(ar);box.append(wrap);});
+  const r=el('div',{class:'trow'});
+  const rs=el('button',{type:'button',class:'btn sm',disabled:zoneHasEdits(d)?null:''},'Повернути як було');
+  rs.onclick=()=>{if(rs.dataset.c){resetZoneButtons(d);renderZones();renderSide();toast('Кнопки зони «'+d.name+'» повернуто');}else{rs.dataset.c='1';rs.textContent='Точно повернути стандартні кнопки?';setTimeout(()=>{rs.dataset.c='';rs.textContent='Повернути як було';},3000);}};
+  const ok=el('button',{type:'button',class:'btn sm primary'},'Готово');ok.onclick=()=>{editZone=null;renderZones();};
+  r.append(ok,rs);box.append(r);
 }
 function renderMeas(){
   const ids=activeMeas();$('measPanel').hidden=!ids.length;const root=$('meas');root.textContent='';
@@ -1089,55 +1382,73 @@ function renderPrev(){
     const r2=el('div',{class:'trow'});r2.append(b);box.append(r2);}
 }
 
-/* протокол: текст або «як на папері» */
-let prevZoneText={},firstPaint=true,editing=false,paperView=false;
+/* протокол: текст (правиться прямо тут) або «як на папері» */
+let prevZoneText={},firstPaint=true,paperView=false;
+const ptextFocused=()=>{const a=document.activeElement;return !!(a&&a.id==='ptext');};
+function readPtext(){const n=$('ptext');if(!n)return '';return n.innerText.replace(/ /g,' ').replace(/\n{3,}/g,'\n\n').replace(/\s+$/,'');}
+function updManualBadge(){const b=$('pman');if(b)b.hidden=S.manual==null;}
 function renderPaper(){
-  const p=$('paper');p.textContent='';
-  if(paperView&&!editing){renderSheetView(p);return;}
+  const p=$('paper');
+  if(!paperView&&ptextFocused())return; /* не збиваємо курсор під час правки */
+  p.textContent='';
+  if(paperView){renderSheetView(p);return;}
+  const man=el('div',{class:'pman',id:'pman',hidden:S.manual==null?'':null});
+  man.append(el('span',{class:'badge'},'відредаговано вручну'));
+  const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();toast('Повернуто автоматичний текст');};
+  man.append(rs,el('span',{class:'note'},'Кнопки зон тепер не змінюють текст — скиньте правку, щоб повернути автотекст.'));p.append(man);
   p.append(el('div',{class:'stampspace'},'місце для штампу'));
-  if(editing){
-    const ta=el('textarea',{id:'manualTa','aria-label':'Текст протоколу'});ta.value=protocolText();p.append(ta);
-    const r=el('div',{class:'trow',style:'margin-top:10px'});
-    const ok=el('button',{type:'button',class:'btn primary'},'Зберегти правку');ok.onclick=()=>{tick();S.manual=ta.value;editing=false;renderAll();toast('Текст змінено вручну');};
-    const no=el('button',{type:'button',class:'btn'},'Скасувати');no.onclick=()=>{editing=false;renderSide();};
-    r.append(ok,no);p.append(r);setTimeout(()=>ta.focus(),0);return;
-  }
+  const tx=el('div',{id:'ptext',contenteditable:'true',spellcheck:'true',role:'textbox','aria-multiline':'true','aria-label':'Текст протоколу — можна правити прямо тут',title:'Клацніть і пишіть. Alt+клік по реченню — відкрити його зону.'});
   if(S.manual!=null){
-    const b=el('div',{class:'trow',style:'margin-bottom:8px'});b.append(el('span',{class:'badge'},'відредаговано вручну'));
-    const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();};b.append(rs);p.append(b);
-    p.append(el('div',{class:'manual'},S.manual));return;
+    String(S.manual).split('\n').forEach((ln,i)=>{const d=el('div',{class:i===0?'pt':/^Rö-ч:/.test(ln)?'concl':''});if(ln)d.textContent=ln;else d.append(el('br'));tx.append(d);});
+  }else{
+    const P=protocol();
+    tx.append(el('div',{class:'pt'},P.head),el('div',null,P.ref));
+    const b=el('div',{class:'body'});const nowMap={};
+    P.body.forEach((x,i)=>{const cls=['z'];if(x.tbd)cls.push('tbd');if(!firstPaint&&prevZoneText[x.zone]!==x.t)cls.push('flash');nowMap[x.zone]=x.t;
+      if(i)b.append(document.createTextNode(' '));b.append(el('span',{class:cls.join(' '),'data-zone':x.zone},x.t));});
+    tx.append(b);prevZoneText=nowMap;firstPaint=false;
+    setTimeout(()=>p.querySelectorAll('.flash').forEach(n=>n.classList.remove('flash')),900);
+    const c=el('div',{class:'concl'});c.append(P.concl.tbd?el('span',{class:'tbd'},P.concl.t):document.createTextNode(P.concl.t));tx.append(c);
+    if(P.rec)tx.append(el('div',{class:'recs'},P.rec));
+    tx.append(el('div',{class:'foot'},P.eed+'   '+P.doc));
   }
-  const P=protocol();
-  p.append(el('p',{class:'pt'},P.head),el('p',null,P.ref));
-  const b=el('p',{class:'body'});const nowMap={};
-  P.body.forEach(x=>{const cls=['z'];if(x.tbd)cls.push('tbd');if(!firstPaint&&prevZoneText[x.zone]!==x.t)cls.push('flash');nowMap[x.zone]=x.t;
-    b.append(el('span',{class:cls.join(' '),'data-zone':x.zone,title:'Відкрити зону'},x.t),document.createTextNode(' '));});
-  p.append(b);prevZoneText=nowMap;firstPaint=false;
-  setTimeout(()=>p.querySelectorAll('.flash').forEach(n=>n.classList.remove('flash')),900);
-  const c=el('p',{class:'concl'});c.append(P.concl.tbd?el('span',{class:'tbd'},P.concl.t):document.createTextNode(P.concl.t));p.append(c);
-  if(P.rec)p.append(el('p',{class:'recs'},P.rec));
-  const f=el('div',{class:'foot'});f.append(el('span',null,P.eed),el('span',null,P.doc));p.append(f);
+  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
+  tx.addEventListener('blur',()=>{if(S.manual!=null){renderBlankAdviceSoon();}});
+  p.append(tx);
+  p.append(el('p',{class:'note phint'},'Текст можна правити прямо тут. Alt+клік по реченню — відкрити його зону.'));
 }
 function renderSheetView(p){
   p.style.padding='12px';p.style.background='transparent';p.style.boxShadow='none';
-  const it=classify({name:$('pName').value.trim()||'Пацієнт',units:currentUnits()});
+  const it=classify(currentItem());const B=BLANKS[it.blank]||BLANKS.C;
   const wrap=el('div',{class:'sheetview'});
-  const msg={half:['ok','Вміщається в пів аркуша A4 ✓'],flip:['w','Не вміщається в пів аркуша — продовження піде на зворот тієї ж половинки'],full:['w',SET.printMode==='flip'?'Задовгий навіть для двох сторін половинки — займе цілий аркуш':'Не вміщається в пів аркуша — займе цілий аркуш']}[it.kind];
-  wrap.append(el('div',{class:'fit '+msg[0]},msg[1]));
+  const msg={half:['ok',it.cmp?'Вміщається в пів аркуша A4 — ущільнено до 11 pt ✓':'Вміщається в пів аркуша A4 ✓'],
+    flip:['w','Не вміщається в пів аркуша — продовження піде на зворот тієї ж половинки'],
+    full:['w','Не вміщається в пів аркуша навіть ущільнено — надрукується на цілому аркуші A4 з одного боку']}[it.kind];
+  wrap.append(el('div',{class:'fit '+msg[0]},`Бланк ${it.blank} · ${B.n}. ${msg[1]}`));
   const avail=Math.max(260,($('paper').parentElement.clientWidth||600)-50);const z=Math.min(1,avail/mm(210));
-  const mkHalf=(html,label)=>{const box=el('div');box.append(el('div',{class:'note'},label));const s=el('div',{class:'sheetbox'});s.style.zoom=z;
-    s.innerHTML=`<div class="pslot" style="width:210mm"><div class="pdoc">${html}</div></div>`;box.append(s);return box;};
-  const stamp='<div class="pstamp show">місце для штампу</div>';
-  if(it.kind==='half')wrap.append(mkHalf(stamp+unitsHTML(it.units),'Половина аркуша A4'));
-  else if(it.kind==='flip'){wrap.append(mkHalf(stamp+unitsHTML(it.front),'Лицьова сторона половинки'));wrap.append(mkHalf(unitsHTML(it.back),'Зворот тієї ж половинки'));}
-  else{const box=el('div');box.append(el('div',{class:'note'},'Цілий аркуш A4'));const s=el('div',{class:'sheetbox'});s.style.zoom=z;s.innerHTML=`<div class="ppage full" style="min-height:0"><div class="pdoc">${stamp}${unitsHTML(it.units)}</div></div>`;box.append(s);wrap.append(box);}
+  itemPreview(it).forEach(pg=>{const box=el('div');box.append(el('div',{class:'note'},pg.label));const s=el('div',{class:'sheetbox'});s.style.zoom=z;s.innerHTML=pg.html;box.append(s);wrap.append(box);});
   p.append(wrap);
 }
 function resetPaperStyle(){const p=$('paper');p.style.padding='';p.style.background='';p.style.boxShadow='';}
-$('paper').addEventListener('click',e=>{const z=e.target.closest('[data-zone]');if(!z)return;const id=z.dataset.zone;closeSheet();
+$('paper').addEventListener('click',e=>{if(paperView)return;const z=e.target.closest('[data-zone]');if(!z||!e.altKey)return;e.preventDefault();const id=z.dataset.zone;closeSheet();
   if(id==='meas'){$('measPanel').scrollIntoView({block:'start',behavior:'smooth'});return;}
   if(id==='prev'){$('prevBox').scrollIntoView({block:'center',behavior:'smooth'});return;}
-  const zs=S.zones[id];if(zs&&zs.st!=='c'){tick();zs.st='c';}openZone(id,true);renderSide();renderConcl();});
+  const zs=S.zones[id];if(zs&&zs.st!=='c'){tick();zs.st='c';}document.activeElement&&document.activeElement.blur();openZone(id,true);renderSide();renderConcl();});
+/* рядок пацієнта і бланк */
+function shortFio(n){const p=String(n||'').trim().split(/\s+/).filter(Boolean);if(p.length<2)return p.join(' ');return p[0]+' '+p.slice(1).map(x=>/^\p{L}\.(\p{L}\.)?$/u.test(x)||/^[(\[]/.test(x)?x:x.charAt(0).toUpperCase()+'.').join(' ');}
+function patientLine(){const n=shortFio($('pName').value),a=$('pAge').value.trim(),no=$('pNum').value.trim(),d=$('pDate').value;
+  return [n?n+(a?`, ${a} р.`:''):(a?a+' р.':''),no?'№ '+no:'',d?fmtD(d):''].filter(Boolean).join(' · ');}
+function renderPatientSum(){const t=patientLine();$('pSum').textContent=t||'Пацієнта не вказано';$('pSum').classList.toggle('empty',!t);$('mbarPat').textContent=t;}
+function renderBlankSel(){const s=$('blankSel');if(!s.options.length)BLANK_ORDER.forEach(b=>s.append(el('option',{value:b,title:BLANKS[b].why},`${b} · ${BLANKS[b].sn}`)));s.value=curBlank();s.title=BLANKS[curBlank()].why;}
+let advT=null;
+function renderBlankAdviceSoon(){clearTimeout(advT);advT=setTimeout(renderBlankAdvice,350);}
+function renderBlankAdvice(){
+  const box=$('blankAdvice');box.textContent='';let a=null;try{a=blankAdvice(currentItem());}catch(e){a=null;}
+  if(!a){box.hidden=true;return;}box.hidden=false;
+  box.append(el('span',null,a.text));
+  if(a.b){const b=el('button',{type:'button',class:'btn sm primary'},'Застосувати '+a.b);b.onclick=()=>{tick();S.blank=a.b;renderSide();toast('Бланк '+a.b+' · '+BLANKS[a.b].n);};box.append(b);}
+  else if(/Налаштуваннях/.test(a.text)){const b=el('button',{type:'button',class:'btn sm'},'Відкрити налаштування');b.onclick=()=>showView('settings');box.append(b);}
+}
 function renderChecks(saveMode){
   const w=checks();const box=$('checkBox');box.classList.toggle('has',!!w.length);box.classList.toggle('ok',!w.length);
   $('checkSum').textContent=w.length?`Перевірка перед підписом: зауважень ${w.length}`:'Перевірка перед підписом: зауважень немає ✓';
@@ -1168,8 +1479,9 @@ function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new S
   [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?r.age+' р. · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
-function renderSide(){if(!paperView||editing)resetPaperStyle();renderPaper();renderChecks();renderMeter();saveDraftSoon();}
-function renderAll(){renderStudy();renderPrev();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();}
+function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
+function updStudyCard(){$('sec-study').hidden=$('studyExtra').hidden&&$('projChips').hidden&&$('prevBox').hidden;}
+function renderAll(){renderStudy();renderPrev();updStudyCard();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();}
 
 /* --- 060-actions.js --- */
 /* ===== Дії: введення, кнопки, збереження, гарячі клавіші, перегляди ===== */
@@ -1194,13 +1506,14 @@ function allNorm(){tick();visibleZones().forEach(d=>S.zones[d.id]={st:'n',sel:{}
 $('allNorm').onclick=allNorm;
 function newPatient(keep){
   const date=keep?$('pDate').value:today();const eedKeep=$('pEed').value;
-  S=blank(S.study);editingId=null;editing=false;
+  S=blank(S.study);editingId=null;editZone=null;
   ['pName','pAge','pRef','pRefDoc','conclFree','recFree','pDept'].forEach(i=>$(i).value='');$('pSex').value='';$('pCount').value='1';
   $('pDate').value=date;setEedDefault();if(keep&&eedKeep)$('pEed').value=eedKeep;$('pNum').value=nextNum();$('refMsg').textContent='';
   clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;renderAll();
 }
 $('newPatient').onclick=()=>{pushHist('click');newPatient(false);toast('Новий пацієнт. Попередній стан можна повернути: Ctrl+Z');};
-$('navUndo').onclick=undo;
+$('navUndo').onclick=undo;$('navRedo').onclick=redo;
+$('blankSel').addEventListener('change',e=>{tick();S.blank=e.target.value;renderSide();});
 $('saveTpl').onclick=()=>{closeSheet();$('tplSave').hidden=false;$('sec-zones').scrollIntoView({block:'start',behavior:'smooth'});setTimeout(()=>$('tplName').focus(),300);};
 $('tplSaveCancel').onclick=()=>{$('tplSave').hidden=true;};
 $('tplSaveOk').onclick=()=>{const n=$('tplName').value.trim();if(!n){$('tplName').focus();return;}
@@ -1212,8 +1525,7 @@ $('copyAll').onclick=copyAll;
 $('copyDesc').onclick=()=>{if(S.manual!=null){copyText(S.manual,'Протокол');return;}const P=protocol();copyText([P.ref,P.body.map(x=>x.t).join(' ')].join('\n'),'Опис');};
 $('copyConcl').onclick=()=>{copyText(conclText().t.replace(/^Rö-ч:\s*/,''),'Висновок');};
 $('copyRec').onclick=()=>{const t=recText();if(!t){toast('Рекомендацій немає');return;}copyText(t.replace(/^Рекомендовано:\s*/,''),'Рекомендації');};
-$('editBtn').onclick=()=>{editing=true;paperView=false;$('paperBtn').setAttribute('aria-pressed','false');renderSide();};
-$('paperBtn').onclick=()=>{paperView=!paperView;editing=false;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
+$('paperBtn').onclick=()=>{paperView=!paperView;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
 $('pfsBtn').onclick=()=>{const o=['s','m','l','xl'];SET.pfs=o[(o.indexOf(SET.pfs)+1)%o.length];saveSet();applyLook();toast({s:'Текст протоколу: менший',m:'Текст протоколу: звичайний',l:'Текст протоколу: більший',xl:'Текст протоколу: великий'}[SET.pfs]);if(paperView)renderSide();};
 $('themeBtn').onclick=()=>{const order=['system','light','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%3];saveSet();applyLook();};
 window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);window.__rz=setTimeout(renderSide,200);}});
@@ -1252,7 +1564,7 @@ function doSave(){
   const rec={id:editingId||('r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),ts:Date.now(),date,num:$('pNum').value.trim(),
     name:$('pName').value.trim(),age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),
     study:S.study,what:headerLine().replace(/^На\s*/,'').replace(/ від .*$/,''),eed:$('pEed').value.trim(),
-    concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,
+    concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,doc:docData(),blank:curBlank(),
     ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
@@ -1273,6 +1585,7 @@ document.addEventListener('keydown',e=>{
   if(mod&&e.code==='KeyP'){e.preventDefault();$('printBtn').click();return;}
   if(typing(e))return;
   if(mod&&!e.shiftKey&&e.code==='KeyZ'){e.preventDefault();undo();return;}
+  if(mod&&(e.code==='KeyY'||(e.shiftKey&&e.code==='KeyZ'))){e.preventDefault();redo();return;}
   if(!mod&&!e.altKey&&/^Digit[1-9]$/.test(e.code)){const i=Number(e.code.slice(5))-1;const d=visibleZones()[i];if(!d)return;e.preventDefault();tick();
     const z=S.zones[d.id];if(z.st==='c'&&S.open===d.id){z.st='n';S.open=null;}else{z.st='c';S.open=d.id;}S.focus=d.id;renderAll();const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}
 });
@@ -1337,7 +1650,7 @@ function openRecord(r){
 $('aToday').onclick=()=>{$('aFrom').value=today();$('aTo').value=today();renderArchive();};
 $('aClear').onclick=()=>{['aSearch','aFrom','aTo'].forEach(i=>$(i).value='');$('aStudy').value='';renderArchive();};
 $('aSelUnprinted').onclick=()=>{selected=new Set(aFiltered().filter(r=>!r.printed).map(r=>r.id));renderArchive();if(!selected.size)toast('Ненадрукованих протоколів у вибірці немає');};
-$('aPrint').onclick=()=>{const items=A.filter(r=>selected.has(r.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts).map(r=>({id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')}));if(items.length)openPrint(items);};
+$('aPrint').onclick=()=>{const items=A.filter(r=>selected.has(r.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts).map(recordItem);if(items.length)openPrint(items);};
 $('backupBtn').onclick=()=>{const ok=download(`Skiagrama_архів_${today()}.json`,JSON.stringify({app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A},null,1),'application/json');
   if(ok){SET.lastBackup=today();saveSet();}toast(ok?`Копію архіву (${A.length}) збережено у файл`:'Не вдалося зберегти файл');renderArchive();};
 function mergeArchive(list){const byId=new Map(A.map(r=>[r.id,r]));let n=0;list.forEach(r=>{if(!r||!r.id)return;const o=byId.get(r.id);if(!o){A.push(r);byId.set(r.id,r);n++;}else if((r.ts||0)>(o.ts||0)){Object.assign(o,r);}});return n;}
@@ -1360,21 +1673,113 @@ $('demoA').onclick=()=>{
   saveA();renderArchive();renderNames();updCtrlBadge();toast('Додано 5 прикладів');};
 
 /* --- 080-print.js --- */
-/* ===== Друк: розкладка по пів аркуша A4, зворот вручну ===== */
+/* ===== Друк: бланки A–D, автопідгонка в пів аркуша A4, цілий аркуш або зворот ===== */
 const mm=v=>v*96/25.4;
 const CAP_HALF=mm(148.5-20);
-function unitsHTML(units){return groupsOf(units).map(g=>`<p${g.c?` class="${g.c}"`:''}>${esc(g.t.join(' '))}</p>`).join('');}
+
+/* одиниці друку: {t: текст | h: готовий HTML, p: абзац, c: клас, blk: окремий блок} */
+function unitsHTML(units){
+  const out=[];let cur=null;
+  units.forEach(u=>{const piece=u.h!=null?u.h:esc(u.t);
+    if(cur&&!u.blk&&!cur.blk&&u.p!=null&&cur.p===u.p)cur.parts.push(piece);
+    else{cur={p:u.p,c:u.c,blk:u.blk,parts:[piece]};out.push(cur);}});
+  return out.map(g=>g.blk?g.parts.join(''):`<p${g.c?` class="${g.c}"`:''}>${g.parts.join(' ')}</p>`).join('');
+}
 const STAMP='<div class="pstamp"></div>';
-function measure(html){const m=$('measure');m.innerHTML=html;return m.offsetHeight;}
-function contUnits(it,rest){return [{t:`${it.name||'Пацієнт'} — продовження`,p:-1,c:'cont'},...rest];}
+function measure(html,cls){const m=$('measure');m.className='pdoc '+(cls||'');m.innerHTML=html;return m.offsetHeight;}
+
+/* реквізити закладу */
+const ORG=()=>Object.assign({name:'',sub:'',cab:'Рентгенологічний кабінет',addr:'',tel:'',edrpou:'',form:'',order:''},SET.org||{});
+const dLong=v=>{if(!v)return '__.__.____';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`;};
+const sexW=s=>s==='ч'?'чол.':s==='ж'?'жін.':'';
+function manualBody(doc,keepHead){
+  let lines=String(doc.manual||'').split('\n');
+  if(!keepHead){if(lines[0]&&lines[0].trim()===String(doc.head).trim())lines.shift();if(lines[0]&&/^На\s/.test(lines[0].trim()))lines.shift();}
+  return unitsFromText(lines.join('\n')).map(u=>Object.assign(u,{p:'m'+u.p,c:keepHead?u.c:(u.c==='pt'?'':u.c)}));
+}
+const LOGO_SVG='<svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="20" fill="#1F4E79"/><g fill="none" stroke="#fff" stroke-linecap="round" stroke-width="7"><path d="M42 84 L36.6 22.5"/><path d="M50 84 L50 16.5"/><path d="M58 84 L64 23.5"/><path d="M65 85 L75 34"/><path d="M36 86 L17 48"/></g><g stroke="#1F4E79" stroke-width="2.4"><path d="M36 60 L44 60"/><path d="M46 58 L54 58"/><path d="M57 60 L65 60"/><path d="M66 64 L73 64"/><path d="M35 42 L42 42"/><path d="M46 38 L54 38"/><path d="M59 42 L67 42"/><path d="M69 50 L76 50"/><path d="M33 30 L41 30"/><path d="M46 25 L54 25"/><path d="M60 31 L67 31"/><path d="M23 70 L31 70"/><path d="M16 56 L24 56"/></g><ellipse cx="60.8" cy="54" rx="7" ry="2.8" transform="rotate(-8 60.8 54)" fill="none" stroke="#F2A65A" stroke-width="5"/></svg>';
+const SIGN=(doc,cmp)=>`<div class="bk-sign"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="bk-mp">М. П.</span></div>`;
+const BLANKS={
+ C:{n:'компактний під штамп',sn:'під штамп',why:'звичний формат рентгенолога, рамка під штамп, найбільше місця під текст',
+   build(doc,cmp){const o=ORG();
+     const sub=[o.sub,o.cab,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · ');
+     const h=`<div class="bkC-h"><div class="bkC-stamp">місце для штампу рентгенкабінету<br>(№ і дата)</div><div class="bkC-org"><b>${esc(o.name||'[Назва закладу]')}</b>${sub?`<span>${esc(sub)}</span>`:''}<span class="bkC-tag">${doc.study==='fg'?'ФЛЮОРОГРАФІЯ':'РЕНТГЕНОГРАФІЯ'}</span></div></div>`;
+     const u=[{h,blk:true}];
+     if(doc.manual!=null)return u.concat(manualBody(doc,true));
+     u.push({t:doc.head,p:'h',c:'pt'},{t:doc.refLine,p:'r'});doc.body.forEach(t=>u.push({t,p:'b'}));
+     u.push({t:'Rö-ч: '+doc.concl,p:'c',c:'concl'});if(doc.rec)u.push({t:'Рекомендовано: '+doc.rec,p:'rc'});
+     u.push({h:`<div class="bk-foot"><span>ЕЕД ${esc(doc.eed||'___')} мЗв.</span><span>Лікар: ${esc(doc.doctor||'____________')}</span></div>`,blk:true});return u;}},
+ B:{n:'сучасний діловий',sn:'сучасний',why:'сучасний вигляд, дані пацієнта сіткою, розділи легко читати',
+   build(doc,cmp){const o=ORG();
+     const h=`<div class="bkB-h"><div class="bkB-org">${LOGO_SVG}<div><b>${esc(o.name||'[Назва закладу]')}</b><span>${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · '))}</span></div></div><div class="bkB-r"><small>ПРОТОКОЛ ДОСЛІДЖЕННЯ</small><b>${esc(doc.what)}</b><span>№ ${esc(doc.num||'___')} · ${dLong(doc.date)}</span></div></div><div class="bkB-bar"></div>`;
+     const pt=`<div class="bkB-pt"><div class="w"><small>ПАЦІЄНТ</small><b>${esc(doc.name)}</b></div><div><small>ВІК, СТАТЬ</small><span>${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', ')||'—')}</span></div><div><small>ЕЕД</small><span>${esc(doc.eed?doc.eed+' мЗв':'___')}</span></div>${doc.dept?`<div class="w"><small>ВІДДІЛЕННЯ</small><span>${esc(doc.dept)}</span></div>`:''}${doc.proj?`<div class="w"><small>ПРОЄКЦІЇ</small><span>${esc(doc.proj)}</span></div>`:''}</div>`;
+     const sec=(l,inner)=>`<div class="bkB-sec"><span>${l}</span><div>${inner}</div></div>`;
+     const u=[{h,blk:true},{h:pt,blk:true}];
+     if(doc.manual!=null)u.push({h:sec('ОПИС',unitsHTML(manualBody(doc))),blk:true});
+     else{u.push({h:sec('ОПИС',`<p>${esc(doc.body.join(' '))}</p>`),blk:true},{h:sec('ВИСНОВОК',`<p><b>${esc(doc.concl)}</b></p>`),blk:true});if(doc.rec)u.push({h:sec('РЕКОМЕНДАЦІЇ',`<p>${esc(doc.rec)}</p>`),blk:true});}
+     u.push({h:`<div class="bkB-foot"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="d">Висновок не є діагнозом; оцінюється лікарем, що направив.</span></div>`,blk:true});return u;}},
+ A:{n:'класичний офіційний',sn:'офіційний',why:'повні реквізити закладу — для пацієнта на руки або в іншу установу',
+   build(doc,cmp){const o=ORG();
+     const top=cmp?`<div class="bk-mini"><b>${esc(o.name||'[Назва закладу]')}</b> · ${esc(o.cab)}</div>`:
+       `<div class="bkA-h"><div class="s">Міністерство охорони здоров’я України</div><div class="n">${esc([o.name||'[Назва закладу]',o.sub].filter(Boolean).join(' '))}</div><div class="s">${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:'',o.edrpou?'код ЄДРПОУ '+o.edrpou:''].filter(Boolean).join(' · '))}</div></div><div class="bkA-rule"></div>`;
+     const t=`<div class="bkA-t"><b>ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ</b><span>№ ${esc(doc.num||'___')} від ${dLong(doc.date)}</span></div>`;
+     const rows=[['Пацієнт:',`<b>${esc(doc.name)}</b>${doc.age?', '+esc(doc.age)+' р.':''}${doc.sex?', '+sexW(doc.sex):''}`]];
+     if(doc.dept||doc.ref)rows.push(['Направлення:',esc([doc.dept,doc.refDoc?'лікар '+doc.refDoc:'',doc.ref?'е-напр. '+doc.ref:''].filter(Boolean).join(' · '))]);
+     rows.push(['Дослідження:',esc(doc.what+(doc.proj?` (${doc.proj})`:'')+(doc.eed?` · ЕЕД ${doc.eed} мЗв`:''))]);
+     const u=[{h:top+t,blk:true},{h:`<div class="bk-grid">${rows.map(r=>`<span class="l">${r[0]}</span><span>${r[1]}</span>`).join('')}</div>`,blk:true}];
+     if(doc.manual!=null)u.push(...manualBody(doc));
+     else{doc.body.forEach((x,i)=>u.push(i?{t:x,p:'b'}:{h:'<b>Опис.</b> '+esc(x),p:'b'}));u.push({h:`<b>Висновок: ${esc(doc.concl)}</b>`,p:'c'});if(doc.rec)u.push({h:`<b>Рекомендовано:</b> ${esc(doc.rec)}`,p:'rc'});}
+     u.push({h:SIGN(doc,cmp),blk:true});return u;}},
+ D:{n:'форма з полями',sn:'форма з полями',why:'облікова форма з реквізитами й пронумерованими полями',
+   build(doc,cmp){const o=ORG();
+     const req=`<div class="bkD-req"><div><span>Найменування міністерства: <u>МОЗ України</u></span><span>Заклад: <b><u>${esc(o.name||'[Назва закладу]')}</u></b></span>${cmp?'':`<span>Місцезнаходження: <u>${esc(o.addr||'[адреса]')}</u></span>`}<span>Код за ЄДРПОУ: <u>${esc(o.edrpou||'[________]')}</u></span></div><div><b>МЕДИЧНА ДОКУМЕНТАЦІЯ</b>${cmp?'':'<span>Форма первинної облікової документації</span>'}<span>№ ${esc(o.form||'[___]')}${o.order?' · '+esc(o.order):''}</span></div></div>`;
+     const t=`<div class="bkD-t">ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ № <u>${esc(doc.num||'___')}</u></div>`;
+     const f=`<div class="bkD-f"><span>1. ПІБ</span><span class="u"><b>${esc(doc.name)}</b></span><span>Вік</span><span class="u">${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', '))}</span><span>2. Відділення</span><span class="u">${esc(doc.dept||'—')}</span><span>Дата</span><span class="u">${dLong(doc.date)}</span><span>3. Дослідження</span><span class="u">${esc(doc.what+(doc.proj?` (${doc.proj})`:''))}</span><span>ЕЕД</span><span class="u">${esc(doc.eed?doc.eed+' мЗв':'')}</span></div>`;
+     const u=[{h:req+t+f,blk:true},{t:'4. Опис:',p:'bl'}];
+     if(doc.manual!=null)u.push(...manualBody(doc));
+     else{doc.body.forEach(x=>u.push({t:x,p:'b'}));u.push({h:`5. Висновок: <b>${esc(doc.concl)}</b>`,p:'c'});if(doc.rec)u.push({t:'6. Рекомендації: '+doc.rec,p:'rc'});}
+     u.push({h:SIGN(doc,cmp),blk:true});return u;}}
+};
+const BLANK_ORDER=['C','B','A','D'];
+const curBlank=()=>S.blank||SET.blank||'C';
+function buildUnits(it,cmp){if(!it.doc)return [{h:STAMP,blk:true}].concat(it.units||[]);return (BLANKS[it.blank]||BLANKS.C).build(it.doc,cmp);}
+const clsOf=(it,cmp)=>(cmp?'cmp ':'')+'b'+(it.doc?(BLANKS[it.blank]?it.blank:'C'):'L');
+const fitsHalf=(units,cls)=>measure(unitsHTML(units),cls)<=CAP_HALF;
+function contUnits(it,rest){return [{t:`${it.name||'Пацієнт'} — продовження`,p:'cont',c:'cont'},...rest];}
 function classify(it){
-  const h=measure(STAMP+unitsHTML(it.units));
-  if(h<=CAP_HALF)return {...it,kind:'half'};
+  const u0=buildUnits(it,false),c0=clsOf(it,false);
+  if(fitsHalf(u0,c0))return {...it,kind:'half',units:u0,cls:c0};
+  const u1=buildUnits(it,true),c1=clsOf(it,true);
+  if(fitsHalf(u1,c1))return {...it,kind:'half',units:u1,cls:c1,cmp:true};
   if(SET.printMode==='flip'){
-    let k=0;for(let i=1;i<=it.units.length;i++){if(measure(STAMP+unitsHTML(it.units.slice(0,i)))<=CAP_HALF)k=i;else break;}
-    if(k>0&&k<it.units.length){const back=contUnits(it,it.units.slice(k));if(measure(unitsHTML(back))<=CAP_HALF)return {...it,kind:'flip',front:it.units.slice(0,k),back};}
+    let lo=1,hi=u1.length-1,k=0;
+    while(lo<=hi){const m=(lo+hi)>>1;if(fitsHalf(u1.slice(0,m),c1)){k=m;lo=m+1;}else hi=m-1;}
+    if(k>0){const back=contUnits(it,u1.slice(k));if(fitsHalf(back,c1))return {...it,kind:'flip',front:u1.slice(0,k),back,units:u1,cls:c1,cmp:true};}
   }
-  return {...it,kind:'full'};
+  return {...it,kind:'full',units:u0,cls:c0};
+}
+function blankAdvice(it){
+  if(!it.doc)return null;const cur=it.blank;const c=classify(it);const o=ORG();
+  if(c.kind==='half'&&!c.cmp)return (cur==='A'||cur==='D')&&!o.name?{b:null,text:`У бланку ${cur} реквізити закладу на видноті — заповніть їх у «Налаштуваннях» → «Бланк і реквізити».`}:null;
+  const others=BLANK_ORDER.filter(b=>b!==cur).map(b=>({b,c:classify({...it,blank:b})}));
+  if(c.kind==='half'){const x=others.find(x=>x.c.kind==='half'&&!x.c.cmp);
+    return x?{b:x.b,text:`У бланку ${cur} протокол ущільнено до 11 pt. У бланку ${x.b} (${BLANKS[x.b].n}) він вміститься звичайним шрифтом. Рекомендую ${x.b}.`}:null;}
+  const x=others.find(x=>x.c.kind==='half');
+  if(x)return {b:x.b,text:`Протокол довгий: у бланку ${x.b} (${BLANKS[x.b].n}) вміститься в пів аркуша${x.c.cmp?' (ущільнено)':''}, а в ${cur} — ${c.kind==='flip'?'піде на зворот половинки':'займе цілий аркуш'}. Рекомендую ${x.b}.`};
+  return {b:null,text:'Протокол довгий — у жодному бланку не вміститься в пів аркуша, тож надрукується на цілому аркуші A4 з одного боку.'};
+}
+function wrapDoc(it,units){return `<div class="pdoc ${it.cls}">${unitsHTML(units)}</div>`;}
+function slotHTML(it,side){if(!it)return '';if(side==='back')return wrapDoc(it,it.back);return wrapDoc(it,it.kind==='flip'?it.front:it.units);}
+function pageHTML(sh,side){
+  if(sh.full)return `<div class="ppage full">${wrapDoc(sh.full,sh.full.units)}</div>`;
+  const a=side==='back'?sh.backs:sh.slots;
+  return `<div class="ppage"><div class="pslot">${slotHTML(a[0],side)}</div><div class="pslot cut">${slotHTML(a[1],side)}</div></div>`;
+}
+function itemPreview(it){
+  const half=h=>`<div class="pslot" style="width:210mm">${h}</div>`;
+  if(it.kind==='half')return [{label:'Половина аркуша A4'+(it.cmp?' (ущільнено)':''),html:half(wrapDoc(it,it.units))}];
+  if(it.kind==='flip')return [{label:'Лицьова сторона половинки',html:half(wrapDoc(it,it.front))},{label:'Зворот тієї ж половинки',html:half(wrapDoc(it,it.back))}];
+  return [{label:'Цілий аркуш A4',html:`<div class="ppage full" style="min-height:0">${wrapDoc(it,it.units)}</div>`}];
 }
 function pack(items){
   const cl=items.map(classify);const flips=cl.filter(x=>x.kind==='flip'),halves=cl.filter(x=>x.kind==='half'),fulls=cl.filter(x=>x.kind==='full');
@@ -1384,19 +1789,13 @@ function pack(items){
   flips.forEach(place);halves.forEach(place);fulls.forEach(it=>sheets.push({full:it}));
   return {sheets,cl};
 }
-function slotHTML(it,side){if(!it)return '';if(side==='back')return unitsHTML(it.back);return STAMP+unitsHTML(it.kind==='flip'?it.front:it.units);}
-function pageHTML(sh,side){
-  if(sh.full)return `<div class="ppage full"><div class="pdoc">${STAMP}${unitsHTML(sh.full.units)}</div></div>`;
-  const a=side==='back'?sh.backs:sh.slots;
-  return `<div class="ppage"><div class="pslot"><div class="pdoc">${slotHTML(a[0],side)}</div></div><div class="pslot cut"><div class="pdoc">${slotHTML(a[1],side)}</div></div></div>`;
-}
 let PLAN=null,printIds=[];
 function openPrint(items){
   printIds=items.map(i=>i.id).filter(Boolean);
   PLAN=pack(items);const sh=PLAN.sheets;const backSheets=sh.filter(s=>s.backs&&s.backs.some(Boolean));
-  const nHalf=PLAN.cl.filter(x=>x.kind==='half').length,nFlip=PLAN.cl.filter(x=>x.kind==='flip').length,nFull=PLAN.cl.filter(x=>x.kind==='full').length;
+  const nHalf=PLAN.cl.filter(x=>x.kind==='half').length,nFlip=PLAN.cl.filter(x=>x.kind==='flip').length,nFull=PLAN.cl.filter(x=>x.kind==='full').length,nCmp=PLAN.cl.filter(x=>x.cmp&&x.kind==='half').length;
   $('pmTitle').textContent=items.length>1?`Друк пачкою: ${items.length} протоколів`:'Друк протоколу';
-  $('pmSummary').textContent=`Аркушів A4: ${sh.length}. Пів аркуша: ${nHalf}${nFlip?`, з продовженням на звороті: ${nFlip}`:''}${nFull?`, на цілий аркуш: ${nFull}`:''}.`;
+  $('pmSummary').textContent=`Аркушів A4: ${sh.length}. Пів аркуша: ${nHalf}${nCmp?` (з них ущільнено: ${nCmp})`:''}${nFlip?`, з продовженням на звороті: ${nFlip}`:''}${nFull?`, на цілий аркуш: ${nFull}`:''}.`;
   const steps=$('pmSteps');steps.textContent='';const btns=$('pmBtns');btns.textContent='';
   const b1=el('button',{type:'button',class:'btn primary'},backSheets.length?`1. Лицьові сторони (${sh.length} арк.)`:`Друкувати (${sh.length} арк.)`);b1.onclick=()=>doPrint('front');btns.append(b1);
   if(backSheets.length){
@@ -1405,9 +1804,9 @@ function openPrint(items){
      `Візьміть перші ${backSheets.length} арк. (протоколи з продовженням друкуються першими), переверніть ${SET.flipEdge==='short'?'знизу догори':'як сторінку книги'} і покладіть у лоток чистою стороною для друку.`,
      'Натисніть «Звороти». Якщо продовження вийшло догори ногами або не на тому аркуші — змініть налаштування друку (є пробний аркуш).',
      'Розріжте аркуші по пунктирній лінії ✂.'].forEach(t=>steps.append(el('li',null,t)));
-  }else steps.append(el('li',null,sh.some(s=>!s.full)?'Після друку розріжте аркуші по пунктирній лінії ✂.':'Кожен протокол друкується на окремому аркуші.'));
+  }else steps.append(el('li',null,sh.some(s=>!s.full)?'Після друку розріжте аркуші по пунктирній лінії ✂.':'Протокол друкується на цілому аркуші A4.'));
   const pv=$('pmPreview');pv.textContent='';
-  sh.forEach((s,i)=>{const w=el('div',{class:'pv'});w.append(el('span',null,`Аркуш ${i+1} — лицьова`));const z=el('div',{class:'pz'});z.innerHTML=pageHTML(s,'front');w.append(z);pv.append(w);
+  sh.forEach((s,i)=>{const w=el('div',{class:'pv'});w.append(el('span',null,`Аркуш ${i+1}${s.full?' — цілий':' — лицьова'}`));const z=el('div',{class:'pz'});z.innerHTML=pageHTML(s,'front');w.append(z);pv.append(w);
     if(s.backs&&s.backs.some(Boolean)){const w2=el('div',{class:'pv'});w2.append(el('span',null,`Аркуш ${i+1} — зворот`));const z2=el('div',{class:'pz'});z2.innerHTML=pageHTML(s,'back');w2.append(z2);pv.append(w2);}});
   $('printModal').hidden=false;closeSheet();
 }
@@ -1423,14 +1822,16 @@ function doPrint(side){
   runPrint(pages.join(''));
   if(side==='front'&&printIds.length){A.forEach(r=>{if(printIds.includes(r.id))r.printed=true;});saveA();if(!$('view-archive').hidden)renderArchive();}
 }
-$('printBtn').onclick=()=>{const name=$('pName').value.trim();openPrint([{id:editingId,name:name||'Пацієнт',units:currentUnits()}]);};
+const currentItem=()=>({id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
+const recordItem=r=>r.doc?{id:r.id,name:r.name,doc:r.doc,blank:r.blank||SET.blank||'C'}:{id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')};
+$('printBtn').onclick=()=>openPrint([currentItem()]);
 function testSheet(){
   const half=(t,s)=>`<div class="ptest"><div>${t}</div><div style="font-size:13pt;font-weight:normal">${s}</div></div>`;
   const front=`<div class="ppage"><div class="pslot">${half('ЛИЦЬОВА · половина А ↑','Верх аркуша. Переверніть аркуш так, як робите завжди, і надрукуйте зворот.')}</div><div class="pslot cut">${half('ЛИЦЬОВА · половина Б ↑','Низ аркуша.')}</div></div>`;
   const bA=half('ЗВОРОТ половини А ↑','Цей текст має бути на звороті половини А і читатися не догори ногами.'),bB=half('ЗВОРОТ половини Б ↑','');
   const top=SET.flipEdge==='short'?bB:bA,bot=SET.flipEdge==='short'?bA:bB;
   const back=`<div class="ppage"><div class="pslot">${top}</div><div class="pslot cut">${bot}</div></div>`;
-  $('pmTitle').textContent='Пробний аркуш';$('pmSummary').textContent='Перевірка того, як ви перевертаєте аркуш.';
+  $('pmTitle').textContent='Пробний аркуш';$('pmSummary').textContent='Перевірка того, як ви перевертаєте аркуш (потрібно лише для друку продовження на звороті).';
   const steps=$('pmSteps');steps.textContent='';['Надрукуйте лицьову сторону.','Переверніть аркуш так, як робитимете завжди, і покладіть у лоток.','Надрукуйте зворот. Напис «ЗВОРОТ половини А» має опинитися за «ЛИЦЬОВА · половина А» і читатися нормально. Якщо ні — змініть «Як перевертаєте аркуш».'].forEach(t=>steps.append(el('li',null,t)));
   const btns=$('pmBtns');btns.textContent='';const a=el('button',{type:'button',class:'btn primary'},'1. Лицьова');a.onclick=()=>runPrint(front);const b=el('button',{type:'button',class:'btn primary'},'2. Зворот');b.onclick=()=>runPrint(back);btns.append(a,b);
   const pv=$('pmPreview');pv.textContent='';[['Лицьова',front],['Зворот',back]].forEach(([t,h])=>{const w=el('div',{class:'pv'});w.append(el('span',null,t));const z=el('div',{class:'pz'});z.innerHTML=h;w.append(z);pv.append(w);});
@@ -1523,8 +1924,9 @@ function searchItems(){
   RECS.forEach(t=>L.push({k:'Рекомендація',t,go:()=>{showView('desc');if(!S.recs.includes(t)){tick();S.recs.push(t);renderAll();}toast('Додано рекомендацію');}}));
   TPL.filter(t=>t.study===S.study).forEach(t=>L.push({k:'Шаблон',t:t.name,go:()=>{showView('desc');tick();applyTpl(t);}}));
   act('Копіювати протокол',copyAll,'Ctrl+Enter');act('Готово — зберегти в архів',done,'Ctrl+S');act('Друк',()=>$('printBtn').click(),'Ctrl+P');
-  act('Норма всюди',allNorm,'Alt+N');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');
-  act('Як на папері',()=>$('paperBtn').click());act('Правити текст протоколу',()=>$('editBtn').click());
+  act('Норма всюди',allNorm,'Alt+N');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');act('Повторити дію',redo,'Ctrl+Y');
+  act('Як на папері',()=>$('paperBtn').click());act('Правити текст протоколу',()=>{if(document.body.classList.contains('sheet')===false&&window.innerWidth<=760)openSheet();if(paperView)$('paperBtn').click();const t=$('ptext');if(t){t.focus();}});
+  BLANK_ORDER.forEach(b=>act(`Бланк ${b} · ${BLANKS[b].n}`,()=>{tick();S.blank=b;renderSide();}));act('Пакет фраз',()=>showView('settings'));act('Памʼятка (1 сторінка)',openMemo);
   act('Архів',()=>showView('archive'));act('На контроль',()=>showView('archive'));act('Налаштування',()=>showView('settings'));act('Довідка',openHelp);
   act('Папка даних',()=>showView('settings'));act('Пробний аркуш друку',testSheet);act('Знайомство: дані лікаря',openWelcome);
   return L;
@@ -1569,17 +1971,20 @@ function openHelp(){
 <li>Заповніть ПІБ, вік, № і дату знімка. ЕЕД підставляється сама.</li>
 <li>«Норма всюди» — усі зони в нормі. Для зміненої зони натисніть «Зміни» й виберіть кнопки. «—» — не згадувати зону.</li>
 <li>Прийміть підказки висновку або виберіть свій.</li>
+<li>Текст протоколу правиться прямо в ньому — клацніть і пишіть. «Скинути правку» повертає автотекст.</li>
 <li>«Копіювати» — для h24; «Готово» — зберегти в архів; «Друк» — на пів аркуша A4.</li></ol>
 <h3>Корисне</h3><ul>
-<li>Клік по реченню в протоколі відкриває його зону.</li>
-<li>«Як на папері» показує, чи протокол вміститься в пів аркуша.</li>
+<li>Alt+клік по реченню в протоколі відкриває його зону.</li>
+<li>Бланк (A, B, C, D) — перемикач біля протоколу; за замовчуванням і реквізити закладу — у «Налаштуваннях». Програма підкаже, у якому бланку довгий протокол вміститься в пів аркуша.</li>
+<li>«Як на папері» показує протокол у вибраному бланку: пів аркуша, ущільнено або цілий аркуш.</li>
+<li>Олівець ✎ біля назви зони — змінити напис і фразу кнопок, сховати, переставити, додати свою.</li>
 <li>У розгорнутій зоні «+ своя фраза» додає власну кнопку.</li>
 <li>Для контрольного знімка — «Як минулого разу» в блоці «Попереднє».</li>
 <li>«Архів» → «Вибрати ненадруковані» → «Друкувати вибрані» — друк пачкою.</li>
 <li>Папка даних («Налаштування») — архів зберігається на диск сам.</li></ul>
 <h3>Гарячі клавіші</h3>
-<div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
-    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};r.append(w);box.append(r);});
+<div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Y</kbd> або <kbd class="k">Ctrl</kbd>+<kbd class="k">Shift</kbd>+<kbd class="k">Z</kbd></span><span>повторити</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
+    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};const m=el('button',{type:'button',class:'btn'},'Памʼятка на 1 сторінку');m.onclick=()=>{closeDlg();openMemo();};r.append(w,m);box.append(r);});
 }
 $('navHelp').onclick=openHelp;
 
@@ -1611,6 +2016,14 @@ function openWelcome(){
   });
 }
 
+/* памʼятка на 1 сторінку: окремий файл поруч (сайт) або вбудована (офлайн-файл) */
+function openMemo(){
+  const html=$('memoTpl').innerHTML;
+  openDlg(box=>{dlgHead(box,'Памʼятка');const r=el('div',{class:'trow'});const pr=el('button',{type:'button',class:'btn primary'},'Друкувати (1 аркуш A4)');
+    pr.onclick=()=>{closeDlg();runPrint(`<div class="ppage full">${html}</div>`);};r.append(pr,el('span',{class:'note'},'Повісьте біля робочого місця рентгенолога й лаборанта.'));box.append(r);
+    const v=el('div',{class:'memo-view'});v.innerHTML=html;box.append(v);});
+}
+
 /* --- 110-settings-boot.js --- */
 /* ===== Налаштування і запуск ===== */
 function renderSettings(){
@@ -1618,6 +2031,8 @@ function renderSettings(){
   $('sFlow').checked=!!SET.flow;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
   const e=$('sEed');e.textContent='';Object.keys(STUDIES).forEach(k=>{const l=el('label',{class:'f'},STUDIES[k].n);const i=el('input',{type:'text',inputmode:'decimal'});i.value=SET.eed[k]||'';i.addEventListener('input',()=>{SET.eed[k]=i.value.trim();saveSet();});l.append(i);e.append(l);});
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
+  const sb=$('sBlank');if(!sb.options.length)BLANK_ORDER.forEach(b=>sb.append(el('option',{value:b},`${b} · ${BLANKS[b].n}`)));sb.value=SET.blank||'C';$('sBlankWhy').textContent=blankWhy(sb.value);
+  const o=ORG();ORG_FIELDS.forEach(([id,k])=>{$(id).value=o[k]||'';});
   renderNorms();renderMy();renderFolderInfo();$('sVer').textContent=`Skiagrama ${VERSION} бета. Працює без інтернету; оновлення приходять самі, коли є мережа.`;
 }
 function renderNorms(){
@@ -1635,6 +2050,25 @@ function renderMy(){
     root.append(r);});
 }
 $('sNormStudy').addEventListener('change',renderNorms);
+const ORG_FIELDS=[['sOrgName','name'],['sOrgSub','sub'],['sOrgCab','cab'],['sOrgAddr','addr'],['sOrgTel','tel'],['sOrgEdrpou','edrpou'],['sOrgForm','form'],['sOrgOrder','order']];
+ORG_FIELDS.forEach(([id,k])=>$(id).addEventListener('input',e=>{SET.org[k]=e.target.value.trim();saveSet();}));
+const blankWhy=b=>({C:'C — вклеюєте в історію хвороби: найменше місця, рамка під штамп, звичний формат «На Rö-гр. … Rö-ч:».',B:'B — сучасний вигляд: логотип, дані пацієнта сіткою, розділи ОПИС / ВИСНОВОК / РЕКОМЕНДАЦІЇ.',A:'A — для пацієнта на руки або в іншу установу: повні реквізити закладу, «М. П.».',D:'D — облікова форма з реквізитами й пронумерованими полями.'})[b]||'';
+$('sBlank').addEventListener('change',e=>{SET.blank=e.target.value;saveSet();$('sBlankWhy').textContent=blankWhy(SET.blank);renderSide();});
+$('sBtnReset').onclick=e=>{const b=e.currentTarget;const k=$('sNormStudy').value||'ogk';
+  if(!b.dataset.c){b.dataset.c='1';b.textContent='Точно? Усі зміни кнопок цього дослідження зникнуть';setTimeout(()=>{b.dataset.c='';b.textContent='Повернути кнопки цього дослідження як були';},3000);return;}
+  [SET.btn,SET.btnAdd,SET.btnOrder].forEach(o=>Object.keys(o).forEach(x=>{if(x.startsWith(k+'.'))delete o[x];}));saveSet();b.dataset.c='';b.textContent='Повернути кнопки цього дослідження як були';renderZones();renderSide();toast('Кнопки повернуто');};
+/* пакет фраз */
+function phrasePack(){return {app:'skiagrama-phrases',v:1,saved:new Date().toISOString(),norms:SET.norms,my:SET.my,btn:SET.btn,btnAdd:SET.btnAdd,btnOrder:SET.btnOrder,templates:TPL};}
+function applyPhrasePack(d){
+  if(!d||d.app!=='skiagrama-phrases')throw new Error('not a pack');
+  ['norms','btn','btnOrder'].forEach(k=>{if(d[k]&&typeof d[k]==='object')SET[k]=Object.assign({},SET[k],d[k]);});
+  if(d.my)Object.keys(d.my).forEach(k=>{const a=SET.my[k]||[];(d.my[k]||[]).forEach(p=>{if(!a.includes(p))a.push(p);});SET.my[k]=a;});
+  if(d.btnAdd)Object.keys(d.btnAdd).forEach(k=>{const a=SET.btnAdd[k]||[];(d.btnAdd[k]||[]).forEach(x=>{if(x&&x.k&&!a.some(y=>y.k===x.k))a.push(x);});SET.btnAdd[k]=a;});
+  let nt=0;if(Array.isArray(d.templates))d.templates.forEach(t=>{if(!t||!t.name)return;TPL=TPL.filter(q=>!(q.study===t.study&&q.name===t.name));TPL.push(t);nt++;});
+  saveSet();saveTpl();return nt;
+}
+$('phExport').onclick=()=>{const ok=download(`Skiagrama_пакет_фраз_${today()}.json`,JSON.stringify(phrasePack(),null,1),'application/json');$('phMsg').textContent=ok?'Пакет фраз збережено у файл. Перенесіть його на інший ПК і натисніть «Завантажити пакет фраз».':'Не вдалося зберегти файл.';};
+$('phImport').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const nt=applyPhrasePack(JSON.parse(rd.result));renderSettings();renderAll();$('phMsg').textContent=`Пакет фраз завантажено${nt?`, шаблонів: ${nt}`:''}. Ваші фрази доповнено, архів не змінено.`;}catch(err){$('phMsg').textContent='Це не пакет фраз Skiagrama.';}e.target.value='';};rd.readAsText(f);});
 $('sNormReset').onclick=()=>{const k=$('sNormStudy').value;Object.keys(SET.norms).forEach(x=>{if(x.startsWith(k+'.'))delete SET.norms[x];});saveSet();renderNorms();toast('Стандартні фрази повернуто');};
 $('sDoctor').addEventListener('input',e=>{SET.doctor=e.target.value;saveSet();});
 $('sDepts').addEventListener('input',e=>{SET.depts=e.target.value;saveSet();fillDepts();});
@@ -1649,11 +2083,14 @@ $('sRevBacks').addEventListener('change',e=>{SET.revBacks=e.target.checked;saveS
 $('sWelcome').onclick=openWelcome;
 $('sExport').onclick=()=>{const ok=download(`Skiagrama_налаштування_${today()}.json`,JSON.stringify({app:'skiagrama-settings',v:2,settings:SET,templates:TPL},null,1),'application/json');$('sMsg').textContent=ok?'Налаштування і шаблони збережено у файл.':'Не вдалося зберегти файл.';};
 $('sImport').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(d.app!=='skiagrama-settings')throw 0;
-  SET=Object.assign(SET,d.settings||{});TPL=Array.isArray(d.templates)?d.templates:TPL;saveSet();saveTpl();fillDepts();applyLook();renderSettings();$('sMsg').textContent='Налаштування завантажено.';}catch(err){$('sMsg').textContent='Це не файл налаштувань Skiagrama.';}e.target.value='';};rd.readAsText(f);});
+  SET=Object.assign(SET,d.settings||{});['org','btn','btnAdd','btnOrder'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});TPL=Array.isArray(d.templates)?d.templates:TPL;saveSet();saveTpl();fillDepts();applyLook();renderSettings();$('sMsg').textContent='Налаштування завантажено.';}catch(err){$('sMsg').textContent='Це не файл налаштувань Skiagrama.';}e.target.value='';};rd.readAsText(f);});
 function fillDepts(){const dl=$('deptList');dl.textContent='';SET.depts.split(',').map(s=>s.trim()).filter(Boolean).forEach(d=>dl.append(el('option',{value:d})));}
 
 /* запуск */
 applyLook();$('vBadge').textContent=`v${VERSION} бета`;
+/* для автотестів: доступ до внутрішніх функцій (не впливає на роботу) */
+window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,phrasePack,
+  setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k)};
 fillDepts();renderNames();updCtrlBadge();
 $('pDate').value=today();setEedDefault();$('pNum').value=nextNum();
 const dr=store.get(DRAFT_KEY,null);

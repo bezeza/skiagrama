@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skiagrama — памʼятка</title>
+<style>@page{size:A4;margin:12mm}html,body{margin:0;background:#fff}body{padding:12mm}@media print{body{padding:0}}
+/* памʼятка на 1 сторінку A4 */
+.memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
+.memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
+.memo .mh b{font-size:18pt;color:#1F4E79}
+.memo .mh span{font-size:9.5pt;color:#4A5866}
+.memo h3{font-size:11.5pt;color:#1F4E79;margin:3mm 0 1mm}
+.memo ul,.memo ol{margin:0;padding-left:6mm}
+.memo li{margin:.6mm 0}
+.memo .mk{display:grid;grid-template-columns:38mm 1fr;gap:.8mm 3mm}
+.memo .mk span:nth-child(odd){font-weight:bold}
+.memo .mf{margin-top:4mm;border-top:1px solid #C9D3DD;padding-top:1.5mm;font-size:9pt;color:#4A5866}
+.memo-view{background:#fff;color:#111;border-radius:8px;padding:12px;overflow:auto}
+.memo-view .memo{width:auto;max-width:186mm}
+</style></head><body>
+<div class="memo">
+  <div class="mh"><b>Skiagrama</b><span>памʼятка рентгенолога й лаборанта · бета</span></div>
+
+  <h3>1. Встановлення (один раз)</h3>
+  <ul>
+    <li>Відкрийте <b>bezeza.github.io/skiagrama</b> у Chrome або Edge → «Встановити». Без інтернету програма теж працює.</li>
+    <li>Або скопіюйте файл <b>skiagrama.html</b> на ПК і відкривайте його.</li>
+    <li>«Налаштування» → ПІБ лікаря, реквізити закладу, бланк за замовчуванням, <b>папка даних</b> (архів зберігається на диск сам).</li>
+  </ul>
+
+  <h3>2. Протокол за 5 кроків</h3>
+  <ol>
+    <li>Вид дослідження вгорі: ОГК, ФГ, кістки, хребет, ОЧП, череп.</li>
+    <li>Рядок пацієнта: ПІБ · вік · № · дата · ЕЕД (ЕЕД підставляється сама).</li>
+    <li><b>Норма всюди</b>, потім у зміненій зоні — «Зміни» і кнопки.</li>
+    <li>Висновок: прийміть підказку або виберіть свій. Текст можна правити прямо в протоколі.</li>
+    <li><b>Готово</b> (Ctrl+S) — в архів; <b>Копіювати</b> (Ctrl+Enter) — для h24; <b>Друк</b> (Ctrl+P).</li>
+  </ol>
+
+  <h3>3. Бланк і друк</h3>
+  <ul>
+    <li>Бланки: <b>A</b> офіційний · <b>B</b> сучасний · <b>C</b> компактний під штамп · <b>D</b> форма з полями. Перемикач — біля протоколу.</li>
+    <li>Протокол друкується на <b>пів аркуша A4</b>; довгий — ущільнюється до 11 pt; якщо й так не вміщається — <b>цілий аркуш</b> з одного боку.</li>
+    <li>Програма підкаже, у якому бланку протокол вміститься, — кнопка «Застосувати».</li>
+    <li>Пачкою: «Архів» → «Вибрати ненадруковані» → «Друкувати вибрані». Розріжте по ✂.</li>
+  </ul>
+
+  <h3>4. Резервна копія</h3>
+  <ul>
+    <li>З папкою даних копії робляться самі (папка «копії»).</li>
+    <li>Без папки: «Архів» → «Зберегти копію архіву» — щодня.</li>
+    <li>Свої фрази й кнопки на інший ПК — «Налаштування» → «Пакет фраз».</li>
+  </ul>
+
+  <h3>5. Гарячі клавіші</h3>
+  <div class="mk">
+    <span>Ctrl+Enter</span><span>копіювати протокол</span>
+    <span>Ctrl+S</span><span>готово — в архів</span>
+    <span>Ctrl+P</span><span>друк</span>
+    <span>Ctrl+K</span><span>пошук зони, висновку, дії</span>
+    <span>Ctrl+Z / Ctrl+Y</span><span>скасувати / повторити</span>
+    <span>Alt+N</span><span>норма всюди</span>
+    <span>1…9</span><span>зона: норма ↔ зміни</span>
+    <span>Alt+клік</span><span>по реченню — відкрити його зону</span>
+  </div>
+
+  <p class="mf">Програма готує текст; перевіряє й підписує лікар. Помилки та ідеї — розробнику (bezeza).</p>
+</div>
+</body></html>

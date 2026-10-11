@@ -1,6 +1,6 @@
 /* ===== Відображення: вкладки, розділи, зони, висновок, протокол ===== */
 const STUDY_SHORT={ogk:'ОГК',fg:'ФГ',bone:'Кістки',spine:'Хребет',abd:'ОЧП',skull:'Череп, ППН'};
-function switchStudy(k){if(S.study===k)return;tick();const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
+function switchStudy(k){if(S.study===k)return;tick();editZone=null;const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull,blank:S.blank};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
 function renderStudy(){
   const st=$('studyTabs');st.textContent='';
   Object.keys(STUDIES).forEach(k=>{const b=el('button',{type:'button',role:'tab','aria-selected':String(S.study===k),title:STUDIES[k].n},STUDY_SHORT[k]||STUDIES[k].n);b.onclick=()=>switchStudy(k);st.append(b);});
@@ -41,11 +41,20 @@ function renderStepper(){const vz=visibleZones();let i=vz.findIndex(d=>d.id===S.
   $('stPrev').onclick=()=>gotoZone(vz[Math.max(0,i-1)].id);$('stNext').onclick=()=>gotoZone(vz[Math.min(vz.length-1,i+1)].id);}
 function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z)z.scrollIntoView({block:'start',behavior:'smooth'});}}
 
+/* Кнопки зони: звичайний режим і редагування (олівець ✎).
+   Завдання для тебе: знайди в 020-data.js зону «Інфільтрація» (id:'infil') і подивись,
+   як кнопка «права» записана в коді: ['права','правої легені','права'] — ключ, фраза в протокол, напис.
+   Олівець робить те саме без коду: зміни зберігаються в SET.btn / SET.btnAdd / SET.btnOrder (040-core.js → effOpts). */
+let editZone=null;
 function renderZones(){
   const root=$('zones');root.textContent='';
   visibleZones().forEach((d,i)=>{
-    const z=S.zones[d.id];const zs=zoneState(d);const box=el('div',{class:'zone'+(z.st==='c'?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
-    const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));head.append(h);
+    const z=S.zones[d.id];const zs=zoneState(d);const ed=editZone===d.id;
+    const box=el('div',{class:'zone'+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
+    const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));
+    const pen=el('button',{type:'button',class:'zpen','aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Редагувати кнопки зони: напис, фраза, порядок','aria-label':'Редагувати кнопки зони '+d.name},'✎');
+    pen.onclick=()=>{editZone=ed?null:d.id;S.focus=d.id;renderZones();if(!ed){const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}};
+    h.append(pen);head.append(h);
     const seg=el('div',{class:'seg',role:'group','aria-label':d.name});
     [['n','Норма'],['c','Зміни'],['x','—']].forEach(([st,l])=>{const b=el('button',{type:'button','aria-pressed':String(z.st===st),class:st==='n'?'n':'',title:st==='x'?'Не згадувати в протоколі':st==='n'?(normOf(d)||'У нормі не описується'):null},l);
       b.onclick=()=>{tick();z.st=st;S.focus=d.id;S.open=st==='c'?d.id:(S.open===d.id?null:S.open);renderAll();};seg.append(b);});
@@ -55,12 +64,13 @@ function renderZones(){
       (t||(z.st==='n'?'(у нормі не описується)':'(не згадується)'))+(z.st==='c'&&!isOpen?'  ✎':''));
     ph.onclick=()=>{if(z.st!=='c'){tick();z.st='c';}S.open=isOpen?null:d.id;S.focus=d.id;renderAll();};
     head.append(ph);box.append(head);
-    if(isOpen){
+    if(ed)renderZoneEditor(d,box);
+    else if(isOpen){
       d.groups.forEach(g=>{const row=el('div',{class:'group'});row.append(el('span',{class:'gl'},g.l));
         if(g.type==='text'){const inp=el('input',{class:'t',type:'text',placeholder:g.ph||'','aria-label':d.name+': '+g.l});inp.value=z.sel[g.id]||'';
           inp.addEventListener('input',()=>{tick('text');z.sel[g.id]=inp.value;ph.textContent=zoneText(d);renderSide();renderConcl();renderNav();});row.append(inp);}
-        else orderOpts(d,g).forEach(([k,phrase,label])=>{const on=g.many?(z.sel[g.id]||[]).includes(k):z.sel[g.id]===k;
-          const b=el('button',{type:'button',class:'chip','aria-pressed':String(on),title:'У протокол: «'+phrase+'»'},label);
+        else effOpts(d,g).forEach(o=>{const k=o.k;const on=g.many?(z.sel[g.id]||[]).includes(k):z.sel[g.id]===k;
+          const b=el('button',{type:'button',class:'chip','aria-pressed':String(on),title:'У протокол: «'+o.ph+'»'},o.lb);
           b.onclick=()=>{tick();if(!on)countUse(d,g,k);if(g.many){const a=z.sel[g.id]||(z.sel[g.id]=[]);const i=a.indexOf(k);i>=0?a.splice(i,1):a.push(k);}else z.sel[g.id]=on?null:k;renderAll();};row.append(b);});
         box.append(row);});
       /* мої кнопки */
@@ -78,6 +88,51 @@ function renderZones(){
       const done=el('button',{type:'button',class:'btn sm'},'Згорнути');done.onclick=()=>{S.open=null;renderZones();renderNav();};box.append(done);
     }
     root.append(box);});
+}
+/* редактор кнопок зони */
+const zonePrefix=d=>`${S.study}.${d.id}.`;
+function zoneHasEdits(d){const p=zonePrefix(d);return [SET.btn,SET.btnAdd,SET.btnOrder].some(o=>Object.keys(o||{}).some(k=>k.startsWith(p)))||isNormOverridden(d);}
+function resetZoneButtons(d){const p=zonePrefix(d);[SET.btn,SET.btnAdd,SET.btnOrder].forEach(o=>Object.keys(o).forEach(k=>{if(k.startsWith(p))delete o[k];}));delete SET.norms[S.study+'.'+d.id];saveSet();}
+function setBtn(gk,k,patch){const key=gk+'.'+k;const o=Object.assign({},SET.btn[key]||{},patch);Object.keys(o).forEach(x=>{if(o[x]===''||o[x]===false||o[x]==null)delete o[x];});if(Object.keys(o).length)SET.btn[key]=o;else delete SET.btn[key];saveSet();}
+function setAdded(gk,k,patch){const a=SET.btnAdd[gk]||[];const x=a.find(y=>y.k===k);if(x)Object.assign(x,patch);saveSet();}
+function moveBtn(d,g,k,to){const list=effOpts(d,g,true).map(o=>o.k);const i=list.indexOf(k);if(i<0)return;list.splice(i,1);list.splice(Math.max(0,Math.min(list.length,to)),0,k);SET.btnOrder[gKey(d,g)]=list;saveSet();}
+function renderZoneEditor(d,box){
+  box.append(el('p',{class:'note'},'Режим редагування кнопок. Напис — що на кнопці, фраза — що піде в протокол. Порядок: стрілки ↑↓ або перетягніть рядок. Зміни зберігаються одразу.'));
+  const nr=el('div',{class:'egroup'});nr.append(el('div',{class:'eh'},'Фраза норми'));
+  const ni=el('input',{type:'text','aria-label':'Фраза норми зони '+d.name,placeholder:'(у нормі не описується)'});ni.value=normOf(d);
+  ni.addEventListener('input',()=>{SET.norms[S.study+'.'+d.id]=ni.value;saveSet();renderSide();});nr.append(ni);box.append(nr);
+  d.groups.filter(g=>g.type!=='text').forEach(g=>{
+    const gk=gKey(d,g);const wrap=el('div',{class:'egroup'});wrap.append(el('div',{class:'eh'},g.l));
+    const list=effOpts(d,g,true);
+    list.forEach((o,idx)=>{
+      const r=el('div',{class:'erow'+(o.hid?' hid':''),draggable:'true'});r.dataset.k=o.k;
+      r.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',o.k);r.classList.add('drag');});
+      r.addEventListener('dragend',()=>r.classList.remove('drag'));
+      r.addEventListener('dragover',e=>{e.preventDefault();r.classList.add('over');});
+      r.addEventListener('dragleave',()=>r.classList.remove('over'));
+      r.addEventListener('drop',e=>{e.preventDefault();const k=e.dataTransfer.getData('text/plain');if(k&&k!==o.k){moveBtn(d,g,k,idx);renderZones();renderSide();}});
+      const up=el('button',{type:'button',class:'btn sm icon','aria-label':'Вище: '+o.lb,disabled:idx===0?'':null},'↑');up.onclick=()=>{moveBtn(d,g,o.k,idx-1);renderZones();};
+      const dn=el('button',{type:'button',class:'btn sm icon','aria-label':'Нижче: '+o.lb,disabled:idx===list.length-1?'':null},'↓');dn.onclick=()=>{moveBtn(d,g,o.k,idx+1);renderZones();};
+      const lb=el('input',{type:'text',class:'elb','aria-label':'Напис кнопки',placeholder:'Напис'});lb.value=o.lb;
+      const ph=el('input',{type:'text',class:'eph','aria-label':'Фраза в протокол',placeholder:'Фраза в протокол'});ph.value=o.ph;
+      const upd=(f,v)=>{o.added?setAdded(gk,o.k,{[f]:v}):setBtn(gk,o.k,{[f]:v});renderSide();renderNav();};
+      lb.addEventListener('input',()=>upd('label',lb.value.trim()));ph.addEventListener('input',()=>upd('phrase',ph.value.trim()));
+      const hd=el('button',{type:'button',class:'btn sm','aria-pressed':String(o.hid)},o.hid?'Показати':'Сховати');
+      hd.onclick=()=>{o.added?setAdded(gk,o.k,{hidden:!o.hid}):setBtn(gk,o.k,{hidden:!o.hid});renderZones();};
+      r.append(el('span',{class:'grip','aria-hidden':'true'},'⋮⋮'),up,dn,lb,ph,hd);
+      if(o.added){const x=el('button',{type:'button',class:'btn sm danger','aria-label':'Видалити кнопку '+o.lb},'×');
+        x.onclick=()=>{if(x.dataset.c){SET.btnAdd[gk]=(SET.btnAdd[gk]||[]).filter(y=>y.k!==o.k);if(!SET.btnAdd[gk].length)delete SET.btnAdd[gk];saveSet();renderZones();renderSide();}else{x.dataset.c='1';x.textContent='видалити?';setTimeout(()=>{x.dataset.c='';x.textContent='×';},3000);}};r.append(x);}
+      wrap.append(r);});
+    const ar=el('div',{class:'erow add'});const al=el('input',{type:'text',class:'elb',placeholder:'Напис нової кнопки','aria-label':'Напис нової кнопки в групі '+g.l});const ap=el('input',{type:'text',class:'eph',placeholder:'Фраза в протокол','aria-label':'Фраза нової кнопки в групі '+g.l});
+    const ab=el('button',{type:'button',class:'btn sm'},'+ Додати');
+    ab.onclick=()=>{const phrase=ap.value.trim()||al.value.trim();if(!phrase){ap.focus();return;}const a=SET.btnAdd[gk]||(SET.btnAdd[gk]=[]);a.push({k:'u'+Date.now().toString(36),label:al.value.trim()||phrase,phrase});saveSet();renderZones();toast('Кнопку додано в «'+g.l+'»');};
+    ap.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ab.click();}});
+    ar.append(al,ap,ab);wrap.append(ar);box.append(wrap);});
+  const r=el('div',{class:'trow'});
+  const rs=el('button',{type:'button',class:'btn sm',disabled:zoneHasEdits(d)?null:''},'Повернути як було');
+  rs.onclick=()=>{if(rs.dataset.c){resetZoneButtons(d);renderZones();renderSide();toast('Кнопки зони «'+d.name+'» повернуто');}else{rs.dataset.c='1';rs.textContent='Точно повернути стандартні кнопки?';setTimeout(()=>{rs.dataset.c='';rs.textContent='Повернути як було';},3000);}};
+  const ok=el('button',{type:'button',class:'btn sm primary'},'Готово');ok.onclick=()=>{editZone=null;renderZones();};
+  r.append(ok,rs);box.append(r);
 }
 function renderMeas(){
   const ids=activeMeas();$('measPanel').hidden=!ids.length;const root=$('meas');root.textContent='';
@@ -140,55 +195,73 @@ function renderPrev(){
     const r2=el('div',{class:'trow'});r2.append(b);box.append(r2);}
 }
 
-/* протокол: текст або «як на папері» */
-let prevZoneText={},firstPaint=true,editing=false,paperView=false;
+/* протокол: текст (правиться прямо тут) або «як на папері» */
+let prevZoneText={},firstPaint=true,paperView=false;
+const ptextFocused=()=>{const a=document.activeElement;return !!(a&&a.id==='ptext');};
+function readPtext(){const n=$('ptext');if(!n)return '';return n.innerText.replace(/ /g,' ').replace(/\n{3,}/g,'\n\n').replace(/\s+$/,'');}
+function updManualBadge(){const b=$('pman');if(b)b.hidden=S.manual==null;}
 function renderPaper(){
-  const p=$('paper');p.textContent='';
-  if(paperView&&!editing){renderSheetView(p);return;}
+  const p=$('paper');
+  if(!paperView&&ptextFocused())return; /* не збиваємо курсор під час правки */
+  p.textContent='';
+  if(paperView){renderSheetView(p);return;}
+  const man=el('div',{class:'pman',id:'pman',hidden:S.manual==null?'':null});
+  man.append(el('span',{class:'badge'},'відредаговано вручну'));
+  const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();toast('Повернуто автоматичний текст');};
+  man.append(rs,el('span',{class:'note'},'Кнопки зон тепер не змінюють текст — скиньте правку, щоб повернути автотекст.'));p.append(man);
   p.append(el('div',{class:'stampspace'},'місце для штампу'));
-  if(editing){
-    const ta=el('textarea',{id:'manualTa','aria-label':'Текст протоколу'});ta.value=protocolText();p.append(ta);
-    const r=el('div',{class:'trow',style:'margin-top:10px'});
-    const ok=el('button',{type:'button',class:'btn primary'},'Зберегти правку');ok.onclick=()=>{tick();S.manual=ta.value;editing=false;renderAll();toast('Текст змінено вручну');};
-    const no=el('button',{type:'button',class:'btn'},'Скасувати');no.onclick=()=>{editing=false;renderSide();};
-    r.append(ok,no);p.append(r);setTimeout(()=>ta.focus(),0);return;
-  }
+  const tx=el('div',{id:'ptext',contenteditable:'true',spellcheck:'true',role:'textbox','aria-multiline':'true','aria-label':'Текст протоколу — можна правити прямо тут',title:'Клацніть і пишіть. Alt+клік по реченню — відкрити його зону.'});
   if(S.manual!=null){
-    const b=el('div',{class:'trow',style:'margin-bottom:8px'});b.append(el('span',{class:'badge'},'відредаговано вручну'));
-    const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();};b.append(rs);p.append(b);
-    p.append(el('div',{class:'manual'},S.manual));return;
+    String(S.manual).split('\n').forEach((ln,i)=>{const d=el('div',{class:i===0?'pt':/^Rö-ч:/.test(ln)?'concl':''});if(ln)d.textContent=ln;else d.append(el('br'));tx.append(d);});
+  }else{
+    const P=protocol();
+    tx.append(el('div',{class:'pt'},P.head),el('div',null,P.ref));
+    const b=el('div',{class:'body'});const nowMap={};
+    P.body.forEach((x,i)=>{const cls=['z'];if(x.tbd)cls.push('tbd');if(!firstPaint&&prevZoneText[x.zone]!==x.t)cls.push('flash');nowMap[x.zone]=x.t;
+      if(i)b.append(document.createTextNode(' '));b.append(el('span',{class:cls.join(' '),'data-zone':x.zone},x.t));});
+    tx.append(b);prevZoneText=nowMap;firstPaint=false;
+    setTimeout(()=>p.querySelectorAll('.flash').forEach(n=>n.classList.remove('flash')),900);
+    const c=el('div',{class:'concl'});c.append(P.concl.tbd?el('span',{class:'tbd'},P.concl.t):document.createTextNode(P.concl.t));tx.append(c);
+    if(P.rec)tx.append(el('div',{class:'recs'},P.rec));
+    tx.append(el('div',{class:'foot'},P.eed+'   '+P.doc));
   }
-  const P=protocol();
-  p.append(el('p',{class:'pt'},P.head),el('p',null,P.ref));
-  const b=el('p',{class:'body'});const nowMap={};
-  P.body.forEach(x=>{const cls=['z'];if(x.tbd)cls.push('tbd');if(!firstPaint&&prevZoneText[x.zone]!==x.t)cls.push('flash');nowMap[x.zone]=x.t;
-    b.append(el('span',{class:cls.join(' '),'data-zone':x.zone,title:'Відкрити зону'},x.t),document.createTextNode(' '));});
-  p.append(b);prevZoneText=nowMap;firstPaint=false;
-  setTimeout(()=>p.querySelectorAll('.flash').forEach(n=>n.classList.remove('flash')),900);
-  const c=el('p',{class:'concl'});c.append(P.concl.tbd?el('span',{class:'tbd'},P.concl.t):document.createTextNode(P.concl.t));p.append(c);
-  if(P.rec)p.append(el('p',{class:'recs'},P.rec));
-  const f=el('div',{class:'foot'});f.append(el('span',null,P.eed),el('span',null,P.doc));p.append(f);
+  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
+  tx.addEventListener('blur',()=>{if(S.manual!=null){renderBlankAdviceSoon();}});
+  p.append(tx);
+  p.append(el('p',{class:'note phint'},'Текст можна правити прямо тут. Alt+клік по реченню — відкрити його зону.'));
 }
 function renderSheetView(p){
   p.style.padding='12px';p.style.background='transparent';p.style.boxShadow='none';
-  const it=classify({name:$('pName').value.trim()||'Пацієнт',units:currentUnits()});
+  const it=classify(currentItem());const B=BLANKS[it.blank]||BLANKS.C;
   const wrap=el('div',{class:'sheetview'});
-  const msg={half:['ok','Вміщається в пів аркуша A4 ✓'],flip:['w','Не вміщається в пів аркуша — продовження піде на зворот тієї ж половинки'],full:['w',SET.printMode==='flip'?'Задовгий навіть для двох сторін половинки — займе цілий аркуш':'Не вміщається в пів аркуша — займе цілий аркуш']}[it.kind];
-  wrap.append(el('div',{class:'fit '+msg[0]},msg[1]));
+  const msg={half:['ok',it.cmp?'Вміщається в пів аркуша A4 — ущільнено до 11 pt ✓':'Вміщається в пів аркуша A4 ✓'],
+    flip:['w','Не вміщається в пів аркуша — продовження піде на зворот тієї ж половинки'],
+    full:['w','Не вміщається в пів аркуша навіть ущільнено — надрукується на цілому аркуші A4 з одного боку']}[it.kind];
+  wrap.append(el('div',{class:'fit '+msg[0]},`Бланк ${it.blank} · ${B.n}. ${msg[1]}`));
   const avail=Math.max(260,($('paper').parentElement.clientWidth||600)-50);const z=Math.min(1,avail/mm(210));
-  const mkHalf=(html,label)=>{const box=el('div');box.append(el('div',{class:'note'},label));const s=el('div',{class:'sheetbox'});s.style.zoom=z;
-    s.innerHTML=`<div class="pslot" style="width:210mm"><div class="pdoc">${html}</div></div>`;box.append(s);return box;};
-  const stamp='<div class="pstamp show">місце для штампу</div>';
-  if(it.kind==='half')wrap.append(mkHalf(stamp+unitsHTML(it.units),'Половина аркуша A4'));
-  else if(it.kind==='flip'){wrap.append(mkHalf(stamp+unitsHTML(it.front),'Лицьова сторона половинки'));wrap.append(mkHalf(unitsHTML(it.back),'Зворот тієї ж половинки'));}
-  else{const box=el('div');box.append(el('div',{class:'note'},'Цілий аркуш A4'));const s=el('div',{class:'sheetbox'});s.style.zoom=z;s.innerHTML=`<div class="ppage full" style="min-height:0"><div class="pdoc">${stamp}${unitsHTML(it.units)}</div></div>`;box.append(s);wrap.append(box);}
+  itemPreview(it).forEach(pg=>{const box=el('div');box.append(el('div',{class:'note'},pg.label));const s=el('div',{class:'sheetbox'});s.style.zoom=z;s.innerHTML=pg.html;box.append(s);wrap.append(box);});
   p.append(wrap);
 }
 function resetPaperStyle(){const p=$('paper');p.style.padding='';p.style.background='';p.style.boxShadow='';}
-$('paper').addEventListener('click',e=>{const z=e.target.closest('[data-zone]');if(!z)return;const id=z.dataset.zone;closeSheet();
+$('paper').addEventListener('click',e=>{if(paperView)return;const z=e.target.closest('[data-zone]');if(!z||!e.altKey)return;e.preventDefault();const id=z.dataset.zone;closeSheet();
   if(id==='meas'){$('measPanel').scrollIntoView({block:'start',behavior:'smooth'});return;}
   if(id==='prev'){$('prevBox').scrollIntoView({block:'center',behavior:'smooth'});return;}
-  const zs=S.zones[id];if(zs&&zs.st!=='c'){tick();zs.st='c';}openZone(id,true);renderSide();renderConcl();});
+  const zs=S.zones[id];if(zs&&zs.st!=='c'){tick();zs.st='c';}document.activeElement&&document.activeElement.blur();openZone(id,true);renderSide();renderConcl();});
+/* рядок пацієнта і бланк */
+function shortFio(n){const p=String(n||'').trim().split(/\s+/).filter(Boolean);if(p.length<2)return p.join(' ');return p[0]+' '+p.slice(1).map(x=>/^\p{L}\.(\p{L}\.)?$/u.test(x)||/^[(\[]/.test(x)?x:x.charAt(0).toUpperCase()+'.').join(' ');}
+function patientLine(){const n=shortFio($('pName').value),a=$('pAge').value.trim(),no=$('pNum').value.trim(),d=$('pDate').value;
+  return [n?n+(a?`, ${a} р.`:''):(a?a+' р.':''),no?'№ '+no:'',d?fmtD(d):''].filter(Boolean).join(' · ');}
+function renderPatientSum(){const t=patientLine();$('pSum').textContent=t||'Пацієнта не вказано';$('pSum').classList.toggle('empty',!t);$('mbarPat').textContent=t;}
+function renderBlankSel(){const s=$('blankSel');if(!s.options.length)BLANK_ORDER.forEach(b=>s.append(el('option',{value:b,title:BLANKS[b].why},`${b} · ${BLANKS[b].sn}`)));s.value=curBlank();s.title=BLANKS[curBlank()].why;}
+let advT=null;
+function renderBlankAdviceSoon(){clearTimeout(advT);advT=setTimeout(renderBlankAdvice,350);}
+function renderBlankAdvice(){
+  const box=$('blankAdvice');box.textContent='';let a=null;try{a=blankAdvice(currentItem());}catch(e){a=null;}
+  if(!a){box.hidden=true;return;}box.hidden=false;
+  box.append(el('span',null,a.text));
+  if(a.b){const b=el('button',{type:'button',class:'btn sm primary'},'Застосувати '+a.b);b.onclick=()=>{tick();S.blank=a.b;renderSide();toast('Бланк '+a.b+' · '+BLANKS[a.b].n);};box.append(b);}
+  else if(/Налаштуваннях/.test(a.text)){const b=el('button',{type:'button',class:'btn sm'},'Відкрити налаштування');b.onclick=()=>showView('settings');box.append(b);}
+}
 function renderChecks(saveMode){
   const w=checks();const box=$('checkBox');box.classList.toggle('has',!!w.length);box.classList.toggle('ok',!w.length);
   $('checkSum').textContent=w.length?`Перевірка перед підписом: зауважень ${w.length}`:'Перевірка перед підписом: зауважень немає ✓';
@@ -219,5 +292,6 @@ function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new S
   [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?r.age+' р. · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
-function renderSide(){if(!paperView||editing)resetPaperStyle();renderPaper();renderChecks();renderMeter();saveDraftSoon();}
-function renderAll(){renderStudy();renderPrev();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();}
+function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
+function updStudyCard(){$('sec-study').hidden=$('studyExtra').hidden&&$('projChips').hidden&&$('prevBox').hidden;}
+function renderAll(){renderStudy();renderPrev();updStudyCard();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();}

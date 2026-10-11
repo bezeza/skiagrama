@@ -1,9 +1,12 @@
 /* ===== Сховища, налаштування, стан, генерація тексту ===== */
 const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1';
 let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Терапевтичне №2, Хірургічне, Неврологічне, Інфекційне, Педіатричне, Амбулаторно',
-  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'flip',flipEdge:'long',revBacks:false,
+  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
 SET.eed=Object.assign({...DEF_EED},SET.eed||{});SET.norms=SET.norms||{};SET.my=SET.my||{};
+['org','btn','btnAdd','btnOrder'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
+/* 2.2: за замовчуванням довгий протокол — на цілий аркуш (зворот половинки — лише опція) */
+if(!SET.v22){SET.printMode='full';SET.v22=true;store.set(SET_KEY,SET);}
 let TPL=store.get(TPL_KEY,[]);
 let A=store.get(A_KEY,null);
 if(!A){const old=store.get('skiagrama.journal.v1',[]);A=Array.isArray(old)?old:[];}
@@ -33,19 +36,36 @@ const myKey=d=>S.study+'.'+d.id;
 const myList=d=>SET.my[myKey(d)]||[];
 
 /* скасування */
-let hist=[],lastKind='',lastT=0;
+let hist=[],future=[],lastKind='',lastT=0;
 function snapshot(){return {S:clone(S),f:fieldsObj(),editingId};}
 function pushHist(kind){const now=Date.now();if(kind==='text'&&lastKind==='text'&&now-lastT<1500){lastT=now;return;}hist.push(snapshot());if(hist.length>80)hist.shift();lastKind=kind;lastT=now;}
-function tick(kind){pushHist(kind||'click');clicks++;if(!t0)t0=Date.now();tDone=null;}
-function undo(){const s=hist.pop();if(!s){toast('Немає що скасовувати');return;}S=s.S;setFields(s.f);editingId=s.editingId;lastKind='';renderAll();toast('Скасовано');}
+function tick(kind){pushHist(kind||'click');future=[];clicks++;if(!t0)t0=Date.now();tDone=null;}
+function undo(){const s=hist.pop();if(!s){toast('Немає що скасовувати');return;}future.push(snapshot());S=s.S;setFields(s.f);editingId=s.editingId;lastKind='';renderAll();toast('Скасовано');}
+function redo(){const s=future.pop();if(!s){toast('Немає що повторювати');return;}hist.push(snapshot());S=s.S;setFields(s.f);editingId=s.editingId;lastKind='';renderAll();toast('Повторено');}
+
+/* кнопки з урахуванням правок лікаря (олівець ✎ біля зони)
+   SET.btn['ogk.infil.side.права']={label,phrase,hidden} — зміна стандартної кнопки
+   SET.btnAdd['ogk.infil.side']=[{k,label,phrase,hidden}] — додані кнопки
+   SET.btnOrder['ogk.infil.side']=['права','обидві',…] — свій порядок */
+const gKey=(d,g)=>`${S.study}.${d.id}.${g.id}`;
+function effOpts(d,g,all){
+  const gk=gKey(d,g),ov=SET.btn||{};
+  let list=g.o.map((o,i)=>{const x=ov[gk+'.'+o[0]]||{};return {k:o[0],ph:x.phrase!=null&&x.phrase!==''?x.phrase:o[1],lb:x.label!=null&&x.label!==''?x.label:o[2],hid:!!x.hidden,i,added:false};});
+  ((SET.btnAdd||{})[gk]||[]).forEach((a,j)=>list.push({k:a.k,ph:a.phrase,lb:a.label||a.phrase,hid:!!a.hidden,i:1000+j,added:true}));
+  const ord=(SET.btnOrder||{})[gk];
+  if(ord&&ord.length){const pos=k=>{const i=ord.indexOf(k);return i<0?9999:i;};list.sort((a,b)=>pos(a.k)-pos(b.k)||a.i-b.i);}
+  else if(SET.freq){const r=USE.rank||{};list.sort((a,b)=>(r[useKey(d.id,g.id,b.k)]||0)-(r[useKey(d.id,g.id,a.k)]||0)||a.i-b.i);}
+  return all?list:list.filter(x=>!x.hid);
+}
+const optPhrase=(d,g,k)=>{const o=effOpts(d,g,true).find(x=>x.k===k);return o?o.ph:'';};
 
 /* генерація тексту */
 function groupVal(d,z,gid,showReq){
   const g=d.groups.find(x=>x.id===gid);if(!g)return '';
   const v=z.sel[gid];
   if(g.type==='text'){const t=String(v||'').trim();return t||(showReq&&g.req?'…':'');}
-  if(g.many){const a=(v||[]).map(k=>(g.o.find(x=>x[0]===k)||[])[1]).filter(Boolean);return a.length?a.join(g.join||', '):(showReq&&g.req?'…':'');}
-  const o=g.o.find(x=>x[0]===v);return o?o[1]:(showReq&&g.req?'…':'');
+  if(g.many){const a=(v||[]).map(k=>optPhrase(d,g,k)).filter(Boolean);return a.length?a.join(g.join||', '):(showReq&&g.req?'…':'');}
+  const ph=v?optPhrase(d,g,v):'';return ph||(showReq&&g.req?'…':'');
 }
 const hasStd=(d,z)=>d.groups.some(g=>groupVal(d,z,g.id,false));
 const sentence=t=>{t=String(t).trim();if(!t)return '';t=cap(t);return /[.!?]$/.test(t)?t:t+'.';};
@@ -84,7 +104,7 @@ function measResults(){
   const out=[];
   activeMeas().forEach(id=>{const def=MEAS[id];const m=S.meas[id]||{};let v;
     if(def.kind==='kti'){const a=num(m.a),b=num(m.b);v=(a>0&&b>0)?a/b:num(m.v);}else v=num(m.v);
-    if(!isFinite(v))return;out.push({id,def,v,r:def.grade(v,m)});});
+    if(!isFinite(v))return;if(def.lim&&(v<def.lim[0]||v>def.lim[1])){out.push({id,def,v,bad:true,r:{ok:1,ph:''}});return;}out.push({id,def,v,r:def.grade(v,m)});});
   return out;
 }
 function allNormal(){return visibleZones().every(d=>S.zones[d.id].st!=='c')&&measResults().every(x=>x.r.ok);}
@@ -141,10 +161,17 @@ function dynText(){if(!S.dyn||!S.prevId)return '';const p=A.find(r=>r.id===S.pre
 function protocol(){
   const name=$('pName').value.trim()||'[ПІБ]',age=$('pAge').value.trim();
   const body=visibleZones().map(d=>({t:zoneText(d),tbd:d.tbd&&S.zones[d.id].st==='n'&&!isNormOverridden(d),zone:d.id})).filter(x=>x.t);
-  measResults().forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
+  measResults().filter(x=>!x.bad).forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
   const dy=dynText();if(dy)body.push({t:dy,zone:'prev'});
   const eed=$('pEed').value.trim();
   return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:SET.doctor?`Лікар: ${SET.doctor}`:'Лікар: ____________'};
+}
+const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографія ОГК',bone:`Rö-графія ${objPhrase()}`,spine:`Rö-графія ${deptGen()} відділу хребта`,abd:'Оглядова Rö-графія ОЧП',skull:`Rö-графія ${S.skull==='ppn'?'ППН':'черепа'}`}[S.study]);
+function docData(){
+  const P=protocol();
+  return {name:$('pName').value.trim()||'[ПІБ]',age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),refDoc:$('pRefDoc').value.trim(),
+    num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.join(', '),eed:$('pEed').value.trim(),
+    study:S.study,head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
 }
 function genText(P){P=P||protocol();return [P.head,P.ref,P.body.map(x=>x.t).join(' '),P.concl.t,P.rec,P.eed+'   '+P.doc].filter(Boolean).join('\n');}
 const protocolText=()=>S.manual!=null?S.manual:genText();
@@ -171,11 +198,10 @@ function checks(){
   const items=conclItems();const normRe=/без патолог|патології не|без кістково/i;
   if(allNormal()&&items.length&&!items.every(i=>normRe.test(i)))w.push('Усі зони в нормі, а у висновку патологія — перевірте.');
   if(!allNormal()&&items.some(i=>normRe.test(i)))w.push('Є зміни в описі, а висновок «без патології» — перевірте.');
-  measResults().forEach(x=>{if(x.r.c&&!S.concl.includes(x.r.c))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
+  measResults().forEach(x=>{if(x.bad)w.push(`${x.def.n}: значення ${fx(x.v,x.def.kind==='kti'?2:0)} поза можливими межами — перевірте.`);if(x.r.c&&!S.concl.includes(x.r.c))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
   return w;
 }
 
 /* часті фрази першими */
 const useKey=(z,g,k)=>`${S.study}.${z}.${g}.${k}`;
-function orderOpts(d,g){if(!SET.freq)return g.o;const r=USE.rank||{};return g.o.map((o,i)=>({o,i,n:r[useKey(d.id,g.id,o[0])]||0})).sort((a,b)=>b.n-a.n||a.i-b.i).map(x=>x.o);}
 function countUse(d,g,k){const key=useKey(d.id,g.id,k);USE.counts[key]=(USE.counts[key]||0)+1;saveUse();}

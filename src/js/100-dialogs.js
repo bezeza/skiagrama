@@ -14,8 +14,9 @@ function searchItems(){
   RECS.forEach(t=>L.push({k:'Рекомендація',t,go:()=>{showView('desc');if(!S.recs.includes(t)){tick();S.recs.push(t);renderAll();}toast('Додано рекомендацію');}}));
   TPL.filter(t=>t.study===S.study).forEach(t=>L.push({k:'Шаблон',t:t.name,go:()=>{showView('desc');tick();applyTpl(t);}}));
   act('Копіювати протокол',copyAll,'Ctrl+Enter');act('Готово — зберегти в архів',done,'Ctrl+S');act('Друк',()=>$('printBtn').click(),'Ctrl+P');
-  act('Норма всюди',allNorm,'Alt+N');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');
-  act('Як на папері',()=>$('paperBtn').click());act('Правити текст протоколу',()=>$('editBtn').click());
+  act('Норма всюди',allNorm,'Alt+N');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');act('Повторити дію',redo,'Ctrl+Y');
+  act('Як на папері',()=>$('paperBtn').click());act('Правити текст протоколу',()=>{if(document.body.classList.contains('sheet')===false&&window.innerWidth<=760)openSheet();if(paperView)$('paperBtn').click();const t=$('ptext');if(t){t.focus();}});
+  BLANK_ORDER.forEach(b=>act(`Бланк ${b} · ${BLANKS[b].n}`,()=>{tick();S.blank=b;renderSide();}));act('Пакет фраз',()=>showView('settings'));act('Памʼятка (1 сторінка)',openMemo);
   act('Архів',()=>showView('archive'));act('На контроль',()=>showView('archive'));act('Налаштування',()=>showView('settings'));act('Довідка',openHelp);
   act('Папка даних',()=>showView('settings'));act('Пробний аркуш друку',testSheet);act('Знайомство: дані лікаря',openWelcome);
   return L;
@@ -60,17 +61,20 @@ function openHelp(){
 <li>Заповніть ПІБ, вік, № і дату знімка. ЕЕД підставляється сама.</li>
 <li>«Норма всюди» — усі зони в нормі. Для зміненої зони натисніть «Зміни» й виберіть кнопки. «—» — не згадувати зону.</li>
 <li>Прийміть підказки висновку або виберіть свій.</li>
+<li>Текст протоколу правиться прямо в ньому — клацніть і пишіть. «Скинути правку» повертає автотекст.</li>
 <li>«Копіювати» — для h24; «Готово» — зберегти в архів; «Друк» — на пів аркуша A4.</li></ol>
 <h3>Корисне</h3><ul>
-<li>Клік по реченню в протоколі відкриває його зону.</li>
-<li>«Як на папері» показує, чи протокол вміститься в пів аркуша.</li>
+<li>Alt+клік по реченню в протоколі відкриває його зону.</li>
+<li>Бланк (A, B, C, D) — перемикач біля протоколу; за замовчуванням і реквізити закладу — у «Налаштуваннях». Програма підкаже, у якому бланку довгий протокол вміститься в пів аркуша.</li>
+<li>«Як на папері» показує протокол у вибраному бланку: пів аркуша, ущільнено або цілий аркуш.</li>
+<li>Олівець ✎ біля назви зони — змінити напис і фразу кнопок, сховати, переставити, додати свою.</li>
 <li>У розгорнутій зоні «+ своя фраза» додає власну кнопку.</li>
 <li>Для контрольного знімка — «Як минулого разу» в блоці «Попереднє».</li>
 <li>«Архів» → «Вибрати ненадруковані» → «Друкувати вибрані» — друк пачкою.</li>
 <li>Папка даних («Налаштування») — архів зберігається на диск сам.</li></ul>
 <h3>Гарячі клавіші</h3>
-<div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
-    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};r.append(w);box.append(r);});
+<div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Y</kbd> або <kbd class="k">Ctrl</kbd>+<kbd class="k">Shift</kbd>+<kbd class="k">Z</kbd></span><span>повторити</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
+    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};const m=el('button',{type:'button',class:'btn'},'Памʼятка на 1 сторінку');m.onclick=()=>{closeDlg();openMemo();};r.append(w,m);box.append(r);});
 }
 $('navHelp').onclick=openHelp;
 
@@ -100,4 +104,12 @@ function openWelcome(){
     const skip=el('button',{type:'button',class:'btn'},'Пропустити — заповню пізніше');skip.onclick=()=>{SET.welcomed=true;SET.seenVersion=VERSION;saveSet();closeDlg();};
     r2.append(ok,skip);box.append(r2);setTimeout(()=>d.focus(),30);
   });
+}
+
+/* памʼятка на 1 сторінку: окремий файл поруч (сайт) або вбудована (офлайн-файл) */
+function openMemo(){
+  const html=$('memoTpl').innerHTML;
+  openDlg(box=>{dlgHead(box,'Памʼятка');const r=el('div',{class:'trow'});const pr=el('button',{type:'button',class:'btn primary'},'Друкувати (1 аркуш A4)');
+    pr.onclick=()=>{closeDlg();runPrint(`<div class="ppage full">${html}</div>`);};r.append(pr,el('span',{class:'note'},'Повісьте біля робочого місця рентгенолога й лаборанта.'));box.append(r);
+    const v=el('div',{class:'memo-view'});v.innerHTML=html;box.append(v);});
 }

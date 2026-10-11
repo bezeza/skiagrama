@@ -1,18 +1,110 @@
-/* ===== Друк: розкладка по пів аркуша A4, зворот вручну ===== */
+/* ===== Друк: бланки A–D, автопідгонка в пів аркуша A4, цілий аркуш або зворот ===== */
 const mm=v=>v*96/25.4;
 const CAP_HALF=mm(148.5-20);
-function unitsHTML(units){return groupsOf(units).map(g=>`<p${g.c?` class="${g.c}"`:''}>${esc(g.t.join(' '))}</p>`).join('');}
+
+/* одиниці друку: {t: текст | h: готовий HTML, p: абзац, c: клас, blk: окремий блок} */
+function unitsHTML(units){
+  const out=[];let cur=null;
+  units.forEach(u=>{const piece=u.h!=null?u.h:esc(u.t);
+    if(cur&&!u.blk&&!cur.blk&&u.p!=null&&cur.p===u.p)cur.parts.push(piece);
+    else{cur={p:u.p,c:u.c,blk:u.blk,parts:[piece]};out.push(cur);}});
+  return out.map(g=>g.blk?g.parts.join(''):`<p${g.c?` class="${g.c}"`:''}>${g.parts.join(' ')}</p>`).join('');
+}
 const STAMP='<div class="pstamp"></div>';
-function measure(html){const m=$('measure');m.innerHTML=html;return m.offsetHeight;}
-function contUnits(it,rest){return [{t:`${it.name||'Пацієнт'} — продовження`,p:-1,c:'cont'},...rest];}
+function measure(html,cls){const m=$('measure');m.className='pdoc '+(cls||'');m.innerHTML=html;return m.offsetHeight;}
+
+/* реквізити закладу */
+const ORG=()=>Object.assign({name:'',sub:'',cab:'Рентгенологічний кабінет',addr:'',tel:'',edrpou:'',form:'',order:''},SET.org||{});
+const dLong=v=>{if(!v)return '__.__.____';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`;};
+const sexW=s=>s==='ч'?'чол.':s==='ж'?'жін.':'';
+function manualBody(doc,keepHead){
+  let lines=String(doc.manual||'').split('\n');
+  if(!keepHead){if(lines[0]&&lines[0].trim()===String(doc.head).trim())lines.shift();if(lines[0]&&/^На\s/.test(lines[0].trim()))lines.shift();}
+  return unitsFromText(lines.join('\n')).map(u=>Object.assign(u,{p:'m'+u.p,c:keepHead?u.c:(u.c==='pt'?'':u.c)}));
+}
+const LOGO_SVG='<svg width="34" height="34" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="20" fill="#1F4E79"/><g fill="none" stroke="#fff" stroke-linecap="round" stroke-width="7"><path d="M42 84 L36.6 22.5"/><path d="M50 84 L50 16.5"/><path d="M58 84 L64 23.5"/><path d="M65 85 L75 34"/><path d="M36 86 L17 48"/></g><g stroke="#1F4E79" stroke-width="2.4"><path d="M36 60 L44 60"/><path d="M46 58 L54 58"/><path d="M57 60 L65 60"/><path d="M66 64 L73 64"/><path d="M35 42 L42 42"/><path d="M46 38 L54 38"/><path d="M59 42 L67 42"/><path d="M69 50 L76 50"/><path d="M33 30 L41 30"/><path d="M46 25 L54 25"/><path d="M60 31 L67 31"/><path d="M23 70 L31 70"/><path d="M16 56 L24 56"/></g><ellipse cx="60.8" cy="54" rx="7" ry="2.8" transform="rotate(-8 60.8 54)" fill="none" stroke="#F2A65A" stroke-width="5"/></svg>';
+const SIGN=(doc,cmp)=>`<div class="bk-sign"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="bk-mp">М. П.</span></div>`;
+const BLANKS={
+ C:{n:'компактний під штамп',sn:'під штамп',why:'звичний формат рентгенолога, рамка під штамп, найбільше місця під текст',
+   build(doc,cmp){const o=ORG();
+     const sub=[o.sub,o.cab,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · ');
+     const h=`<div class="bkC-h"><div class="bkC-stamp">місце для штампу рентгенкабінету<br>(№ і дата)</div><div class="bkC-org"><b>${esc(o.name||'[Назва закладу]')}</b>${sub?`<span>${esc(sub)}</span>`:''}<span class="bkC-tag">${doc.study==='fg'?'ФЛЮОРОГРАФІЯ':'РЕНТГЕНОГРАФІЯ'}</span></div></div>`;
+     const u=[{h,blk:true}];
+     if(doc.manual!=null)return u.concat(manualBody(doc,true));
+     u.push({t:doc.head,p:'h',c:'pt'},{t:doc.refLine,p:'r'});doc.body.forEach(t=>u.push({t,p:'b'}));
+     u.push({t:'Rö-ч: '+doc.concl,p:'c',c:'concl'});if(doc.rec)u.push({t:'Рекомендовано: '+doc.rec,p:'rc'});
+     u.push({h:`<div class="bk-foot"><span>ЕЕД ${esc(doc.eed||'___')} мЗв.</span><span>Лікар: ${esc(doc.doctor||'____________')}</span></div>`,blk:true});return u;}},
+ B:{n:'сучасний діловий',sn:'сучасний',why:'сучасний вигляд, дані пацієнта сіткою, розділи легко читати',
+   build(doc,cmp){const o=ORG();
+     const h=`<div class="bkB-h"><div class="bkB-org">${LOGO_SVG}<div><b>${esc(o.name||'[Назва закладу]')}</b><span>${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · '))}</span></div></div><div class="bkB-r"><small>ПРОТОКОЛ ДОСЛІДЖЕННЯ</small><b>${esc(doc.what)}</b><span>№ ${esc(doc.num||'___')} · ${dLong(doc.date)}</span></div></div><div class="bkB-bar"></div>`;
+     const pt=`<div class="bkB-pt"><div class="w"><small>ПАЦІЄНТ</small><b>${esc(doc.name)}</b></div><div><small>ВІК, СТАТЬ</small><span>${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', ')||'—')}</span></div><div><small>ЕЕД</small><span>${esc(doc.eed?doc.eed+' мЗв':'___')}</span></div>${doc.dept?`<div class="w"><small>ВІДДІЛЕННЯ</small><span>${esc(doc.dept)}</span></div>`:''}${doc.proj?`<div class="w"><small>ПРОЄКЦІЇ</small><span>${esc(doc.proj)}</span></div>`:''}</div>`;
+     const sec=(l,inner)=>`<div class="bkB-sec"><span>${l}</span><div>${inner}</div></div>`;
+     const u=[{h,blk:true},{h:pt,blk:true}];
+     if(doc.manual!=null)u.push({h:sec('ОПИС',unitsHTML(manualBody(doc))),blk:true});
+     else{u.push({h:sec('ОПИС',`<p>${esc(doc.body.join(' '))}</p>`),blk:true},{h:sec('ВИСНОВОК',`<p><b>${esc(doc.concl)}</b></p>`),blk:true});if(doc.rec)u.push({h:sec('РЕКОМЕНДАЦІЇ',`<p>${esc(doc.rec)}</p>`),blk:true});}
+     u.push({h:`<div class="bkB-foot"><span>Лікар-рентгенолог ______________ ${esc(doc.doctor||'[ПІБ]')}</span><span class="d">Висновок не є діагнозом; оцінюється лікарем, що направив.</span></div>`,blk:true});return u;}},
+ A:{n:'класичний офіційний',sn:'офіційний',why:'повні реквізити закладу — для пацієнта на руки або в іншу установу',
+   build(doc,cmp){const o=ORG();
+     const top=cmp?`<div class="bk-mini"><b>${esc(o.name||'[Назва закладу]')}</b> · ${esc(o.cab)}</div>`:
+       `<div class="bkA-h"><div class="s">Міністерство охорони здоров’я України</div><div class="n">${esc([o.name||'[Назва закладу]',o.sub].filter(Boolean).join(' '))}</div><div class="s">${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:'',o.edrpou?'код ЄДРПОУ '+o.edrpou:''].filter(Boolean).join(' · '))}</div></div><div class="bkA-rule"></div>`;
+     const t=`<div class="bkA-t"><b>ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ</b><span>№ ${esc(doc.num||'___')} від ${dLong(doc.date)}</span></div>`;
+     const rows=[['Пацієнт:',`<b>${esc(doc.name)}</b>${doc.age?', '+esc(doc.age)+' р.':''}${doc.sex?', '+sexW(doc.sex):''}`]];
+     if(doc.dept||doc.ref)rows.push(['Направлення:',esc([doc.dept,doc.refDoc?'лікар '+doc.refDoc:'',doc.ref?'е-напр. '+doc.ref:''].filter(Boolean).join(' · '))]);
+     rows.push(['Дослідження:',esc(doc.what+(doc.proj?` (${doc.proj})`:'')+(doc.eed?` · ЕЕД ${doc.eed} мЗв`:''))]);
+     const u=[{h:top+t,blk:true},{h:`<div class="bk-grid">${rows.map(r=>`<span class="l">${r[0]}</span><span>${r[1]}</span>`).join('')}</div>`,blk:true}];
+     if(doc.manual!=null)u.push(...manualBody(doc));
+     else{doc.body.forEach((x,i)=>u.push(i?{t:x,p:'b'}:{h:'<b>Опис.</b> '+esc(x),p:'b'}));u.push({h:`<b>Висновок: ${esc(doc.concl)}</b>`,p:'c'});if(doc.rec)u.push({h:`<b>Рекомендовано:</b> ${esc(doc.rec)}`,p:'rc'});}
+     u.push({h:SIGN(doc,cmp),blk:true});return u;}},
+ D:{n:'форма з полями',sn:'форма з полями',why:'облікова форма з реквізитами й пронумерованими полями',
+   build(doc,cmp){const o=ORG();
+     const req=`<div class="bkD-req"><div><span>Найменування міністерства: <u>МОЗ України</u></span><span>Заклад: <b><u>${esc(o.name||'[Назва закладу]')}</u></b></span>${cmp?'':`<span>Місцезнаходження: <u>${esc(o.addr||'[адреса]')}</u></span>`}<span>Код за ЄДРПОУ: <u>${esc(o.edrpou||'[________]')}</u></span></div><div><b>МЕДИЧНА ДОКУМЕНТАЦІЯ</b>${cmp?'':'<span>Форма первинної облікової документації</span>'}<span>№ ${esc(o.form||'[___]')}${o.order?' · '+esc(o.order):''}</span></div></div>`;
+     const t=`<div class="bkD-t">ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ № <u>${esc(doc.num||'___')}</u></div>`;
+     const f=`<div class="bkD-f"><span>1. ПІБ</span><span class="u"><b>${esc(doc.name)}</b></span><span>Вік</span><span class="u">${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', '))}</span><span>2. Відділення</span><span class="u">${esc(doc.dept||'—')}</span><span>Дата</span><span class="u">${dLong(doc.date)}</span><span>3. Дослідження</span><span class="u">${esc(doc.what+(doc.proj?` (${doc.proj})`:''))}</span><span>ЕЕД</span><span class="u">${esc(doc.eed?doc.eed+' мЗв':'')}</span></div>`;
+     const u=[{h:req+t+f,blk:true},{t:'4. Опис:',p:'bl'}];
+     if(doc.manual!=null)u.push(...manualBody(doc));
+     else{doc.body.forEach(x=>u.push({t:x,p:'b'}));u.push({h:`5. Висновок: <b>${esc(doc.concl)}</b>`,p:'c'});if(doc.rec)u.push({t:'6. Рекомендації: '+doc.rec,p:'rc'});}
+     u.push({h:SIGN(doc,cmp),blk:true});return u;}}
+};
+const BLANK_ORDER=['C','B','A','D'];
+const curBlank=()=>S.blank||SET.blank||'C';
+function buildUnits(it,cmp){if(!it.doc)return [{h:STAMP,blk:true}].concat(it.units||[]);return (BLANKS[it.blank]||BLANKS.C).build(it.doc,cmp);}
+const clsOf=(it,cmp)=>(cmp?'cmp ':'')+'b'+(it.doc?(BLANKS[it.blank]?it.blank:'C'):'L');
+const fitsHalf=(units,cls)=>measure(unitsHTML(units),cls)<=CAP_HALF;
+function contUnits(it,rest){return [{t:`${it.name||'Пацієнт'} — продовження`,p:'cont',c:'cont'},...rest];}
 function classify(it){
-  const h=measure(STAMP+unitsHTML(it.units));
-  if(h<=CAP_HALF)return {...it,kind:'half'};
+  const u0=buildUnits(it,false),c0=clsOf(it,false);
+  if(fitsHalf(u0,c0))return {...it,kind:'half',units:u0,cls:c0};
+  const u1=buildUnits(it,true),c1=clsOf(it,true);
+  if(fitsHalf(u1,c1))return {...it,kind:'half',units:u1,cls:c1,cmp:true};
   if(SET.printMode==='flip'){
-    let k=0;for(let i=1;i<=it.units.length;i++){if(measure(STAMP+unitsHTML(it.units.slice(0,i)))<=CAP_HALF)k=i;else break;}
-    if(k>0&&k<it.units.length){const back=contUnits(it,it.units.slice(k));if(measure(unitsHTML(back))<=CAP_HALF)return {...it,kind:'flip',front:it.units.slice(0,k),back};}
+    let lo=1,hi=u1.length-1,k=0;
+    while(lo<=hi){const m=(lo+hi)>>1;if(fitsHalf(u1.slice(0,m),c1)){k=m;lo=m+1;}else hi=m-1;}
+    if(k>0){const back=contUnits(it,u1.slice(k));if(fitsHalf(back,c1))return {...it,kind:'flip',front:u1.slice(0,k),back,units:u1,cls:c1,cmp:true};}
   }
-  return {...it,kind:'full'};
+  return {...it,kind:'full',units:u0,cls:c0};
+}
+function blankAdvice(it){
+  if(!it.doc)return null;const cur=it.blank;const c=classify(it);const o=ORG();
+  if(c.kind==='half'&&!c.cmp)return (cur==='A'||cur==='D')&&!o.name?{b:null,text:`У бланку ${cur} реквізити закладу на видноті — заповніть їх у «Налаштуваннях» → «Бланк і реквізити».`}:null;
+  const others=BLANK_ORDER.filter(b=>b!==cur).map(b=>({b,c:classify({...it,blank:b})}));
+  if(c.kind==='half'){const x=others.find(x=>x.c.kind==='half'&&!x.c.cmp);
+    return x?{b:x.b,text:`У бланку ${cur} протокол ущільнено до 11 pt. У бланку ${x.b} (${BLANKS[x.b].n}) він вміститься звичайним шрифтом. Рекомендую ${x.b}.`}:null;}
+  const x=others.find(x=>x.c.kind==='half');
+  if(x)return {b:x.b,text:`Протокол довгий: у бланку ${x.b} (${BLANKS[x.b].n}) вміститься в пів аркуша${x.c.cmp?' (ущільнено)':''}, а в ${cur} — ${c.kind==='flip'?'піде на зворот половинки':'займе цілий аркуш'}. Рекомендую ${x.b}.`};
+  return {b:null,text:'Протокол довгий — у жодному бланку не вміститься в пів аркуша, тож надрукується на цілому аркуші A4 з одного боку.'};
+}
+function wrapDoc(it,units){return `<div class="pdoc ${it.cls}">${unitsHTML(units)}</div>`;}
+function slotHTML(it,side){if(!it)return '';if(side==='back')return wrapDoc(it,it.back);return wrapDoc(it,it.kind==='flip'?it.front:it.units);}
+function pageHTML(sh,side){
+  if(sh.full)return `<div class="ppage full">${wrapDoc(sh.full,sh.full.units)}</div>`;
+  const a=side==='back'?sh.backs:sh.slots;
+  return `<div class="ppage"><div class="pslot">${slotHTML(a[0],side)}</div><div class="pslot cut">${slotHTML(a[1],side)}</div></div>`;
+}
+function itemPreview(it){
+  const half=h=>`<div class="pslot" style="width:210mm">${h}</div>`;
+  if(it.kind==='half')return [{label:'Половина аркуша A4'+(it.cmp?' (ущільнено)':''),html:half(wrapDoc(it,it.units))}];
+  if(it.kind==='flip')return [{label:'Лицьова сторона половинки',html:half(wrapDoc(it,it.front))},{label:'Зворот тієї ж половинки',html:half(wrapDoc(it,it.back))}];
+  return [{label:'Цілий аркуш A4',html:`<div class="ppage full" style="min-height:0">${wrapDoc(it,it.units)}</div>`}];
 }
 function pack(items){
   const cl=items.map(classify);const flips=cl.filter(x=>x.kind==='flip'),halves=cl.filter(x=>x.kind==='half'),fulls=cl.filter(x=>x.kind==='full');
@@ -22,19 +114,13 @@ function pack(items){
   flips.forEach(place);halves.forEach(place);fulls.forEach(it=>sheets.push({full:it}));
   return {sheets,cl};
 }
-function slotHTML(it,side){if(!it)return '';if(side==='back')return unitsHTML(it.back);return STAMP+unitsHTML(it.kind==='flip'?it.front:it.units);}
-function pageHTML(sh,side){
-  if(sh.full)return `<div class="ppage full"><div class="pdoc">${STAMP}${unitsHTML(sh.full.units)}</div></div>`;
-  const a=side==='back'?sh.backs:sh.slots;
-  return `<div class="ppage"><div class="pslot"><div class="pdoc">${slotHTML(a[0],side)}</div></div><div class="pslot cut"><div class="pdoc">${slotHTML(a[1],side)}</div></div></div>`;
-}
 let PLAN=null,printIds=[];
 function openPrint(items){
   printIds=items.map(i=>i.id).filter(Boolean);
   PLAN=pack(items);const sh=PLAN.sheets;const backSheets=sh.filter(s=>s.backs&&s.backs.some(Boolean));
-  const nHalf=PLAN.cl.filter(x=>x.kind==='half').length,nFlip=PLAN.cl.filter(x=>x.kind==='flip').length,nFull=PLAN.cl.filter(x=>x.kind==='full').length;
+  const nHalf=PLAN.cl.filter(x=>x.kind==='half').length,nFlip=PLAN.cl.filter(x=>x.kind==='flip').length,nFull=PLAN.cl.filter(x=>x.kind==='full').length,nCmp=PLAN.cl.filter(x=>x.cmp&&x.kind==='half').length;
   $('pmTitle').textContent=items.length>1?`Друк пачкою: ${items.length} протоколів`:'Друк протоколу';
-  $('pmSummary').textContent=`Аркушів A4: ${sh.length}. Пів аркуша: ${nHalf}${nFlip?`, з продовженням на звороті: ${nFlip}`:''}${nFull?`, на цілий аркуш: ${nFull}`:''}.`;
+  $('pmSummary').textContent=`Аркушів A4: ${sh.length}. Пів аркуша: ${nHalf}${nCmp?` (з них ущільнено: ${nCmp})`:''}${nFlip?`, з продовженням на звороті: ${nFlip}`:''}${nFull?`, на цілий аркуш: ${nFull}`:''}.`;
   const steps=$('pmSteps');steps.textContent='';const btns=$('pmBtns');btns.textContent='';
   const b1=el('button',{type:'button',class:'btn primary'},backSheets.length?`1. Лицьові сторони (${sh.length} арк.)`:`Друкувати (${sh.length} арк.)`);b1.onclick=()=>doPrint('front');btns.append(b1);
   if(backSheets.length){
@@ -43,9 +129,9 @@ function openPrint(items){
      `Візьміть перші ${backSheets.length} арк. (протоколи з продовженням друкуються першими), переверніть ${SET.flipEdge==='short'?'знизу догори':'як сторінку книги'} і покладіть у лоток чистою стороною для друку.`,
      'Натисніть «Звороти». Якщо продовження вийшло догори ногами або не на тому аркуші — змініть налаштування друку (є пробний аркуш).',
      'Розріжте аркуші по пунктирній лінії ✂.'].forEach(t=>steps.append(el('li',null,t)));
-  }else steps.append(el('li',null,sh.some(s=>!s.full)?'Після друку розріжте аркуші по пунктирній лінії ✂.':'Кожен протокол друкується на окремому аркуші.'));
+  }else steps.append(el('li',null,sh.some(s=>!s.full)?'Після друку розріжте аркуші по пунктирній лінії ✂.':'Протокол друкується на цілому аркуші A4.'));
   const pv=$('pmPreview');pv.textContent='';
-  sh.forEach((s,i)=>{const w=el('div',{class:'pv'});w.append(el('span',null,`Аркуш ${i+1} — лицьова`));const z=el('div',{class:'pz'});z.innerHTML=pageHTML(s,'front');w.append(z);pv.append(w);
+  sh.forEach((s,i)=>{const w=el('div',{class:'pv'});w.append(el('span',null,`Аркуш ${i+1}${s.full?' — цілий':' — лицьова'}`));const z=el('div',{class:'pz'});z.innerHTML=pageHTML(s,'front');w.append(z);pv.append(w);
     if(s.backs&&s.backs.some(Boolean)){const w2=el('div',{class:'pv'});w2.append(el('span',null,`Аркуш ${i+1} — зворот`));const z2=el('div',{class:'pz'});z2.innerHTML=pageHTML(s,'back');w2.append(z2);pv.append(w2);}});
   $('printModal').hidden=false;closeSheet();
 }
@@ -61,14 +147,16 @@ function doPrint(side){
   runPrint(pages.join(''));
   if(side==='front'&&printIds.length){A.forEach(r=>{if(printIds.includes(r.id))r.printed=true;});saveA();if(!$('view-archive').hidden)renderArchive();}
 }
-$('printBtn').onclick=()=>{const name=$('pName').value.trim();openPrint([{id:editingId,name:name||'Пацієнт',units:currentUnits()}]);};
+const currentItem=()=>({id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
+const recordItem=r=>r.doc?{id:r.id,name:r.name,doc:r.doc,blank:r.blank||SET.blank||'C'}:{id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')};
+$('printBtn').onclick=()=>openPrint([currentItem()]);
 function testSheet(){
   const half=(t,s)=>`<div class="ptest"><div>${t}</div><div style="font-size:13pt;font-weight:normal">${s}</div></div>`;
   const front=`<div class="ppage"><div class="pslot">${half('ЛИЦЬОВА · половина А ↑','Верх аркуша. Переверніть аркуш так, як робите завжди, і надрукуйте зворот.')}</div><div class="pslot cut">${half('ЛИЦЬОВА · половина Б ↑','Низ аркуша.')}</div></div>`;
   const bA=half('ЗВОРОТ половини А ↑','Цей текст має бути на звороті половини А і читатися не догори ногами.'),bB=half('ЗВОРОТ половини Б ↑','');
   const top=SET.flipEdge==='short'?bB:bA,bot=SET.flipEdge==='short'?bA:bB;
   const back=`<div class="ppage"><div class="pslot">${top}</div><div class="pslot cut">${bot}</div></div>`;
-  $('pmTitle').textContent='Пробний аркуш';$('pmSummary').textContent='Перевірка того, як ви перевертаєте аркуш.';
+  $('pmTitle').textContent='Пробний аркуш';$('pmSummary').textContent='Перевірка того, як ви перевертаєте аркуш (потрібно лише для друку продовження на звороті).';
   const steps=$('pmSteps');steps.textContent='';['Надрукуйте лицьову сторону.','Переверніть аркуш так, як робитимете завжди, і покладіть у лоток.','Надрукуйте зворот. Напис «ЗВОРОТ половини А» має опинитися за «ЛИЦЬОВА · половина А» і читатися нормально. Якщо ні — змініть «Як перевертаєте аркуш».'].forEach(t=>steps.append(el('li',null,t)));
   const btns=$('pmBtns');btns.textContent='';const a=el('button',{type:'button',class:'btn primary'},'1. Лицьова');a.onclick=()=>runPrint(front);const b=el('button',{type:'button',class:'btn primary'},'2. Зворот');b.onclick=()=>runPrint(back);btns.append(a,b);
   const pv=$('pmPreview');pv.textContent='';[['Лицьова',front],['Зворот',back]].forEach(([t,h])=>{const w=el('div',{class:'pv'});w.append(el('span',null,t));const z=el('div',{class:'pz'});z.innerHTML=h;w.append(z);pv.append(w);});

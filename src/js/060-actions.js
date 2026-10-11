@@ -20,13 +20,14 @@ function allNorm(){tick();visibleZones().forEach(d=>S.zones[d.id]={st:'n',sel:{}
 $('allNorm').onclick=allNorm;
 function newPatient(keep){
   const date=keep?$('pDate').value:today();const eedKeep=$('pEed').value;
-  S=blank(S.study);editingId=null;editing=false;
+  S=blank(S.study);editingId=null;editZone=null;
   ['pName','pAge','pRef','pRefDoc','conclFree','recFree','pDept'].forEach(i=>$(i).value='');$('pSex').value='';$('pCount').value='1';
   $('pDate').value=date;setEedDefault();if(keep&&eedKeep)$('pEed').value=eedKeep;$('pNum').value=nextNum();$('refMsg').textContent='';
   clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;renderAll();
 }
 $('newPatient').onclick=()=>{pushHist('click');newPatient(false);toast('Новий пацієнт. Попередній стан можна повернути: Ctrl+Z');};
-$('navUndo').onclick=undo;
+$('navUndo').onclick=undo;$('navRedo').onclick=redo;
+$('blankSel').addEventListener('change',e=>{tick();S.blank=e.target.value;renderSide();});
 $('saveTpl').onclick=()=>{closeSheet();$('tplSave').hidden=false;$('sec-zones').scrollIntoView({block:'start',behavior:'smooth'});setTimeout(()=>$('tplName').focus(),300);};
 $('tplSaveCancel').onclick=()=>{$('tplSave').hidden=true;};
 $('tplSaveOk').onclick=()=>{const n=$('tplName').value.trim();if(!n){$('tplName').focus();return;}
@@ -38,8 +39,7 @@ $('copyAll').onclick=copyAll;
 $('copyDesc').onclick=()=>{if(S.manual!=null){copyText(S.manual,'Протокол');return;}const P=protocol();copyText([P.ref,P.body.map(x=>x.t).join(' ')].join('\n'),'Опис');};
 $('copyConcl').onclick=()=>{copyText(conclText().t.replace(/^Rö-ч:\s*/,''),'Висновок');};
 $('copyRec').onclick=()=>{const t=recText();if(!t){toast('Рекомендацій немає');return;}copyText(t.replace(/^Рекомендовано:\s*/,''),'Рекомендації');};
-$('editBtn').onclick=()=>{editing=true;paperView=false;$('paperBtn').setAttribute('aria-pressed','false');renderSide();};
-$('paperBtn').onclick=()=>{paperView=!paperView;editing=false;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
+$('paperBtn').onclick=()=>{paperView=!paperView;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
 $('pfsBtn').onclick=()=>{const o=['s','m','l','xl'];SET.pfs=o[(o.indexOf(SET.pfs)+1)%o.length];saveSet();applyLook();toast({s:'Текст протоколу: менший',m:'Текст протоколу: звичайний',l:'Текст протоколу: більший',xl:'Текст протоколу: великий'}[SET.pfs]);if(paperView)renderSide();};
 $('themeBtn').onclick=()=>{const order=['system','light','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%3];saveSet();applyLook();};
 window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);window.__rz=setTimeout(renderSide,200);}});
@@ -78,7 +78,7 @@ function doSave(){
   const rec={id:editingId||('r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)),ts:Date.now(),date,num:$('pNum').value.trim(),
     name:$('pName').value.trim(),age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),
     study:S.study,what:headerLine().replace(/^На\s*/,'').replace(/ від .*$/,''),eed:$('pEed').value.trim(),
-    concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,
+    concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,doc:docData(),blank:curBlank(),
     ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
@@ -99,6 +99,7 @@ document.addEventListener('keydown',e=>{
   if(mod&&e.code==='KeyP'){e.preventDefault();$('printBtn').click();return;}
   if(typing(e))return;
   if(mod&&!e.shiftKey&&e.code==='KeyZ'){e.preventDefault();undo();return;}
+  if(mod&&(e.code==='KeyY'||(e.shiftKey&&e.code==='KeyZ'))){e.preventDefault();redo();return;}
   if(!mod&&!e.altKey&&/^Digit[1-9]$/.test(e.code)){const i=Number(e.code.slice(5))-1;const d=visibleZones()[i];if(!d)return;e.preventDefault();tick();
     const z=S.zones[d.id];if(z.st==='c'&&S.open===d.id){z.st='n';S.open=null;}else{z.st='c';S.open=d.id;}S.focus=d.id;renderAll();const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}
 });
