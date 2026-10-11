@@ -18,7 +18,7 @@ const saveSet=()=>{store.set(SET_KEY,SET);folderSoon();},saveTpl=()=>{store.set(
 const FONT={s:'14px',m:'15px',l:'16.5px',xl:'18px'},PFONT={s:'14.5px',m:'16px',l:'17.5px',xl:'19.5px'};
 const THEME_LABEL={system:'Тема: авто',light:'Тема: світла',grey:'Тема: кабінет',dark:'Тема: темна'};
 function applyLook(){const r=document.documentElement;if(SET.theme==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',SET.theme);
-  r.style.setProperty('--fs',FONT[SET.font]||FONT.m);r.style.setProperty('--pfs',PFONT[SET.pfs]||PFONT.m);const tb=$('themeBtn');if(tb)tb.textContent=THEME_LABEL[SET.theme]||THEME_LABEL.system;}
+  r.style.setProperty('--fs',FONT[SET.font]||FONT.m);r.style.setProperty('--pfs',PFONT[SET.pfs]||PFONT.m);const tb=$('themeBtn');if(tb){tb.innerHTML=ic({system:'monitor',light:'sun',grey:'half',dark:'moon'}[SET.theme]||'monitor');tb.title=(THEME_LABEL[SET.theme]||THEME_LABEL.system)+' — натисніть, щоб змінити';tb.setAttribute('aria-label',tb.title);}}
 
 /* стан */
 const FIELDS=['pName','pAge','pSex','pNum','pDate','pEed','pDept','pRef','pRefDoc','pCount','conclFree','recFree'];

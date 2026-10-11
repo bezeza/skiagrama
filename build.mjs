@@ -1,5 +1,6 @@
 // Збирання: src/ → index.html (сайт, PWA) і skiagrama.html (офлайн-файл); версія кешу в sw.js
 import {readFileSync,writeFileSync,readdirSync} from 'node:fs';
+import {createHash} from 'node:crypto';
 const r=p=>readFileSync(new URL(p,import.meta.url),'utf8');
 const js=readdirSync(new URL('./src/js/',import.meta.url)).filter(f=>f.endsWith('.js')).sort().map(f=>`/* --- ${f} --- */\n`+r('./src/js/'+f)).join('\n');
 const ver=(/const VERSION='([^']+)'/.exec(js)||[])[1]||'0';
@@ -17,6 +18,7 @@ writeFileSync(new URL('./pamyatka.html',import.meta.url),`<!doctype html>
 ${r('./src/memo.css')}</style></head><body>
 ${r('./src/memo.html')}</body></html>
 `);
-const sw=r('./sw.js').replace(/const VERSION='[^']*';/,`const VERSION='skiagrama-${ver}';`);
+const hash=createHash('sha1').update(page(true)+r('./src/memo.html')).digest('hex').slice(0,8);
+const sw=r('./sw.js').replace(/const VERSION='[^']*';/,`const VERSION='skiagrama-${ver}-${hash}';`);
 writeFileSync(new URL('./sw.js',import.meta.url),sw);
 console.log('Зібрано Skiagrama',ver);
