@@ -64,9 +64,9 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await ctx.close();
 }
 
-/* ---------- 2.2: модульні перевірки й нові функції (ПК) ---------- */
+/* ---------- 0.3: модульні перевірки й нові функції (ПК) ---------- */
 {
-  console.log('\nМодульні перевірки і 2.2');
+  console.log('\nМодульні перевірки і 0.3');
   const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');await p.click('text=Пропустити — заповню пізніше');
   // захист шаблонів: усі зони, усі кнопки
