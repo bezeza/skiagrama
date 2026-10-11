@@ -165,16 +165,68 @@ function renderConcl(){
   S.concl.forEach((t,i)=>{const row=el('div',{class:'row'});row.append(el('span',null,t));
     if(i>0){const u=el('button',{type:'button',class:'btn sm','aria-label':'Вище'},'↑');u.onclick=()=>{tick();[S.concl[i-1],S.concl[i]]=[S.concl[i],S.concl[i-1]];renderAll();};row.append(u);}
     const x=el('button',{type:'button',class:'btn sm danger'},'Прибрати');x.onclick=()=>{tick();S.concl.splice(i,1);renderAll();};row.append(x);ch.append(row);});
-  if(!S.concl.length&&allNormal())ch.append(el('p',{class:'note'},'Усі зони в нормі — у протокол піде «'+study().normConcl+'».'));
-  const cc=$('conclChips');cc.textContent='';
-  conclChipList().forEach(t=>{const on=S.concl.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
-    b.onclick=()=>{tick();on?S.concl.splice(S.concl.indexOf(t),1):S.concl.push(t);renderAll();};cc.append(b);});
+  if(!S.concl.length&&allNormal())ch.append(el('p',{class:'note'},'Усі зони в нормі — у протокол піде «'+normConclOf()+'».'));
+  renderChipList('concl');
 }
-const conclChipList=()=>[study().normConcl,...study().chips.map(c=>c.replace('{dept}',deptGen()))];
-function renderRecs(){
-  const rc=$('recChips');rc.textContent='';
-  RECS.forEach(t=>{const on=S.recs.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
-    b.onclick=()=>{tick();on?S.recs.splice(S.recs.indexOf(t),1):S.recs.push(t);renderAll();};rc.append(b);});
+const conclChipList=()=>[normConclOf(),...effList('concl').map(x=>x.t)];
+function renderRecs(){renderChipList('rec');}
+/* кнопки висновку / рекомендацій: звичайний режим, «+ свій», олівець ✎ */
+let editList=null;
+function addToList(kind,text){
+  text=String(text||'').trim().replace(/\.$/,'');if(!text)return false;
+  const key=listKeyOf(kind);const L=SET.lists[key]||(SET.lists[key]={});const a=L.add||(L.add=[]);
+  if(!effList(kind,true).some(x=>x.t===text))a.push({k:'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,4),t:text});
+  saveSet();const arr=kind==='concl'?S.concl:S.recs;if(!arr.includes(text))arr.push(text);return true;
+}
+function renderChipList(kind){
+  const isC=kind==='concl';const root=$(isC?'conclChips':'recChips'),tools=$(isC?'conclTools':'recTools');root.textContent='';tools.textContent='';
+  const arr=isC?S.concl:S.recs;
+  if(editList===kind){root.hidden=true;renderListEditor(kind,tools);return;}root.hidden=false;
+  const chip=(t,k)=>{const on=arr.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
+    b.onclick=()=>{tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}renderAll();};root.append(b);};
+  if(isC)chip(normConclOf(),null);
+  effList(kind).forEach(x=>chip(x.t,x.k));
+  const add=el('div',{class:'myadd'});const inp=el('input',{type:'text',placeholder:isC?'+ свій висновок, напр. «Плевральні спайки справа»':'+ своя рекомендація','aria-label':isC?'Новий висновок':'Нова рекомендація'});
+  const ok=el('button',{type:'button',class:'btn sm'},'Додати');
+  const doAdd=()=>{tick();if(addToList(kind,inp.value)){renderAll();toast(isC?'Висновок додано як кнопку':'Рекомендацію додано як кнопку');}};
+  ok.onclick=doAdd;inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doAdd();}});add.append(inp,ok);
+  const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'},'✎ Редагувати кнопки');pen.onclick=()=>{editList=kind;renderChipList(kind);};
+  tools.append(add,pen);
+}
+function renderListEditor(kind,box){
+  const isC=kind==='concl';const key=listKeyOf(kind);const L=()=>SET.lists[key]||(SET.lists[key]={});
+  box.append(el('p',{class:'note'},(isC?`Кнопки висновку для «${study().n}». `:'Кнопки рекомендацій (спільні для всіх досліджень). ')+'Змініть текст, сховайте зайве, переставте стрілками або перетягніть. Зміни зберігаються одразу.'+(isC&&study().chips.some(c=>c.includes('{dept}'))?' {dept} — підставиться відділ хребта.':'')));
+  if(isC){const nr=el('div',{class:'egroup'});nr.append(el('div',{class:'eh'},'Висновок норми (коли всі зони в нормі)'));
+    const ni=el('input',{type:'text','aria-label':'Висновок норми',placeholder:study().normConcl});ni.value=(SET.conclNorm||{})[S.study]||'';
+    ni.addEventListener('input',()=>{const v=ni.value.trim();if(v)SET.conclNorm[S.study]=v;else delete SET.conclNorm[S.study];saveSet();renderSide();renderNav();});nr.append(ni);box.append(nr);}
+  const wrap=el('div',{class:'egroup'});wrap.append(el('div',{class:'eh'},isC?'Кнопки висновку':'Кнопки рекомендацій'));
+  const list=effList(kind,true);
+  const move=(k,to)=>{const ks=effList(kind,true).map(x=>x.k);const i=ks.indexOf(k);ks.splice(i,1);ks.splice(Math.max(0,Math.min(ks.length,to)),0,k);L().order=ks;saveSet();renderChipList(kind);};
+  list.forEach((o,idx)=>{
+    const r=el('div',{class:'erow'+(o.hid?' hid':''),draggable:'true'});r.dataset.k=o.k;
+    r.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/plain',o.k);r.classList.add('drag');});r.addEventListener('dragend',()=>r.classList.remove('drag'));
+    r.addEventListener('dragover',e=>{e.preventDefault();r.classList.add('over');});r.addEventListener('dragleave',()=>r.classList.remove('over'));
+    r.addEventListener('drop',e=>{e.preventDefault();const k=e.dataTransfer.getData('text/plain');if(k&&k!==o.k)move(k,idx);});
+    const up=el('button',{type:'button',class:'btn sm icon','aria-label':'Вище: '+o.t,disabled:idx===0?'':null},'↑');up.onclick=()=>move(o.k,idx-1);
+    const dn=el('button',{type:'button',class:'btn sm icon','aria-label':'Нижче: '+o.t,disabled:idx===list.length-1?'':null},'↓');dn.onclick=()=>move(o.k,idx+1);
+    const ti=el('input',{type:'text',class:'eph','aria-label':'Текст кнопки'});ti.value=o.raw;
+    ti.addEventListener('input',()=>{const v=ti.value.trim().replace(/\.$/,'');const LL=L();
+      if(o.added){const a=(LL.add||[]).find(y=>y.k===o.k);if(a&&v)a.t=v;}else{LL.edit=LL.edit||{};if(v&&v!==o.k)LL.edit[o.k]=v;else delete LL.edit[o.k];}
+      saveSet();renderSide();renderNav();});
+    const hd=el('button',{type:'button',class:'btn sm','aria-pressed':String(o.hid)},o.hid?'Показати':'Сховати');
+    hd.onclick=()=>{const LL=L();const h=LL.hidden||(LL.hidden=[]);const i=h.indexOf(o.k);i>=0?h.splice(i,1):h.push(o.k);saveSet();renderChipList(kind);};
+    r.append(el('span',{class:'grip','aria-hidden':'true'},'⋮⋮'),up,dn,ti,hd);
+    if(o.added){const x=el('button',{type:'button',class:'btn sm danger','aria-label':'Видалити кнопку '+o.t},'×');
+      x.onclick=()=>{if(x.dataset.c){const LL=L();LL.add=(LL.add||[]).filter(y=>y.k!==o.k);saveSet();renderChipList(kind);}else{x.dataset.c='1';x.textContent='видалити?';setTimeout(()=>{x.dataset.c='';x.textContent='×';},3000);}};r.append(x);}
+    wrap.append(r);});
+  const ar=el('div',{class:'erow add'});const ai=el('input',{type:'text',class:'eph',placeholder:isC?'Новий висновок':'Нова рекомендація','aria-label':isC?'Новий висновок':'Нова рекомендація'});
+  const ab=el('button',{type:'button',class:'btn sm'},'+ Додати');ab.onclick=()=>{const v=ai.value.trim().replace(/\.$/,'');if(!v){ai.focus();return;}const LL=L();(LL.add||(LL.add=[])).push({k:'u'+Date.now().toString(36),t:v});saveSet();renderChipList(kind);};
+  ai.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ab.click();}});ar.append(ai,ab);wrap.append(ar);box.append(wrap);
+  const has=!!SET.lists[key]&&Object.keys(SET.lists[key]).some(k=>{const v=SET.lists[key][k];return Array.isArray(v)?v.length:Object.keys(v||{}).length;})||(isC&&!!SET.conclNorm[S.study]);
+  const r=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn sm primary'},'Готово');ok.onclick=()=>{editList=null;renderAll();};
+  const rs=el('button',{type:'button',class:'btn sm',disabled:has?null:''},'Повернути як було');
+  rs.onclick=()=>{if(rs.dataset.c){delete SET.lists[key];if(isC)delete SET.conclNorm[S.study];saveSet();editList=null;renderAll();toast('Кнопки повернуто');}else{rs.dataset.c='1';rs.textContent='Точно повернути стандартні кнопки?';setTimeout(()=>{rs.dataset.c='';rs.textContent='Повернути як було';},3000);}};
+  r.append(ok,rs);box.append(r);
 }
 function findPrev(){
   const name=norm($('pName').value);if(name.length<4)return null;

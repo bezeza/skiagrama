@@ -11,7 +11,7 @@ function searchItems(){
   visibleZones().forEach((d,i)=>L.push({k:'Зона',t:d.name,s:String(i+1),go:()=>{showView('desc');const z=S.zones[d.id];if(z.st!=='c'){tick();z.st='c';}openZone(d.id,true);renderAll();}}));
   Object.keys(STUDIES).forEach(k=>L.push({k:'Дослідження',t:STUDIES[k].n,go:()=>{showView('desc');switchStudy(k);}}));
   conclChipList().forEach(t=>L.push({k:'Висновок',t,go:()=>{showView('desc');if(!S.concl.includes(t)){tick();S.concl.push(t);renderAll();}toast('Додано у висновок');}}));
-  RECS.forEach(t=>L.push({k:'Рекомендація',t,go:()=>{showView('desc');if(!S.recs.includes(t)){tick();S.recs.push(t);renderAll();}toast('Додано рекомендацію');}}));
+  effList('rec').map(x=>x.t).forEach(t=>L.push({k:'Рекомендація',t,go:()=>{showView('desc');if(!S.recs.includes(t)){tick();S.recs.push(t);renderAll();}toast('Додано рекомендацію');}}));
   TPL.filter(t=>t.study===S.study).forEach(t=>L.push({k:'Шаблон',t:t.name,go:()=>{showView('desc');tick();applyTpl(t);}}));
   act('Копіювати протокол',copyAll,'Ctrl+Enter');act('Готово — зберегти в архів',done,'Ctrl+S');act('Друк',()=>$('printBtn').click(),'Ctrl+P');
   act('Норма всюди',allNorm,'Alt+N');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');act('Повторити дію',redo,'Ctrl+Y');

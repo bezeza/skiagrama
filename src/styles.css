@@ -138,6 +138,10 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 .seg button[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
 .seg button.n[aria-pressed="true"]{background:var(--blue-soft);color:var(--blue);font-weight:600}
 .group input.t{max-width:300px}
+.ltools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ltools .egroup{flex-basis:100%}
+.freerow{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.freerow label.f{flex:1 1 260px}
 .myadd{display:flex;gap:6px;flex:1 1 260px;max-width:420px}
 .prev{border:1px solid var(--line);background:var(--blue-soft);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:14px}
 .stepper{display:none}

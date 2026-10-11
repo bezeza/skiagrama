@@ -135,7 +135,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.evaluate(()=>{const it=window.__skg.currentItem();});
   // новий пацієнт: курсор у ПІБ, Enter далі, вік з дати народження
   await p.click('#newPatient');
-  ok(await p.evaluate(()=>document.activeElement.id==='pName'),'«Новий пацієнт» — курсор у полі ПІБ');
+  ok(await p.waitForFunction(()=>document.activeElement.id==='pName',null,{timeout:2000}).then(()=>true,()=>false),'«Новий пацієнт» — курсор у полі ПІБ');
   await p.keyboard.type('Петренко О. В.');await p.keyboard.press('Enter');
   ok(await p.evaluate(()=>document.activeElement.id==='pAge'),'Enter: ПІБ → вік');
   const born='15.06.1954';await p.keyboard.type(born);await p.keyboard.press('Enter');
@@ -144,6 +144,31 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.keyboard.type('77');await p.keyboard.press('Enter');await p.keyboard.press('Enter');await p.keyboard.press('Enter');
   ok(await p.evaluate(()=>!!document.activeElement.closest('#projChips')),'Enter після ЕЕД → проєкції');
   await p.fill('#pAge','1960');await p.click('#pNum');ok((await p.inputValue('#pAge'))===String(new Date().getFullYear()-1960),'рік народження 1960 → вік');
+  // свої висновки й рекомендації
+  await p.click('#studyTabs >> text=ОГК');await p.click('#allNorm');
+  await p.fill('#conclTools .myadd input','Плевральні спайки справа');await p.click('#conclTools .myadd button');
+  ok(await p.isVisible('#conclChips .chip >> text=Плевральні спайки справа')&&(await paper(p)).includes('Rö-ч: Плевральні спайки справа.'),'свій висновок: кнопка і в протоколі');
+  await p.fill('#conclFree','Кальцинат у корені');await p.click('#conclKeep');
+  ok(await p.isVisible('#conclChips .chip >> text=Кальцинат у корені')&&(await p.inputValue('#conclFree'))==='','«Запамʼятати як кнопку»');
+  await p.click('#conclTools >> text=✎ Редагувати кнопки');
+  await p.fill('#conclTools .erow[data-k="Емфізема легень"] input','Емфізема легень (буллезна)');
+  await p.fill('#conclTools input[aria-label="Висновок норми"]','Органи грудної клітки без патології');
+  await p.click('#conclTools .erow[data-k="Гідроторакс"] >> text=Сховати');
+  await p.click('#conclTools >> text=Готово');
+  ok(!(await p.isVisible('#conclChips .chip >> text=Гідроторакс'))&&await p.isVisible('#conclChips .chip >> text=Емфізема легень (буллезна)'),'олівець висновку: перейменувати, сховати');
+  await p.evaluate(()=>{const S=window.__skg.S;S.concl=[];window.__skg.renderAll();});
+  ok((await paper(p)).includes('Rö-ч: Органи грудної клітки без патології.'),'свій висновок норми');
+  await p.click('#zone-pneum .seg button:nth-child(2)');await p.click('#zone-pneum >> text=підвищена');
+  ok((await p.textContent('#sugs')).includes('Емфізема легень (буллезна)'),'підказка бере нову назву кнопки');
+  await p.fill('#recTools .myadd input','Rö-контроль через 3 тижні');await p.click('#recTools .myadd button');
+  ok((await paper(p)).includes('Rö-контроль через 3 тижні'),'своя рекомендація');
+  const pk=await p.evaluate(()=>window.__skg.phrasePack());
+  ok(!!(pk.lists['concl.ogk']&&pk.lists['rec']&&pk.conclNorm.ogk),'пакет фраз містить висновки й рекомендації');
+  {const q=await ctx.newPage();await q.goto(FILE);await q.click('#allNorm');
+   ok(await q.isVisible('#conclChips .chip >> text=Плевральні спайки справа')&&(await paper(q)).includes('Органи грудної клітки без патології'),'свої висновки зберігаються після перезапуску');
+   await q.click('#conclTools >> text=✎ Редагувати кнопки');await q.click('#conclTools button >> text=Повернути як було');await q.click('#conclTools button >> text=Точно');
+   ok(await q.isVisible('#conclChips .chip >> text=Гідроторакс')&&!(await q.isVisible('#conclChips .chip >> text=Плевральні спайки справа')),'«Повернути як було» для висновків');await q.close();}
+  await p.click('#allNorm');
   // тема «Кабінет»
   await p.click('#themeBtn');await p.click('#themeBtn');
   ok((await p.textContent('#themeBtn'))==='Тема: кабінет'&&(await p.evaluate(()=>getComputedStyle(document.body).backgroundColor))==='rgb(42, 43, 45)','тема «Кабінет»: темно-сірий фон');

@@ -30,7 +30,7 @@
   <div class="card pbar" id="sec-patient">
     <div class="prow">
       <label class="f pn">ПІБ<input id="pName" type="text" autocomplete="off" list="nameList" placeholder="Прізвище І. Б."></label>
-      <label class="f pa" title="Можна ввести вік або дату народження (12.03.1954 чи рік 1954) — вік порахується сам">Вік / д. н.<input id="pAge" type="text" inputmode="decimal" autocomplete="off" placeholder="72 або 12.03.1954"></label>
+      <label class="f pa" title="Можна ввести вік або дату народження (12.03.1954 чи рік 1954) — вік порахується сам">Вік / д. н.<input id="pAge" type="text" inputmode="decimal" autocomplete="off" placeholder="років"></label>
       <label class="f pnum">№ знімка<input id="pNum" type="text" inputmode="numeric"></label>
       <label class="f pd">Дата<input id="pDate" type="date"></label>
       <label class="f pe">ЕЕД, мЗв<input id="pEed" type="text" inputmode="decimal"></label>
@@ -87,13 +87,15 @@
     <div id="sugs" class="chosen"></div>
     <div class="chosen" id="chosen"></div>
     <div class="chips" id="conclChips"></div>
-    <label class="f">Свій текст висновку<input id="conclFree" type="text" autocomplete="off"></label>
+    <div class="ltools" id="conclTools"></div>
+    <div class="freerow"><label class="f">Свій текст висновку<input id="conclFree" type="text" autocomplete="off"></label><button class="btn sm" id="conclKeep" type="button" title="Додати цей текст як кнопку висновку для цього виду дослідження">Запамʼятати як кнопку</button></div>
   </div>
 
   <div class="card" id="sec-rec">
     <h2>Рекомендації</h2>
     <div class="chips" id="recChips"></div>
-    <label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label>
+    <div class="ltools" id="recTools"></div>
+    <div class="freerow"><label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label><button class="btn sm" id="recKeep" type="button" title="Додати цей текст як кнопку рекомендації">Запамʼятати як кнопку</button></div>
   </div>
 </section>
 
@@ -242,7 +244,7 @@
   </div>
   <div class="card">
     <h2>Пакет фраз</h2>
-    <p class="note">Один файл з фразами норми, змінами кнопок, «Моїми кнопками» і шаблонами — щоб перенести на інший ПК або дати колезі на заміні. Архів пацієнтів у пакет не потрапляє.</p>
+    <p class="note">Один файл з фразами норми, змінами кнопок зон, висновків і рекомендацій, «Моїми кнопками» і шаблонами — щоб перенести на інший ПК або дати колезі на заміні. Архів пацієнтів у пакет не потрапляє.</p>
     <div class="trow">
       <button class="btn" id="phExport" type="button">Зберегти пакет фраз</button>
       <label class="btn" for="phImport" style="display:inline-flex;align-items:center">Завантажити пакет фраз</label>

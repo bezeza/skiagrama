@@ -1,10 +1,10 @@
 /* ===== Сховища, налаштування, стан, генерація тексту ===== */
 const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1';
 let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Терапевтичне №2, Хірургічне, Неврологічне, Інфекційне, Педіатричне, Амбулаторно',
-  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},
+  eed:{...DEF_EED},norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},lists:{},conclNorm:{},
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
 SET.eed=Object.assign({...DEF_EED},SET.eed||{});SET.norms=SET.norms||{};SET.my=SET.my||{};
-['org','btn','btnAdd','btnOrder'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
+['org','btn','btnAdd','btnOrder','lists','conclNorm'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
 /* 2.2: за замовчуванням довгий протокол — на цілий аркуш (зворот половинки — лише опція) */
 if(!SET.v22){SET.printMode='full';SET.v22=true;store.set(SET_KEY,SET);}
 let TPL=store.get(TPL_KEY,[]);
@@ -57,6 +57,25 @@ function effOpts(d,g,all){
   else if(SET.freq){const r=USE.rank||{};list.sort((a,b)=>(r[useKey(d.id,g.id,b.k)]||0)-(r[useKey(d.id,g.id,a.k)]||0)||a.i-b.i);}
   return all?list:list.filter(x=>!x.hid);
 }
+/* свої висновки й рекомендації: SET.lists['concl.ogk' | 'rec'] = {edit:{оригінал:новий}, hidden:[ключі], add:[{k,t}], order:[ключі]};
+   SET.conclNorm.ogk — свій висновок норми */
+const listKeyOf=kind=>kind==='concl'?'concl.'+S.study:'rec';
+const listUseKey=(key,k)=>`L.${key}.${k}`;
+function effList(kind,all){
+  const key=listKeyOf(kind);const L=SET.lists[key]||{};const ed=L.edit||{},hid=L.hidden||[];
+  const list=(kind==='concl'?study().chips:RECS).map((t,i)=>({k:t,raw:ed[t]?ed[t]:t,hid:hid.includes(t),i,added:false}));
+  (L.add||[]).forEach((a,j)=>list.push({k:a.k,raw:a.t,hid:hid.includes(a.k),i:1000+j,added:true}));
+  const ord=L.order;
+  if(ord&&ord.length){const pos=k=>{const i=ord.indexOf(k);return i<0?9999:i;};list.sort((a,b)=>pos(a.k)-pos(b.k)||a.i-b.i);}
+  else if(SET.freq){const r=USE.rank||{};list.sort((a,b)=>(r[listUseKey(key,b.k)]||0)-(r[listUseKey(key,a.k)]||0)||a.i-b.i);}
+  list.forEach(x=>x.t=x.raw.replace('{dept}',deptGen()));
+  return all?list:list.filter(x=>!x.hid);
+}
+const normConclOf=()=>{const v=(SET.conclNorm||{})[S.study];return v&&v.trim()?v.trim().replace(/\.$/,''):study().normConcl;};
+/* підказка висновку з урахуванням перейменованих кнопок: «Правобічна пневмонія (S9)» → «Пневмонія правої легені (S9)» */
+function renameConcl(t){const L=SET.lists['concl.'+S.study];if(!L||!L.edit)return t;
+  for(const k in L.edit){const v=L.edit[k];if(!v)continue;const from=k.replace('{dept}',deptGen()),to=v.replace('{dept}',deptGen());if(t===from)return to;if(t.startsWith(from+' '))return to+t.slice(from.length);}return t;}
+function countList(kind,k){const key=listUseKey(listKeyOf(kind),k);USE.counts[key]=(USE.counts[key]||0)+1;saveUse();}
 const optPhrase=(d,g,k)=>{const o=effOpts(d,g,true).find(x=>x.k===k);return o?o.ph:'';};
 
 /* генерація тексту */
@@ -110,7 +129,7 @@ function measResults(){
 function allNormal(){return visibleZones().every(d=>S.zones[d.id].st!=='c')&&measResults().every(x=>x.r.ok);}
 function suggestions(){
   const out=[];const Z=S.zones;const sel=(z,g)=>(Z[z]&&Z[z].st==='c')?Z[z].sel[g]:undefined;const ch=z=>Z[z]&&Z[z].st==='c';
-  const add=(t,why,tbd)=>{if(t&&!out.some(x=>x[0]===t))out.push([t,why,tbd]);};
+  const add=(t,why,tbd)=>{t=t&&renameConcl(t);if(t&&!out.some(x=>x[0]===t))out.push([t,why,tbd]);};
   if(S.study==='ogk'||S.study==='fg'){
     if(ch('infil')&&hasStd(OGK_ZONES[0],Z.infil)){const side={обидві:'Двобічна',права:'Правобічна',ліва:'Лівобічна'}[sel('infil','side')]||'';const type={зливні:'вогнищево-зливна',вогнищеві:'вогнищева',сегм:'сегментарна'}[sel('infil','char')]||'';const sg=groupVal(OGK_ZONES[0],Z.infil,'seg',false);add(cap(`${side} ${type} пневмонія`.replace(/\s+/g,' ').trim().toLowerCase())+(sg?` (${sg})`:''),'інфільтрація');}
     if(sel('pneum','p')==='підвищ')add('Емфізема легень','підвищена пневматизація');
@@ -152,7 +171,7 @@ function conclItems(){const a=[...S.concl];const f=$('conclFree').value.trim().r
 function conclText(){
   const a=conclItems();
   if(a.length)return {t:'Rö-ч: '+a.join('. ')+'.',tbd:false};
-  if(allNormal())return {t:'Rö-ч: '+study().normConcl+'.',tbd:!!study().normTbd,auto:1};
+  if(allNormal())return {t:'Rö-ч: '+normConclOf()+'.',tbd:!!study().normTbd&&!(SET.conclNorm||{})[S.study],auto:1};
   return {t:'Rö-ч: …',tbd:false};
 }
 function recList(){const a=[...S.recs];const f=$('recFree').value.trim().replace(/\.$/,'');if(f)a.push(f);return a;}
@@ -195,10 +214,10 @@ function checks(){
   visibleZones().forEach(d=>{if(zoneState(d)==='e')w.push(`«${d.name}»: заповніть зміни до кінця.`);});
   const ct=conclText();
   if(ct.t.includes('…'))w.push('Висновок порожній або не заповнений.');
-  const items=conclItems();const normRe=/без патолог|патології не|без кістково/i;
+  const items=conclItems();const nc=normConclOf();const normRe={test:i=>i===nc||/без патолог|патології не|без кістково/i.test(i)};
   if(allNormal()&&items.length&&!items.every(i=>normRe.test(i)))w.push('Усі зони в нормі, а у висновку патологія — перевірте.');
   if(!allNormal()&&items.some(i=>normRe.test(i)))w.push('Є зміни в описі, а висновок «без патології» — перевірте.');
-  measResults().forEach(x=>{if(x.bad)w.push(`${x.def.n}: значення ${fx(x.v,x.def.kind==='kti'?2:0)} поза можливими межами — перевірте.`);if(x.r.c&&!S.concl.includes(x.r.c))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
+  measResults().forEach(x=>{if(x.bad)w.push(`${x.def.n}: значення ${fx(x.v,x.def.kind==='kti'?2:0)} поза можливими межами — перевірте.`);if(x.r.c&&!S.concl.includes(renameConcl(x.r.c)))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
   return w;
 }
 

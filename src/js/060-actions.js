@@ -37,6 +37,8 @@ ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
   if(e.key!=='Enter'||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.isComposing)return;e.preventDefault();
   if(id==='pAge')applyBirth();
   const nx=ENTER_NEXT[i+1];if(nx){const n=$(nx);n.focus();if(n.select&&n.type!=='date')n.select();}else focusAfterPatient();}));
+$('conclKeep').onclick=()=>{const v=$('conclFree').value;if(!v.trim()){$('conclFree').focus();toast('Спершу введіть текст висновку');return;}tick();addToList('concl',v);$('conclFree').value='';renderAll();toast('Висновок запамʼятовано як кнопку');};
+$('recKeep').onclick=()=>{const v=$('recFree').value;if(!v.trim()){$('recFree').focus();toast('Спершу введіть текст рекомендації');return;}tick();addToList('rec',v);$('recFree').value='';renderAll();toast('Рекомендацію запамʼятовано як кнопку');};
 $('flowChk').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const t=$(b.dataset.go);if(t)t.scrollIntoView({block:'start',behavior:'smooth'});}));
 
@@ -44,7 +46,7 @@ function allNorm(){tick();visibleZones().forEach(d=>S.zones[d.id]={st:'n',sel:{}
 $('allNorm').onclick=allNorm;
 function newPatient(keep){
   const date=keep?$('pDate').value:today();const eedKeep=$('pEed').value;
-  S=blank(S.study);editingId=null;editZone=null;
+  S=blank(S.study);editingId=null;editZone=null;editList=null;
   ['pName','pAge','pRef','pRefDoc','conclFree','recFree','pDept'].forEach(i=>$(i).value='');$('pSex').value='';$('pCount').value='1';
   $('pDate').value=date;setEedDefault();if(keep&&eedKeep)$('pEed').value=eedKeep;$('pNum').value=nextNum();$('refMsg').textContent='';
   clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;$('ageMsg').hidden=true;renderAll();
