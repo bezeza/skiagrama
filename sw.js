@@ -1,5 +1,5 @@
 /* Skiagrama offline cache. Change VERSION on every release. */
-const VERSION='skiagrama-2.0.0';
+const VERSION='skiagrama-2.0.1';
 const FONTS='skiagrama-fonts';
 const SHELL=['./','./index.html','./manifest.webmanifest','./icon-180.png','./icon-192.png','./icon-512.png','./icon-512-maskable.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)));});

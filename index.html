@@ -1,3 +1,6 @@
+<!doctype html>
+<html lang="uk">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Skiagrama</title>
@@ -200,6 +203,8 @@ table.j tr.ex td{color:var(--muted)}
 }
 </style>
 
+</head>
+<body>
 <div class="wrap">
 <header class="top noprint">
   <div class="brand">
@@ -412,7 +417,7 @@ table.j tr.ex td{color:var(--muted)}
       <label class="btn" for="sImport" style="display:inline-flex;align-items:center">Завантажити з файлу</label>
       <input id="sImport" type="file" accept=".json,application/json" hidden>
     </div>
-    <p class="note">Версія 2.0.0. Програма працює без інтернету; оновлення приходять автоматично, коли є мережа.</p>
+    <p class="note">Версія 2.0.1. Програма працює без інтернету; оновлення приходять автоматично, коли є мережа.</p>
     <p class="note" id="sMsg">Так можна перенести фрази й шаблони на інший комп'ютер або телефон.</p>
   </section>
 </div>
@@ -1299,3 +1304,5 @@ setInterval(()=>{if(t0&&!tDone)renderMeter();},1000);
   var reloaded=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(reloaded)return;reloaded=true;location.reload();});
 })();
 </script>
+</body>
+</html>
