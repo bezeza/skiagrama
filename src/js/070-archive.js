@@ -1,6 +1,6 @@
 /* ===== Архів протоколів і «На контроль» ===== */
 Object.keys(STUDIES).forEach(k=>$('aStudy').append(el('option',{value:k},STUDIES[k].n)));
-let selected=new Set();
+let selected=new Set(),aLimit=300;
 function aFiltered(){
   const q=norm($('aSearch').value),f=$('aFrom').value,t=$('aTo').value,s=$('aStudy').value,st=$('aStatus').value;
   return A.filter(r=>(!q||norm(r.name).includes(q))&&(!f||r.date>=f)&&(!t||r.date<=t)&&(!s||r.study===s)&&(!st||r.status===st)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.ts-a.ts);
@@ -33,7 +33,7 @@ function renderArchive(){
   const hr=el('tr');const all=el('input',{type:'checkbox','aria-label':'Вибрати всі'});all.checked=rows.length&&rows.every(r=>selected.has(r.id));all.onchange=()=>{rows.forEach(r=>all.checked?selected.add(r.id):selected.delete(r.id));renderArchive();};
   const th0=el('th');th0.append(all);hr.append(th0);['Дата','№','ПІБ','Дослідження','Висновок','Друк',''].forEach(h=>hr.append(el('th',null,h)));tb.append(hr);
   if(!rows.length){const tr=el('tr');tr.append(el('td',{class:'empty',colspan:'8'},'За цими фільтрами протоколів немає.'));tb.append(tr);}
-  rows.forEach(r=>{const tr=el('tr',r.example?{class:'ex'}:null);
+  rows.slice(0,aLimit).forEach(r=>{const tr=el('tr',r.example?{class:'ex'}:null);
     const c=el('input',{type:'checkbox','aria-label':'Вибрати для друку'});c.checked=selected.has(r.id);c.onchange=()=>{c.checked?selected.add(r.id):selected.delete(r.id);updPrintBtn();};
     const td0=el('td');td0.append(c);tr.append(td0);
     const nm=el('td',null,`${r.name}${r.age?', '+r.age+' р.':''}${r.example?' (приклад)':''}`);
@@ -44,6 +44,7 @@ function renderArchive(){
     if(r.urgent&&!r.notified){const nb=el('button',{type:'button',class:'btn sm'},'Повідомлено');nb.title='Лікаря, що направив, повідомлено';nb.onclick=()=>{r.notified=true;saveA();renderArchive();};ta.append(nb,document.createTextNode(' '));}
     const del=el('button',{type:'button',class:'btn sm danger'},'Видалити');del.onclick=()=>{if(del.dataset.c){A=A.filter(x=>x!==r);selected.delete(r.id);saveA();renderArchive();renderNames();updCtrlBadge();}else{del.dataset.c='1';del.textContent='Точно?';setTimeout(()=>{del.dataset.c='';del.textContent='Видалити';},3000);}};
     ta.append(o,document.createTextNode(' '),del);tr.append(ta);tb.append(tr);});
+  if(rows.length>aLimit){const tr=el('tr');const td=el('td',{colspan:'8',class:'more'});const mb=el('button',{type:'button',class:'btn sm',id:'aMore'},`Показати ще (показано ${aLimit} з ${rows.length})`);mb.onclick=()=>{aLimit+=300;renderArchive();};td.append(mb);tr.append(td);tb.append(tr);}
   updPrintBtn();
 }
 /* підсумок дня */
@@ -76,14 +77,14 @@ function openRecord(r){
   if(r.fields)setFields(r.fields);else{$('pName').value=r.name||'';$('pAge').value=r.age||'';$('pNum').value=r.num||'';$('pDate').value=r.date||'';$('pEed').value=r.eed||'';}
   editingId=r.id;clicks=0;t0=null;tDone=null;hist=[];firstPaint=true;showView('desc');renderAll();toast('Відкрито протокол з архіву');
 }
-['aSearch','aFrom','aTo','aStudy','aStatus'].forEach(id=>$(id).addEventListener('input',renderArchive));
+['aSearch','aFrom','aTo','aStudy','aStatus'].forEach(id=>$(id).addEventListener('input',()=>{aLimit=300;renderArchive();}));
 $('aToday').onclick=()=>{$('aFrom').value=today();$('aTo').value=today();renderArchive();};
 $('aClear').onclick=()=>{['aSearch','aFrom','aTo'].forEach(i=>$(i).value='');$('aStudy').value='';$('aStatus').value='';renderArchive();};
 $('aSelUnprinted').onclick=()=>{selected=new Set(aFiltered().filter(r=>!r.printed).map(r=>r.id));renderArchive();if(!selected.size)toast('Ненадрукованих протоколів у вибірці немає');};
 $('aPrint').onclick=()=>{const items=A.filter(r=>selected.has(r.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts).map(recordItem);if(items.length)openPrint(items);};
 $('backupBtn').onclick=()=>{const ok=download(`Skiagrama_архів_${today()}.json`,JSON.stringify({app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A},null,1),'application/json');
   if(ok){SET.lastBackup=today();saveSet();}toast(ok?`Копію архіву (${A.length}) збережено у файл`:'Не вдалося зберегти файл');renderArchive();};
-function mergeArchive(list){const byId=new Map(A.map(r=>[r.id,r]));let n=0;list.forEach(r=>{if(!r||!r.id)return;const o=byId.get(r.id);if(!o){A.push(r);byId.set(r.id,r);n++;}else if((r.ts||0)>(o.ts||0)){Object.assign(o,r);}});return n;}
+function mergeArchive(list){const byId=new Map(A.map(r=>[r.id,r]));let n=0;list.forEach(r=>{if(!r||!r.id)return;aDeleted.delete(r.id);const o=byId.get(r.id);if(!o){A.push(r);byId.set(r.id,r);n++;}else if((r.ts||0)>(o.ts||0)){Object.assign(o,r);}});return n;}
 $('restoreFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);const list=Array.isArray(d)?d:(d.archive||d.journal);if(!Array.isArray(list))throw 0;
   const n=mergeArchive(list);saveA();renderNames();updCtrlBadge();toast(`Відновлено ${n} нових протоколів (усього ${A.length})`);renderArchive();}catch(err){toast('Це не файл копії архіву Skiagrama');}e.target.value='';};rd.readAsText(f);});
 $('demoA').onclick=()=>{

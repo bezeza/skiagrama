@@ -8,7 +8,7 @@ $('mbarNav').onclick=()=>openNavSheet();
 function fmtRef(v){const s=v.toUpperCase().replace(/[^0-9A-Z]/g,'').slice(0,16);return s.replace(/(.{4})(?=.)/g,'$1-');}
 $('pRef').addEventListener('input',e=>{const f=fmtRef(e.target.value);if(f!==e.target.value)e.target.value=f;
   const m=$('refMsg');if(!f){m.textContent='';m.className='msg';}else if(!REF_RE.test(f)){m.textContent='Неповний номер';m.className='msg warn';}else{m.textContent='Формат правильний';m.className='msg ok';}renderSide();});
-$('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName').value);const hit=A.slice().sort((a,b)=>b.ts-a.ts).find(r=>norm(r.name)===name);
+$('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName').value);const hit=byName(name).slice().sort((a,b)=>b.ts-a.ts)[0];
   if(hit&&!$('pAge').value)$('pAge').value=hit.age||'';if(hit&&!$('pSex').value)$('pSex').value=hit.sex||'';
   S.prevId=findPrev();renderPrev();renderSide();});
 ['pAge','pSex','pDept','pRefDoc','pNum','pDate','pCount','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
@@ -108,6 +108,14 @@ function dueFrom(texts,base){
   for(const t of texts){const m=/через\s+(\d+)?\s*(?:[–-]\s*\d+\s*)?(дн|доб|тиж|міс)/i.exec(t);if(m){const n=m[1]?Number(m[1]):1;const mult=/^тиж/i.test(m[2])?7:/^міс/i.test(m[2])?30:1;return addDays(base,n*mult);}}
   return '';
 }
+/* без папки даних (телефон, Firefox) копія архіву робиться лише вручну — раз на день нагадуємо */
+function backupNudge(){if(folderOK()||SET.lastBackup===today()||SET.nudged===today())return;const n=A.filter(r=>!r.example).length;if(n<3)return;
+  SET.nudged=today();store.set(SET_KEY,SET);setTimeout(()=>{openDlg(box=>{dlgHead(box,'Копія архіву');
+    box.append(el('p',null,`В архіві ${n} протоколів, і вони зберігаються лише в цьому браузері. ${SET.lastBackup?'Останню копію збережено '+fmtD(SET.lastBackup)+'.':'Копію ще не зберігали.'}`));
+    box.append(el('p',{class:'note'},FOLDER_SUPPORTED?'Найкраще — підключити папку даних: тоді копії робляться самі.':'На цьому пристрої копії самі не робляться — збережіть файл і перешліть собі або на ПК.'));
+    const r=el('div',{class:'trow'});const s=el('button',{type:'button',class:'btn primary',id:'nudgeSave'},'Зберегти копію зараз');s.onclick=()=>{closeDlg();$('backupBtn').click();};
+    r.append(s);if(FOLDER_SUPPORTED){const f=el('button',{type:'button',class:'btn'},'Підключити папку');f.onclick=()=>{closeDlg();showView('settings');};r.append(f);}
+    const l=el('button',{type:'button',class:'btn'},'Пізніше');l.onclick=closeDlg;r.append(l);box.append(r);});},900);}
 function doSave(){
   const P=protocol();const text=protocolText();const units=currentUnits();const date=$('pDate').value||today();
   const prev=editingId&&A.find(r=>r.id===editingId);
@@ -120,9 +128,10 @@ function doSave(){
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
   saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
   if(S.study==='fg'&&SET.flow){const nx=nextNum();closeSheet();newPatient(true);renderAll();$('pName').focus();toast(`Збережено. Наступний пацієнт${nx?' — № '+nx:''}`);return;}
-  editingId=rec.id;tDone=Date.now();renderChecks();renderMeter();toast(i>=0?'Протокол оновлено в архіві':'Збережено в архів');
+  editingId=rec.id;tDone=Date.now();renderChecks();renderMeter();toast(i>=0?'Протокол оновлено в архіві':'Збережено в архів');backupNudge();
 }
 
+function acceptSugs(){const sg=suggestions().filter(([t])=>!S.concl.includes(t)&&!S.dismissed.includes(t));if(!sg.length){toast('Підказок висновку немає');return;}tick();sg.forEach(([t])=>S.concl.push(t));renderAll();toast('Прийнято: '+sg.map(x=>x[0]).join('; '));}
 /* гарячі клавіші — як у «Первинному огляді» */
 document.addEventListener('keydown',e=>{
   const mod=e.ctrlKey||e.metaKey;
@@ -130,6 +139,7 @@ document.addEventListener('keydown',e=>{
   if(mod&&(e.code==='KeyK')){e.preventDefault();openSearch();return;}
   if($('view-desc').hidden||!$('dlg').hidden||!$('printModal').hidden)return;
   if(e.altKey&&!mod&&e.code==='KeyN'){e.preventDefault();allNorm();return;}
+  if(e.altKey&&!mod&&e.key==='Enter'){e.preventDefault();acceptSugs();return;}
   if(mod&&e.key==='Enter'){e.preventDefault();copyAll();return;}
   if(mod&&e.code==='KeyS'){e.preventDefault();done();return;}
   if(mod&&e.code==='KeyP'){e.preventDefault();$('printBtn').click();return;}
@@ -137,7 +147,7 @@ document.addEventListener('keydown',e=>{
   if(mod&&!e.shiftKey&&e.code==='KeyZ'){e.preventDefault();undo();return;}
   if(mod&&(e.code==='KeyY'||(e.shiftKey&&e.code==='KeyZ'))){e.preventDefault();redo();return;}
   if(!mod&&!e.altKey&&/^Digit[1-9]$/.test(e.code)){const i=Number(e.code.slice(5))-1;const d=visibleZones()[i];if(!d)return;e.preventDefault();tick();
-    const z=S.zones[d.id];if(z.st==='c'&&S.open===d.id){z.st='n';S.open=null;}else{z.st='c';S.open=d.id;}S.focus=d.id;renderAll();const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}
+    const z=S.zones[d.id];if(z.st==='c'&&S.open===d.id){z.st='n';S.open=null;}else{z.st='c';S.open=d.id;}S.focus=d.id;renderAll();const n=$('zone-'+d.id);if(n){n.scrollIntoView({block:'nearest'});const f=z.st==='c'?n.querySelector('.group button.chip, .group input'):null;if(f)f.focus({preventScroll:true});}}
 });
 
 /* перегляди */

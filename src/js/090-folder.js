@@ -9,7 +9,8 @@ async function kvDel(k){try{const db=await idb();await new Promise(r=>{const t=d
 function folderOK(){return dirOK&&!!dirH;}
 function folderName(){return dirH?dirH.name:'';}
 async function readJSON(dir,name){try{const fh=await dir.getFileHandle(name);const f=await fh.getFile();return JSON.parse(await f.text());}catch(e){return null;}}
-async function writeJSON(dir,name,obj){const fh=await dir.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(JSON.stringify(obj,null,1));await w.close();}
+async function writeText(dir,name,text){const fh=await dir.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(text);await w.close();}
+async function writeJSON(dir,name,obj,compact){await writeText(dir,name,JSON.stringify(obj,null,compact?0:1));}
 async function folderSync(){
   if(!dirH)return;
   const a=await readJSON(dirH,'архів.json');let added=0;
@@ -17,7 +18,7 @@ async function folderSync(){
   const s=await readJSON(dirH,'налаштування.json');
   if(s&&s.settings&&!SET.__fromFolder){const keep={lastBackup:SET.lastBackup};const mergedMy=Object.assign({},s.settings.my||{},SET.my||{});SET=Object.assign({},s.settings,SET,{my:mergedMy});SET.eed=Object.assign({...DEF_EED},s.settings.eed||{},SET.eed||{});Object.assign(SET,keep);}
   if(s&&Array.isArray(s.templates)){const names=new Set(TPL.map(t=>t.study+'|'+t.name));s.templates.forEach(t=>{if(!names.has(t.study+'|'+t.name))TPL.push(t);});}
-  store.set(A_KEY,A);store.set(SET_KEY,SET);store.set(TPL_KEY,TPL);
+  saveA();store.set(SET_KEY,SET);store.set(TPL_KEY,TPL);
   await folderWrite();
   renderNames();updCtrlBadge();applyLook();renderAll();
   if(added)toast(`З папки даних підтягнуто ${added} протоколів`);
@@ -25,7 +26,9 @@ async function folderSync(){
 async function folderWrite(){
   if(!folderOK()||folderBusy)return;folderBusy=true;
   try{
-    await writeJSON(dirH,'архів.json',{app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
+    /* архів серіалізуємо один раз (на тисячах протоколів це найдовша операція) — і для архів.json, і для щоденної копії */
+    const aJson=JSON.stringify({app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
+    await writeText(dirH,'архів.json',aJson);
     await writeJSON(dirH,'налаштування.json',{app:'skiagrama-settings',v:2,settings:SET,templates:TPL});
     await writeJSON(dirH,'пакет фраз.json',phrasePack());
     if(FB.length)await fbToFolder();
@@ -33,10 +36,10 @@ async function folderWrite(){
     const ad=await dirH.getDirectoryHandle('архів',{create:true});const byM={};
     A.filter(r=>!r.example).forEach(r=>{const m=(r.date||today()).slice(0,7);(byM[m]=byM[m]||[]).push(r);});
     const months=Object.keys(byM);const touch=months.filter(m=>!folderWrite.done||folderWrite.done[m]!==byM[m].length||m===today().slice(0,7));
-    for(const m of touch){const yd=await ad.getDirectoryHandle(m.slice(0,4),{create:true});await writeJSON(yd,m+'.json',{app:'skiagrama',v:2,month:m,archive:byM[m]});}
+    for(const m of touch){const yd=await ad.getDirectoryHandle(m.slice(0,4),{create:true});await writeJSON(yd,m+'.json',{app:'skiagrama',v:2,month:m,archive:byM[m]},true);}
     folderWrite.done=Object.fromEntries(months.map(m=>[m,byM[m].length]));
     const cp=await dirH.getDirectoryHandle('копії',{create:true});
-    await writeJSON(cp,`архів-${today()}.json`,{app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
+    await writeText(cp,`архів-${today()}.json`,aJson);
     if(SET.lastBackup!==today()){SET.lastBackup=today();store.set(SET_KEY,SET);}
   }catch(e){console.warn('folderWrite',e);dirOK=false;showFolderBanner('Не вдалося записати в папку даних. Натисніть, щоб дозволити знову.');}
   folderBusy=false;

@@ -462,3 +462,17 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .fblist h3{margin:0 0 6px;font-size:15px}
 .fblist .it{display:flex;gap:8px;align-items:baseline;padding:3px 0}
 #dlgBox .seg button{display:inline-flex;align-items:center;gap:6px}
+.j td.more{text-align:center;padding:10px}
+/* вузька панель протоколу (ноутбук 1366×768 з масштабом 125 %): кнопки — одним рядом */
+.side{container-type:inline-size}
+@container (max-width:640px){.actbar .lbl{display:none}.actbar>.btn,.actbar>details>summary.btn{padding-inline:12px}}
+/* шапка на 1100–1280 px: без підзаголовка, пошук — значком */
+@media (max-width:1279px) and (min-width:761px){
+  header.top .brand small .hide-m{display:none}
+  header.top .btn.search>span{font-size:0;gap:0}header.top .btn.search kbd{display:none}
+  header.top .btn.search{padding-inline:12px;min-width:0}
+  .appnav{margin-left:8px}
+}
+@container (max-width:470px){.actbar .lbl2{display:none}.actbar{gap:6px}}
+.split .mpop{left:auto;right:0}
+:root:not([data-theme="dark"]):not([data-theme="grey"]) .vbadge{color:#9a520f}@media (prefers-color-scheme:dark){:root:not([data-theme]) .vbadge{color:var(--accent)}}

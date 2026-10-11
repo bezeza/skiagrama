@@ -1,7 +1,8 @@
 /* ===== Вікна: пошук Ctrl+K, розділи (телефон), довідка, знайомство, що нового ===== */
 let dlgOnClose=null;
-function openDlg(build,onClose){const box=$('dlgBox');box.textContent='';build(box);$('dlg').hidden=false;dlgOnClose=onClose||null;}
-function closeDlg(){$('dlg').hidden=true;$('dlgBox').textContent='';const f=dlgOnClose;dlgOnClose=null;if(f)f();}
+let dlgReturn=null;
+function openDlg(build,onClose){if($('dlg').hidden)dlgReturn=document.activeElement;const box=$('dlgBox');box.textContent='';build(box);$('dlg').hidden=false;dlgOnClose=onClose||null;const af=box.querySelector('[data-autofocus]');if(af)af.focus();}
+function closeDlg(){$('dlg').hidden=true;$('dlgBox').textContent='';const f=dlgOnClose;dlgOnClose=null;if(f)f();const r=dlgReturn;dlgReturn=null;if(r&&r!==document.body&&document.body.contains(r)&&(!document.activeElement||document.activeElement===document.body))r.focus({preventScroll:true});}
 $('dlg').addEventListener('click',e=>{if(e.target===$('dlg'))closeDlg();});
 const dlgHead=(box,title)=>{const r=el('div',{class:'trow'});r.append(el('h2',null,title),el('span',{style:'flex:1'}));const c=el('button',{type:'button',class:'btn'},'Закрити');c.onclick=closeDlg;r.append(c);box.append(r);};
 
@@ -14,7 +15,7 @@ function searchItems(){
   effList('rec').map(x=>x.t).forEach(t=>L.push({k:'Рекомендація',t,go:()=>{showView('desc');if(!S.recs.includes(t)){tick();S.recs.push(t);renderAll();}toast('Додано рекомендацію');}}));
   TPL.filter(t=>t.study===S.study).forEach(t=>L.push({k:'Шаблон',t:t.name,go:()=>{showView('desc');tick();applyTpl(t);}}));
   act('Копіювати протокол',copyAll,'Ctrl+Enter');act('Готово — зберегти в архів',done,'Ctrl+S');act('Друк',()=>$('printBtn').click(),'Ctrl+P');
-  act('Норма всюди',allNorm,'Alt+N');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');act('Повторити дію',redo,'Ctrl+Y');
+  act('Норма всюди',allNorm,'Alt+N');act('Прийняти підказки висновку',acceptSugs,'Alt+Enter');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');act('Повторити дію',redo,'Ctrl+Y');
   act('Як на папері',()=>$('paperBtn').click());act('Правити текст протоколу',()=>{if(document.body.classList.contains('sheet')===false&&window.innerWidth<=760)openSheet();if(paperView)$('paperBtn').click();const t=$('ptext');if(t){t.focus();}});
   BLANK_ORDER.forEach(b=>act(`Бланк ${b} · ${BLANKS[b].n}`,()=>{tick();S.blank=b;renderSide();}));act('Пакет фраз',()=>showView('settings'));act('Скорочення',()=>{showView('settings');setTimeout(()=>$('abbrCard').scrollIntoView({block:'start'}),50);});act('Список на дообстеження',()=>{showView('archive');$('aStatus').value='d';renderArchive();});act('Ще дослідження цьому пацієнту',sameStudyPatient);act('Терміново — критична знахідка',()=>$('urgBtn').click());act('Вивантажити архів в Excel',()=>{showView('archive');$('aCsv').click();});act('Зберегти як PDF',()=>$('pdfBtn').click());act('Памʼятка (1 сторінка)',openMemo);
   act('Архів',()=>showView('archive'));act('На контроль',()=>showView('archive'));act('Налаштування',()=>showView('settings'));act('Довідка',openHelp);act('Помилка чи ідея — повідомити розробнику',openFeedback);
@@ -35,7 +36,7 @@ function openSearch(){
     const run=it=>{closeDlg();it.go();};
     q.addEventListener('input',()=>{sel=0;draw();});
     q.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){sel=Math.min(sel+1,shown.length-1);draw();e.preventDefault();}else if(e.key==='ArrowUp'){sel=Math.max(sel-1,0);draw();e.preventDefault();}else if(e.key==='Enter'&&shown[sel]){e.preventDefault();run(shown[sel]);}});
-    box.append(q,list,el('p',{class:'note'},'↑↓ — вибір, Enter — відкрити, Esc — закрити.'));draw();setTimeout(()=>q.focus(),20);
+    box.append(q,list,el('p',{class:'note'},'↑↓ — вибір, Enter — відкрити, Esc — закрити.'));draw();q.dataset.autofocus='1';
   });
 }
 $('navSearch').onclick=openSearch;
@@ -76,7 +77,7 @@ function openHelp(){
 <li>«Архів»: друк пачкою, «На контроль», підсумок дня, вивантаження в Excel.</li>
 <li>Папка даних («Налаштування»): архів, копія кожного протоколу як аркуша й налаштування зберігаються на диск самі.</li></ul>
 <h3>Гарячі клавіші</h3>
-<div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Y</kbd> або <kbd class="k">Ctrl</kbd>+<kbd class="k">Shift</kbd>+<kbd class="k">Z</kbd></span><span>повторити</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
+<div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Y</kbd> або <kbd class="k">Ctrl</kbd>+<kbd class="k">Shift</kbd>+<kbd class="k">Z</kbd></span><span>повторити</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">Alt</kbd>+<kbd class="k">Enter</kbd></span><span>прийняти підказки висновку</span><span><kbd class="k">←</kbd><kbd class="k">→</kbd><kbd class="k">↑</kbd><kbd class="k">↓</kbd></span><span>по кнопках зони: ←→ у групі, ↑↓ між групами; пробіл — вибрати</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
     box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};const fbb=el('button',{type:'button',class:'btn'},'Помилка чи ідея');fbb.onclick=()=>{closeDlg();openFeedback();};const m=el('button',{type:'button',class:'btn'},'Памʼятка на 1 сторінку');m.onclick=()=>{closeDlg();openMemo();};r.append(w,m,fbb);box.append(r);});
 }
 $('navHelp').onclick=openHelp;

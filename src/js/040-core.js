@@ -13,9 +13,40 @@ if(!SET.v22){SET.printMode='full';SET.v22=true;store.set(SET_KEY,SET);}
 let TPL=store.get(TPL_KEY,[]);
 let A=store.get(A_KEY,null);
 if(!A){const old=store.get('skiagrama.journal.v1',[]);A=Array.isArray(old)?old:[];}
+/* Архів — у IndexedDB браузера (сотні МБ). Раніше був у localStorage: там ~5 млн символів ≈ 1800 протоколів,
+   після чого нові протоколи тихо не зберігалися б. Старий архів переноситься сам при першому запуску.
+   Дві вкладки: перед записом підтягуємо чужі зміни; видалені записи памʼятаємо (DEL_KEY), щоб вони не «воскресали». */
+const DEL_KEY='skiagrama.archive.deleted';
+let aKnown=new Set(A.map(r=>r.id)),aDeleted=new Set(store.get(DEL_KEY,[])),aChain=Promise.resolve(),aFailNote=false;
+const bc=typeof BroadcastChannel==='function'?new BroadcastChannel('skiagrama'):null;
+function idbPut(k,v){return idb().then(db=>new Promise(res=>{try{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>res(true);t.onerror=t.onabort=()=>res(false);}catch(e){res(false);}})).catch(()=>false);}
+function mergeInto(list){let n=0;const byId=new Map(A.map(r=>[r.id,r]));
+  aVer++;(list||[]).forEach(r=>{if(!r||!r.id||aDeleted.has(r.id))return;const o=byId.get(r.id);if(!o){A.push(r);byId.set(r.id,r);n++;}else if((r.ts||0)>(o.ts||0))Object.assign(o,r);});return n;}
+/* швидкий пошук записів за ПІБ (на тисячах протоколів не перебираємо весь архів на кожну літеру) */
+let aVer=0,nameIdx=null,nameIdxKey='';
+function byName(n){const key=aVer+'|'+A.length;if(!nameIdx||nameIdxKey!==key||nameIdx.arr!==A){const m=new Map();A.forEach(r=>{const k=norm(r.name);if(!k)return;let l=m.get(k);if(!l)m.set(k,l=[]);l.push(r);});nameIdx={m,arr:A};nameIdxKey=key;}return nameIdx.m.get(n)||[];}
+function refreshArchiveViews(){renderNames();updCtrlBadge();if(!$('view-archive').hidden)renderArchive();}
+async function archivePersist(){
+  const db=await kvGet('archive');
+  if(Array.isArray(db)&&mergeInto(db)){aKnown=new Set(A.map(r=>r.id));refreshArchiveViews();}
+  if(await idbPut('archive',A)){store.del(A_KEY);if(bc)bc.postMessage('archive');return true;}
+  try{localStorage.setItem(A_KEY,JSON.stringify(A));return true;}
+  catch(e){if(!aFailNote){aFailNote=true;$('storeBanner').textContent='Памʼять браузера заповнена — нові протоколи не зберігаються на цьому пристрої. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';$('storeBanner').hidden=false;}return false;}
+}
+function saveA(){aVer++;
+  const now=new Set(A.map(r=>r.id));aKnown.forEach(id=>{if(!now.has(id))aDeleted.add(id);});aKnown=now;
+  if(aDeleted.size)store.set(DEL_KEY,[...aDeleted].slice(-5000));
+  aChain=aChain.then(archivePersist,archivePersist);folderSoon();return aChain;
+}
+const archiveSaved=()=>aChain;
+if(bc)bc.onmessage=async e=>{
+  if(e.data==='archive'){aDeleted=new Set(store.get(DEL_KEY,[]));A=A.filter(r=>!aDeleted.has(r.id));const db=await kvGet('archive');mergeInto(db);aKnown=new Set(A.map(r=>r.id));refreshArchiveViews();}
+  else if(e.data==='hello')bc.postMessage('here');
+  else if(e.data==='here')$('tabBanner').hidden=false;
+};
 let USE=store.get(USE_KEY,{counts:{},rank:{},day:''});
 if(USE.day!==today()){USE.rank=Object.assign({},USE.counts);USE.day=today();store.set(USE_KEY,USE);}
-const saveSet=()=>{store.set(SET_KEY,SET);folderSoon();},saveTpl=()=>{store.set(TPL_KEY,TPL);folderSoon();},saveA=()=>{store.set(A_KEY,A);folderSoon();},saveUse=()=>store.set(USE_KEY,USE);
+const saveSet=()=>{store.set(SET_KEY,SET);folderSoon();},saveTpl=()=>{store.set(TPL_KEY,TPL);folderSoon();},saveUse=()=>store.set(USE_KEY,USE);
 
 /* тема і шрифт */
 const FONT={s:'14px',m:'15px',l:'16.5px',xl:'18px'},PFONT={s:'14.5px',m:'16px',l:'17.5px',xl:'19.5px'};

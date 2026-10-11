@@ -87,3 +87,15 @@ $('sAbbrAdd').onclick=()=>{
   if(!v){toast('Напишіть фразу');return;}
   SET.abbr[k]=v;saveSet();$('sAbbrKey').value='';$('sAbbrVal').value='';renderAbbr();toast(`Додано .${k}`);
 };
+
+/* стрілки по кнопках: ←→ — у межах групи, ↑↓ — до попередньої / наступної групи (без десятків Tab) */
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.metaKey||e.altKey||!/^Arrow(Left|Right|Up|Down)$/.test(e.key))return;
+  const b=e.target;if(!b||b.tagName!=='BUTTON')return;const grp=b.closest('.group, .chips, .seg');if(!grp||!grp.closest('#zones, #sec-concl, #sec-rec, #sec-study, #statusRow'))return;
+  const vis=x=>x.offsetParent!==null&&!x.disabled;
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){const bs=[...grp.querySelectorAll('button')].filter(vis);const i=bs.indexOf(b);const n=bs[i+(e.key==='ArrowRight'?1:-1)];if(n){e.preventDefault();n.focus();}return;}
+  if(grp.classList.contains('seg'))return;
+  const scope=grp.closest('.zone')||grp.closest('.card');if(!scope)return;
+  const groups=[...scope.querySelectorAll('.group, .chips')].filter(g=>[...g.querySelectorAll('button,input')].some(vis));const gi=groups.indexOf(grp);
+  const ng=groups[gi+(e.key==='ArrowDown'?1:-1)];if(!ng)return;const f=[...ng.querySelectorAll('button,input')].find(vis);if(f){e.preventDefault();f.focus();}
+});

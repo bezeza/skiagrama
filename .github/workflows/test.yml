@@ -1,0 +1,18 @@
+name: Тести
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - name: Зібрані файли збігаються з src/
+        run: git diff --exit-code -- index.html skiagrama.html pamyatka.html sw.js || (echo "Запустіть node build.mjs і закомітьте зібрані файли" && exit 1)

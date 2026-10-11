@@ -47,7 +47,8 @@ function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(s
    як кнопка «права» записана в коді: ['права','правої легені','права'] — ключ, фраза в протокол, напис.
    Олівець робить те саме без коду: зміни зберігаються в SET.btn / SET.btnAdd / SET.btnOrder (040-core.js → effOpts). */
 let editZone=null;
-function renderZones(){
+function renderZones(){const fk=focusKey();renderZonesInner();focusRestore(fk);}
+function renderZonesInner(){
   const root=$('zones');root.textContent='';
   visibleZones().forEach((d,i)=>{
     const z=S.zones[d.id];const zs=zoneState(d);const ed=editZone===d.id;
@@ -234,7 +235,7 @@ function renderListEditor(kind,box){
 }
 function findPrev(){
   const name=norm($('pName').value);if(name.length<4)return null;
-  const recs=A.filter(r=>norm(r.name)===name&&r.study===S.study&&r.id!==editingId).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.ts-a.ts);
+  const recs=byName(name).filter(r=>r.study===S.study&&r.id!==editingId).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.ts-a.ts);
   return recs[0]?recs[0].id:null;
 }
 function renderPrev(){
@@ -356,4 +357,11 @@ let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
 function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
 function updStudyCard(){}
-function renderAll(){renderStudy();renderPrev();updStudyCard();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();}
+/* фокус клавіатури не губиться, коли кнопки перемальовуються (пробіл / Enter на кнопці → фокус лишається на ній) */
+function focusKey(){const a=document.activeElement;if(!a||a.tagName!=='BUTTON')return null;const box=a.closest('[id]');if(!box||box.id==='ptext'||box.id==='dlgBox')return null;
+  const gs=[...box.querySelectorAll('.group')];const g=a.closest('.group');const scope=g||box;
+  return {box:box.id,gi:g?gs.indexOf(g):-1,t:a.textContent.trim(),aria:a.getAttribute('aria-label'),i:[...scope.querySelectorAll('button')].indexOf(a)};}
+function focusRestore(k){if(!k)return;const cur=document.activeElement;if(cur&&cur!==document.body&&document.body.contains(cur))return;
+  const box=$(k.box);if(!box)return;const scope=k.gi>=0?box.querySelectorAll('.group')[k.gi]||box:box;const btns=[...scope.querySelectorAll('button')];
+  const b=btns.find(x=>x.textContent.trim()===k.t&&x.getAttribute('aria-label')===k.aria)||btns[k.i];if(b)b.focus({preventScroll:true});}
+function renderAll(){const fk=focusKey();renderStudy();renderPrev();updStudyCard();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();focusRestore(fk);}

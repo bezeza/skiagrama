@@ -106,7 +106,7 @@ function fillDepts(){const dl=$('deptList');dl.textContent='';SET.depts.split(',
 /* запуск */
 applyLook();$('vBadge').textContent=`v${VERSION} бета`;
 /* для автотестів: доступ до внутрішніх функцій (не впливає на роботу) */
-window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,swapSide,autoStatus,statusOf,contradictions,checks,phrasePack,PACKS,get TPL(){return TPL;},applyTpl:t=>applyTpl(t),
+window.__skg={get S(){return S;},get A(){return A;},archiveSaved,saveA,get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,swapSide,autoStatus,statusOf,contradictions,checks,phrasePack,PACKS,get TPL(){return TPL;},applyTpl:t=>applyTpl(t),
   setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k),
   async useFolder(h){dirH=h;dirOK=true;await folderWrite();}};
 fillDepts();renderNames();updCtrlBadge();
@@ -115,7 +115,11 @@ const dr=store.get(DRAFT_KEY,null);
 if(dr&&dr.S&&STUDIES[dr.S.study]){S=dr.S;S.zones=Object.assign(blankZones(S.study),S.zones);setFields(dr.f);editingId=dr.editingId||null;clicks=dr.clicks||0;renderAll();setTimeout(()=>toast('Відновлено незбережений протокол'),300);}
 else renderAll();
 setInterval(()=>{if(t0&&!tDone)renderMeter();},1000);
-folderBoot();
+/* архів: перенесення з localStorage у IndexedDB і підтягування збереженого */
+aChain=aChain.then(async()=>{const db=await kvGet('archive');if(Array.isArray(db))mergeInto(db);aKnown=new Set(A.map(r=>r.id));refreshArchiveViews();
+  if(store.get(A_KEY,null)||!Array.isArray(db))await archivePersist();}).then(()=>folderBoot());
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+if(bc)bc.postMessage('hello');
 if(SET.welcomed&&window.innerWidth>760&&!$('pName').value)setTimeout(()=>{if($('dlg').hidden)$('pName').focus();},50);
 if(!SET.welcomed)setTimeout(openWelcome,200);
 else if(SET.seenVersion!==VERSION)setTimeout(openWhatsNew,400);

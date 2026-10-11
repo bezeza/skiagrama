@@ -201,7 +201,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.click('#navHelp');await p.click('#dlg >> text=Памʼятка на 1 сторінку');ok((await p.textContent('#dlg')).includes('Протокол за 5 кроків'),'памʼятка відкривається з довідки');await p.click('#dlg >> text=Закрити');
   // збереження з бланком
   await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
-  ok(await p.evaluate(()=>{const r=JSON.parse(localStorage.getItem('skiagrama.archive.v1')).slice(-1)[0];return !!(r.doc&&r.blank);}),'архів зберігає дані для бланка');
+  ok(await p.evaluate(()=>{const r=window.__skg.A.slice(-1)[0];return !!(r.doc&&r.blank);}),'архів зберігає дані для бланка');
   await p.click('#samePt');
   ok((await p.inputValue('#pName'))!==''&&(await p.inputValue('#pAge'))!==''&&await p.evaluate(()=>!document.getElementById('samePt')),'«Ще дослідження цьому пацієнту»: ПІБ і вік лишились, новий протокол');
   await p.click('#navArchive');const ds=await p.textContent('#dayBox');
@@ -268,7 +268,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.fill('#pName','Пацієнт Тест');await p.fill('#pAge','50');await p.fill('#pNum','777');await p.fill('#pEed','0,35');
   await p.evaluate(()=>{const K=window.__skg;K.setZones({infil:{st:'c',sel:{side:'права',loc:'нижні',char:'інфільтр'}}});K.S.concl=['Правобічна пневмонія'];K.S.recs=[];K.renderAll();});
   await p.fill('#recFree','КТ ОГК для уточнення');await p.keyboard.press('Control+s');
-  ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('skiagrama.archive.v1')).slice(-1)[0].status)==='d','у архів зберігається результат');
+  ok(await p.evaluate(()=>window.__skg.A.slice(-1)[0].status)==='d','у архів зберігається результат');
   await p.click('#navArchive');
   ok((await p.textContent('#aTable')).includes('дообстеження'),'в архіві позначка результату');
   ok(await p.isVisible('#ddList'),'кнопка «Список на дообстеження»');
@@ -287,6 +287,90 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('skiagrama.feedback.v1')).length===1&&JSON.parse(localStorage.getItem('skiagrama.feedback.v1'))[0].sent),'відгук збережено й позначено «передано»');
   await p.click('#navFeedback');await p.fill('#fbText','Петренко І. В. — не друкується');
   ok(await p.isVisible('#dlg .warnt'),'попередження, якщо в тексті ПІБ');await p.click('#dlg >> text=Закрити');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
+/* ---------- Надійність: архів, дві вкладки, вимкнене світло ---------- */
+{
+  console.log('\nНадійність даних');
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const errs=[];
+  const open=async()=>{const p=await ctx.newPage();p.on('pageerror',e=>errs.push(e.message));await p.goto(FILE);
+    await p.waitForFunction(()=>window.__skg&&window.__skg.archiveSaved);await p.evaluate(()=>window.__skg.archiveSaved());
+    if(await p.isVisible('#dlg:not([hidden])'))await p.click('text=Пропустити — заповню пізніше').catch(()=>{});return p;};
+  // старий архів у localStorage переноситься в IndexedDB
+  let p=await ctx.newPage();await p.goto(FILE);await p.waitForFunction(()=>window.__skg&&window.__skg.archiveSaved);await p.evaluate(()=>window.__skg.archiveSaved());
+  await p.evaluate(()=>{localStorage.setItem('skiagrama.archive.v1',JSON.stringify([{id:'old1',ts:1,date:'2025-01-02',num:'1',name:'Старий запис',study:'ogk',concl:'Без патологічних змін.',text:'x'}]));});
+  await p.close();p=await open();
+  ok(await p.evaluate(()=>window.__skg.A.some(r=>r.id==='old1')&&!localStorage.getItem('skiagrama.archive.v1')),'старий архів перенесено з localStorage у сховище браузера');
+  // великий архів: 6000 протоколів зберігаються і читаються
+  const t0=Date.now();
+  await p.evaluate(async()=>{const K=window.__skg;const base={ts:2,date:'2025-03-01',num:'1',name:'Пацієнт',study:'ogk',concl:'Правобічна пневмонія (S9, S10).',text:'П\n'.repeat(200),units:Array.from({length:12},(_,i)=>({t:'Речення протоколу номер '+i,p:2})),state:{zones:{}},doc:{body:Array(8).fill('Фраза опису зони протоколу.')}};
+    for(let i=0;i<6000;i++)K.A.push(Object.assign({},base,{id:'big'+i,num:String(i),name:'Пацієнт '+i}));await K.saveA();});
+  const tSave=Date.now()-t0;
+  await p.close();const t1=Date.now();p=await open();const tLoad=Date.now()-t1;
+  ok(await p.evaluate(()=>window.__skg.A.filter(r=>r.id.startsWith('big')).length)===6000,`6000 протоколів зберігаються (запис ${tSave} мс, відкриття ${tLoad} мс)`);
+  await p.click('#navArchive');const t2=Date.now();await p.fill('#aSearch','Пацієнт 5999');await p.waitForFunction(()=>document.getElementById('aTable').textContent.includes('Пацієнт 5999'));
+  ok(Date.now()-t2<1500,`пошук в архіві з 6000 записів: ${Date.now()-t2} мс`);
+  await p.evaluate(async()=>{const K=window.__skg;K.A.splice(0,K.A.length,...K.A.filter(r=>!r.id.startsWith('big')));await K.saveA();});
+  // дві вкладки
+  const q=await open();
+  ok(await p.isVisible('#tabBanner')||await q.isVisible('#tabBanner'),'попередження: програма відкрита у двох вкладках');
+  await p.evaluate(async()=>{const K=window.__skg;K.A.push({id:'tabA',ts:Date.now(),date:'2026-10-11',name:'Вкладка А',study:'ogk',concl:''});await K.saveA();});
+  await q.evaluate(async()=>{const K=window.__skg;K.A.push({id:'tabB',ts:Date.now(),date:'2026-10-11',name:'Вкладка Б',study:'ogk',concl:''});await K.saveA();});
+  await p.evaluate(async()=>{const K=window.__skg;const i=K.A.findIndex(r=>r.id==='old1');K.A.splice(i,1);await K.saveA();});
+  await q.waitForTimeout(300);
+  await q.evaluate(async()=>{const K=window.__skg;K.A.push({id:'tabB2',ts:Date.now(),date:'2026-10-11',name:'Вкладка Б2',study:'ogk',concl:''});await K.saveA();});
+  await p.close();await q.close();p=await open();
+  const ids=await p.evaluate(()=>window.__skg.A.map(r=>r.id));
+  ok(ids.includes('tabA')&&ids.includes('tabB')&&ids.includes('tabB2'),'дві вкладки: протоколи з обох збереглися');
+  ok(!ids.includes('old1'),'дві вкладки: видалений протокол не повертається');
+  // «вимкнули світло» посеред протоколу
+  await p.fill('#pName','Пацієнт Світло');await p.click('#allNorm');await p.evaluate(()=>{window.__skg.S.concl=['Гострий бронхіт'];window.__skg.renderAll();});
+  await p.waitForTimeout(700);await p.close({runBeforeUnload:false});p=await open();
+  ok((await p.inputValue('#pName'))==='Пацієнт Світло'&&(await paper(p)).includes('Гострий бронхіт'),'після раптового закриття протокол відновлено');
+  await p.click('#ptext .concl');await p.keyboard.press('End');await p.keyboard.type(' Правка вручну');await p.waitForTimeout(700);
+  await p.close({runBeforeUnload:false});p=await open();
+  ok((await paper(p)).includes('Правка вручну'),'ручна правка тексту теж відновлюється');
+  await p.click('#pman >> text=Скинути правку');
+  // нагадування про копію архіву (без папки даних)
+  await p.evaluate(()=>{const K=window.__skg;for(let i=0;i<3;i++)K.A.push({id:'n'+i,ts:i,date:'2026-10-11',name:'Н '+i,study:'ogk',concl:''});});
+  await p.waitForTimeout(500);if(await p.isVisible('#dlg'))await p.click('#dlg button >> nth=-1');if(await p.isVisible('#dlg'))await p.keyboard.press('Escape');
+  await p.evaluate(()=>{window.__skg.S.concl=[];window.__skg.renderAll();});await p.fill('#pNum','55');await p.fill('#pAge','40');await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
+  ok(await p.waitForSelector('#nudgeSave',{timeout:3000}).then(()=>true,()=>false),'раз на день нагадує зберегти копію архіву');
+  await p.click('#dlg >> text=Пізніше');
+  // переповнене сховище: попередження одразу
+  await p.evaluate(()=>{Storage.prototype.setItem=function(){const e=new Error('quota');e.name='QuotaExceededError';throw e;};});
+  await p.click('#navSettings');await p.fill('#sDoctor','Лікар Тест');
+  ok(await p.isVisible('#storeBanner')&&(await p.textContent('#storeBanner')).includes('заповнена'),'сховище переповнене — попередження в ту ж мить');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
+/* ---------- Клавіатура й вузькі екрани ---------- */
+{
+  console.log('\nКлавіатура й вузькі екрани');
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.click('text=Пропустити — заповню пізніше');
+  const where=()=>p.evaluate(()=>{const a=document.activeElement;return a&&a.tagName==='BUTTON'?a.textContent.trim():a?a.id||a.tagName:'';});
+  await p.evaluate(()=>document.activeElement.blur());await p.keyboard.press('Alt+n');await p.keyboard.press('1');
+  ok(await where()==='обидві','«1» ставить фокус на першу кнопку зони');
+  await p.keyboard.press('ArrowRight');await p.keyboard.press('Space');
+  ok(await where()==='права'&&(await paper(p)).includes('правої легені'),'пробіл вибирає кнопку, фокус лишається на ній');
+  await p.keyboard.press('ArrowDown');ok(await where()==='нижньо-медіальні поля','↓ — до наступної групи');
+  await p.keyboard.press('Space');await p.keyboard.press('ArrowDown');await p.keyboard.press('ArrowRight');await p.keyboard.press('ArrowRight');await p.keyboard.press('Space');
+  await p.keyboard.press('Alt+Enter');ok((await paper(p)).includes('Rö-ч: Правобічна пневмонія.'),'Alt+Enter приймає підказку висновку');
+  await p.keyboard.press('Control+k');await p.keyboard.type('рекоменд');
+  ok((await p.inputValue('#dlgBox input[type=search]'))==='рекоменд','Ctrl+K: друк одразу йде в пошук');
+  await p.keyboard.press('Escape');ok(await where()==='інфільтративні','після закриття вікна фокус повертається');
+  // архів по 300
+  await p.evaluate(async()=>{const K=window.__skg;for(let i=0;i<700;i++)K.A.push({id:'m'+i,ts:i,date:'2025-05-01',num:String(i),name:'Пацієнт '+i,study:'ogk',concl:''});await K.saveA();});
+  await p.click('#navArchive');ok(await p.evaluate(()=>document.querySelectorAll('#aTable tr').length)<=302&&await p.isVisible('#aMore'),'архів показує по 300 рядків');
+  await p.click('#aMore');ok(await p.evaluate(()=>document.querySelectorAll('#aTable tr').length)>=601,'«Показати ще» додає рядки');
+  // ноутбук 1366×768 з масштабом 125 %
+  await p.setViewportSize({width:1093,height:614});await p.click('#navDesc');
+  const lay=await p.evaluate(()=>({h:document.querySelector('header.top').getBoundingClientRect().height,a:document.querySelector('.actbar').getBoundingClientRect().height,s:document.documentElement.scrollWidth-document.documentElement.clientWidth}));
+  ok(lay.h<80&&lay.a<50&&lay.s===0,`1366×768 при 125 %: шапка ${Math.round(lay.h)} px, кнопки в один рядок, без прокрутки вбік`);
+  await p.click('.split details.menu>summary');
+  ok(await p.evaluate(()=>document.querySelector('details.menu[open] .mpop').getBoundingClientRect().right<=document.documentElement.clientWidth),'меню «Копіювати» не виходить за край');
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }

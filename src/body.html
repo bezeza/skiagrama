@@ -28,6 +28,7 @@
 <div class="banners noprint">
   <div class="banner" id="updBanner" hidden><span>Доступна нова версія Skiagrama. Незбережений протокол не загубиться.</span><button class="btn primary sm" id="updBtn" type="button">Оновити зараз</button></div>
   <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button></div>
+  <div class="banner" id="tabBanner" hidden>Skiagrama вже відкрита в іншій вкладці або вікні. Працюйте в одній — так надійніше.</div>
   <div class="banner" id="storeBanner" hidden>Браузер не дає зберігати дані на цьому пристрої: архів, шаблони й чернетка зникнуть після закриття сторінки.</div>
 </div>
 
@@ -113,12 +114,12 @@
   <div class="actbar noprint">
     <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Готово</span><span class="cnt" id="doneCnt" hidden></span></button>
     <div class="split">
-      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><i data-i="copy"></i>Копіювати</button>
+      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><i data-i="copy"></i><span class="lbl2">Копіювати</span></button>
       <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
         <div class="mpop"><span class="note">Для h24 частинами:</span><button id="copyDesc" type="button">Опис</button><button id="copyConcl" type="button">Висновок</button><button id="copyRec" type="button">Рекомендації</button></div></details>
     </div>
-    <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)"><i data-i="print"></i>Друк</button>
-    <details class="menu"><summary class="btn" title="Зберегти протокол у файл"><i data-i="save"></i>Зберегти як ▾</summary>
+    <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
+    <details class="menu"><summary class="btn" title="Зберегти протокол у файл: PDF, Word, LibreOffice" aria-label="Зберегти як"><i data-i="save"></i><span class="lbl">Зберегти як</span>&nbsp;▾</summary>
       <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.doc)</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.fodt)</button></div></details>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>

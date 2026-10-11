@@ -13,10 +13,14 @@ const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 const clone=o=>JSON.parse(JSON.stringify(o));
 let storeOK=true;const mem={};
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){storeOK=false;return k in mem?mem[k]:d;}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){storeOK=false;mem[k]=v;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){storeOK=false;mem[k]=v;storeFail(e);}},
   del(k){try{localStorage.removeItem(k);}catch(e){delete mem[k];}}};
 try{localStorage.setItem('skg.t','1');localStorage.removeItem('skg.t');}catch(e){storeOK=false;}
 if(!storeOK)$('storeBanner').hidden=false;
+/* збереження не вдалося — кажемо одразу, а не мовчки тримаємо в памʼяті до перезапуску */
+function storeFail(e){const b=$('storeBanner');if(!b||!b.hidden)return;
+  b.textContent=(e&&/quota/i.test(e.name+e.message)?'Памʼять браузера заповнена: ':'Браузер не дав зберегти дані: ')+'налаштування й чернетка не збережуться після закриття. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';b.hidden=false;
+  try{toast('Не вдалося зберегти — див. попередження вгорі');}catch(x){}}
 function toast(t){const b=$('toast');b.textContent=t;b.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{b.hidden=true;},2400);}
 function copyText(text,label){
   const fb=()=>{const ta=el('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.append(ta);ta.select();let ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();toast(ok?label+' скопійовано':'Не вдалося скопіювати — виділіть текст вручну');};
