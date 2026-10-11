@@ -44,7 +44,7 @@ function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(s
 function renderZones(){
   const root=$('zones');root.textContent='';
   visibleZones().forEach((d,i)=>{
-    const z=S.zones[d.id];const box=el('div',{class:'zone'+(S.focus===d.id?' focus':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
+    const z=S.zones[d.id];const zs=zoneState(d);const box=el('div',{class:'zone'+(z.st==='c'?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
     const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));head.append(h);
     const seg=el('div',{class:'seg',role:'group','aria-label':d.name});
     [['n','Норма'],['c','Зміни'],['x','—']].forEach(([st,l])=>{const b=el('button',{type:'button','aria-pressed':String(z.st===st),class:st==='n'?'n':'',title:st==='x'?'Не згадувати в протоколі':st==='n'?(normOf(d)||'У нормі не описується'):null},l);

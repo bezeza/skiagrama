@@ -54,7 +54,7 @@ function zoneText(d){
   if(z.st==='n')return normOf(d);
   const my=(z.sel.__my||[]).filter(p=>myList(d).includes(p)).map(sentence).join(' ');
   if(!hasStd(d,z)&&my)return my;
-  let t=d.tpl.replace(/\{([^{}|]*)\|(\w+)\}/g,(m,pre,g)=>{const v=groupVal(d,z,g,false);return v?pre+v:'';})
+  let t=d.tpl.replace('{|segclose}',groupVal(d,z,'seg',false)?')':'').replace(/\{([^{}|]*)\|(\w+)\}/g,(m,pre,g)=>{const v=groupVal(d,z,g,false);return v?pre+v:'';})
              .replace(/\{(\w+)\}/g,(m,g)=>groupVal(d,z,g,true));
   t=t.replace(/\s+/g,' ').replace(/\s+([,.])/g,'$1').replace(/\.\./g,'.').trim();
   return cap(t)+(my?' '+my:'');
@@ -92,7 +92,7 @@ function suggestions(){
   const out=[];const Z=S.zones;const sel=(z,g)=>(Z[z]&&Z[z].st==='c')?Z[z].sel[g]:undefined;const ch=z=>Z[z]&&Z[z].st==='c';
   const add=(t,why,tbd)=>{if(t&&!out.some(x=>x[0]===t))out.push([t,why,tbd]);};
   if(S.study==='ogk'||S.study==='fg'){
-    if(ch('infil')&&hasStd(OGK_ZONES[0],Z.infil)){const side={обидві:'Двобічна',права:'Правобічна',ліва:'Лівобічна'}[sel('infil','side')]||'';const type={зливні:'вогнищево-зливна',вогнищеві:'вогнищева',сегм:'сегментарна'}[sel('infil','char')]||'';add(cap(`${side} ${type} пневмонія`.replace(/\s+/g,' ').trim().toLowerCase()),'інфільтрація');}
+    if(ch('infil')&&hasStd(OGK_ZONES[0],Z.infil)){const side={обидві:'Двобічна',права:'Правобічна',ліва:'Лівобічна'}[sel('infil','side')]||'';const type={зливні:'вогнищево-зливна',вогнищеві:'вогнищева',сегм:'сегментарна'}[sel('infil','char')]||'';const sg=groupVal(OGK_ZONES[0],Z.infil,'seg',false);add(cap(`${side} ${type} пневмонія`.replace(/\s+/g,' ').trim().toLowerCase())+(sg?` (${sg})`:''),'інфільтрація');}
     if(sel('pneum','p')==='підвищ')add('Емфізема легень','підвищена пневматизація');
     if(ch('foci')&&['щільні','кальц'].includes(sel('foci','dens'))&&sel('foci','lobe')==='верх')add('ЗЗТБ','щільні вогнища у верхній долі');
     const pat=ch('pattern')?(sel('pattern','ch')||[]):[];
