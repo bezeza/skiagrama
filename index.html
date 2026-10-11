@@ -129,8 +129,10 @@ details.menu[open]>summary{background:var(--blue-soft);border-color:var(--blue)}
 .vbtn:hover{border-color:var(--blue)}
 .vbtn[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
 .viewbar label.bsel select{min-height:34px;padding:4px 8px;font-size:13px;width:auto}
+.studytabs button .ic{flex:none}
+@media (max-width:1300px) and (min-width:761px){.studytabs button{flex-direction:column;gap:3px;font-size:13.5px;padding:7px 4px}}
 .studytabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.studytabs button{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
+.studytabs button{min-width:0;overflow:hidden;line-height:1.15;text-align:center;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
 .studytabs button+button{border-left:1px solid var(--line)}
 .studytabs button[aria-selected="true"]{background:var(--blue);color:var(--surface)}
 .navrow{display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px}
@@ -336,7 +338,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   .hide-m{display:none}
   .zone .zone-head h3{flex-basis:100%}
   .btn.norm{white-space:nowrap}
-  .studytabs button{font-size:13px;gap:5px;padding:9px 4px}
+  .studytabs button{font-size:13px;gap:5px;padding:7px 4px}
   .studytabs button .ic{width:16px;height:16px}
   #mbar .mb .btn{padding:7px 6px;gap:5px;font-size:14.5px}
   #mbar .mb .btn .ic{width:16px;height:16px}
