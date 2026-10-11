@@ -278,6 +278,15 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   const csv=dl[0]?require('fs').readFileSync(await dl[0].path(),'utf8'):'';
   ok(csv.includes(';Результат;')&&csv.includes(';Дообстеження;'),'CSV: колонка «Результат»');
   ok((await p.textContent('#dayBox')).includes('на дообстеження'),'підсумок дня: на дообстеження');
+  // відгук розробнику
+  await p.click('#navFeedback');await p.click('#dlg [data-k="idea"]');await p.fill('#fbText','Додати кнопку плевральні спайки');await p.click('#fbSave');
+  ok((await p.textContent('#dlg')).includes('Записано'),'«Помилка чи ідея»: відгук записано');
+  await ctx.grantPermissions(['clipboard-read','clipboard-write']);await p.click('#fbCopyOne');
+  const clip=await p.evaluate(()=>navigator.clipboard.readText());
+  ok(clip.includes('Ідея')&&clip.includes('плевральні спайки')&&clip.includes('Skiagrama 0.4')&&!clip.includes('Пацієнт Тест'),'відгук копіюється для розробника без даних пацієнта');
+  ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('skiagrama.feedback.v1')).length===1&&JSON.parse(localStorage.getItem('skiagrama.feedback.v1'))[0].sent),'відгук збережено й позначено «передано»');
+  await p.click('#navFeedback');await p.fill('#fbText','Петренко І. В. — не друкується');
+  ok(await p.isVisible('#dlg .warnt'),'попередження, якщо в тексті ПІБ');await p.click('#dlg >> text=Закрити');
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }

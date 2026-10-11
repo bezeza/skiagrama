@@ -454,3 +454,11 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .abbr code{font-weight:600;color:var(--blue)}
 .abbr.add{grid-template-columns:90px 1fr auto;margin-top:6px}
 @media (max-width:560px){.abbr,.abbr.add{grid-template-columns:70px 1fr auto}}
+/* відгуки */
+#dlgBox textarea#fbText{width:100%;margin:10px 0 6px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);resize:vertical}
+#dlgBox #fbWho{width:100%;max-width:340px}
+.warnt{color:var(--warn)}
+.fblist{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.fblist h3{margin:0 0 6px;font-size:15px}
+.fblist .it{display:flex;gap:8px;align-items:baseline;padding:3px 0}
+#dlgBox .seg button{display:inline-flex;align-items:center;gap:6px}

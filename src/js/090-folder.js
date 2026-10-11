@@ -28,6 +28,7 @@ async function folderWrite(){
     await writeJSON(dirH,'архів.json',{app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A});
     await writeJSON(dirH,'налаштування.json',{app:'skiagrama-settings',v:2,settings:SET,templates:TPL});
     await writeJSON(dirH,'пакет фраз.json',phrasePack());
+    if(FB.length)await fbToFolder();
     /* архів ще й по місяцях: архів/2026/2026-10.json — зручно відкрити чи віддати один місяць */
     const ad=await dirH.getDirectoryHandle('архів',{create:true});const byM={};
     A.filter(r=>!r.example).forEach(r=>{const m=(r.date||today()).slice(0,7);(byM[m]=byM[m]||[]).push(r);});
