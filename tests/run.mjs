@@ -177,6 +177,22 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.click('#allNorm');await p.click('#urgBtn');
   ok((await paper(p)).includes('ТЕРМІНОВО')&&await p.evaluate(()=>window.__skg.docData().urgent===true),'мітка «Терміново» в протоколі');
   await p.click('#urgBtn');
+  // пакет типових описів: кожен шаблон дає повний протокол без «…» і без зауважень по зонах
+  const packRes=await p.evaluate(()=>{const K=window.__skg;const bad=[];let n=0;
+    for(const t of K.PACKS[0].templates){K.study(t.study);K.applyTpl(t);n++;
+      const txt=document.getElementById('paper').textContent;const w=[...document.querySelectorAll('#checkList li')].map(l=>l.textContent).filter(x=>/заповніть|Бічність|порожній|без патології/.test(x));
+      if(/[…{}|]/.test(txt.replace('Rö-ч: …',''))||w.length)bad.push(t.name+': '+(w.join(' ')||txt.slice(0,80)));}
+    K.study('ogk');return {n,bad};});
+  ok(packRes.bad.length===0,`пакет «Типові описи»: ${packRes.n} шаблонів дають повні протоколи`+(packRes.bad.length?' — '+packRes.bad.join(' / '):''));
+  await p.click('#navSettings');await p.click('#packCatalog >> text=Переглянути й встановити');
+  ok((await p.textContent('#dlg')).includes('не затверджено'),'перегляд пакета попереджає: чернетка');
+  await p.click('#dlg >> text=Встановити');await p.click('#view-settings [data-back]');await p.click('#allNorm');
+  ok(await p.isVisible('#tplRow >> text=Пневмонія справа, нижня частка'),'типові описи зʼявились у рядку «Шаблони»');
+  await p.click('#tplRow >> text=Пневмонія справа, нижня частка');
+  ok((await paper(p)).includes('В нижніх легеневих полях правої легені (S9, S10) визначаються інфільтративні тіні, з нечіткими контурами.'),'типовий опис заповнює зони одним кліком');
+  await p.click('#navSettings');await p.click('#packUndo');await p.click('#packUndo');
+  ok(await p.evaluate(()=>!window.__skg.TPL.some(t=>t.pack)),'«Повернути як було до пакета»');
+  await p.click('#view-settings [data-back]');await p.click('#allNorm');
   // тема «Кабінет»
   await p.click('#navSettings');await p.selectOption('#sTheme','grey');
   ok((await p.evaluate(()=>getComputedStyle(document.body).backgroundColor))==='rgb(42, 43, 45)','тема «Кабінет»: темно-сірий фон');

@@ -244,13 +244,16 @@
     <p class="note">Власні фрази додаються прямо в зоні: розгорніть зону → «+ своя фраза». Тут можна переглянути й видалити всі.</p>
     <div id="sMy"></div>
   </div>
-  <div class="card">
-    <h2 data-ic="box">Пакет фраз</h2>
-    <p class="note">Один файл з фразами норми, змінами кнопок зон, висновків і рекомендацій, «Моїми кнопками» і шаблонами — щоб перенести на інший ПК або дати колезі на заміні. Архів пацієнтів у пакет не потрапляє.</p>
+  <div class="card" id="packsCard">
+    <h2 data-ic="box">Пакети фраз і типові описи</h2>
+    <p class="note">Пакет — це фрази норми, зміни кнопок, свої висновки й рекомендації та готові типові описи від рентгенолога. Його можна дати колезі або встановити на інший ПК. Дані пацієнтів у пакет не потрапляють.</p>
+    <div id="packCatalog" class="packs"></div>
+    <div id="packInstalled"></div>
     <div class="trow">
-      <button class="btn" id="phExport" type="button" data-ic="down">Зберегти пакет фраз</button>
-      <label class="btn" for="phImport" style="display:inline-flex;align-items:center" data-ic="up">Завантажити пакет фраз</label>
+      <button class="btn" id="phExport" type="button" data-ic="pen">Мій пакет фраз — підписати й зберегти</button>
+      <label class="btn" for="phImport" style="display:inline-flex;align-items:center" data-ic="up">Завантажити пакет з файлу</label>
       <input id="phImport" type="file" accept=".json,application/json" hidden>
+      <button class="btn" id="packUndo" type="button" data-ic="undo" hidden>Повернути як було до пакета</button>
     </div>
     <p class="note" id="phMsg"></p>
   </div>

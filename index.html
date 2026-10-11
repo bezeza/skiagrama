@@ -103,6 +103,11 @@ input.miss{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset;backg
 @media (hover:none){.zpen{opacity:1}}
 .ppage.a5{width:210mm;height:148.5mm}
 .mpop b{font-weight:600}
+.packs{display:flex;flex-direction:column;gap:8px}
+.pack{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;background:var(--bg)}
+.pack .pt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tpl.fromPack button:first-child{color:var(--blue)}
+sup.draft{font-size:10px;color:var(--warn);font-weight:600}
 .chead{display:flex;align-items:center;gap:10px;justify-content:space-between}
 .urgbtn[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--surface)}
 .urgbtn{color:var(--bad)}
@@ -710,13 +715,16 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <p class="note">Власні фрази додаються прямо в зоні: розгорніть зону → «+ своя фраза». Тут можна переглянути й видалити всі.</p>
     <div id="sMy"></div>
   </div>
-  <div class="card">
-    <h2 data-ic="box">Пакет фраз</h2>
-    <p class="note">Один файл з фразами норми, змінами кнопок зон, висновків і рекомендацій, «Моїми кнопками» і шаблонами — щоб перенести на інший ПК або дати колезі на заміні. Архів пацієнтів у пакет не потрапляє.</p>
+  <div class="card" id="packsCard">
+    <h2 data-ic="box">Пакети фраз і типові описи</h2>
+    <p class="note">Пакет — це фрази норми, зміни кнопок, свої висновки й рекомендації та готові типові описи від рентгенолога. Його можна дати колезі або встановити на інший ПК. Дані пацієнтів у пакет не потрапляють.</p>
+    <div id="packCatalog" class="packs"></div>
+    <div id="packInstalled"></div>
     <div class="trow">
-      <button class="btn" id="phExport" type="button" data-ic="down">Зберегти пакет фраз</button>
-      <label class="btn" for="phImport" style="display:inline-flex;align-items:center" data-ic="up">Завантажити пакет фраз</label>
+      <button class="btn" id="phExport" type="button" data-ic="pen">Мій пакет фраз — підписати й зберегти</button>
+      <label class="btn" for="phImport" style="display:inline-flex;align-items:center" data-ic="up">Завантажити пакет з файлу</label>
       <input id="phImport" type="file" accept=".json,application/json" hidden>
+      <button class="btn" id="packUndo" type="button" data-ic="undo" hidden>Повернути як було до пакета</button>
     </div>
     <p class="note" id="phMsg"></p>
   </div>
@@ -1052,6 +1060,33 @@ const MEAS={
 };
 
 
+/* --- 025-packs.js --- */
+/* ===== Каталог пакетів фраз (вбудований) =====
+   Пакет = фрази норми, зміни кнопок, свої висновки й рекомендації та «типові описи» (шаблони).
+   meta.status: 'чернетка' — ще не перевірено рентгенологом; 'затверджено' — підписано автором (ПІБ, стаж, дата).
+   Завдання для тебе: додай у пакет ще один типовий опис — скопіюй блок «Гострий бронхіт» і зміни кнопки. */
+const _T=(z,concl,recs,extra)=>Object.assign({zones:z,concl:concl||[],recs:recs||[],proj:[],meas:{}},extra||{});
+const _c=sel=>({st:'c',sel});
+const PACKS=[{
+  app:'skiagrama-phrases',v:2,
+  meta:{id:'skg-ogk-bone-draft',title:'Типові описи ОГК і кісток',version:'0.1',status:'чернетка',
+    author:'',experience:'',approved:'',
+    note:'Чернетка Skiagrama. Перед використанням рентгенолог перевіряє кожен опис, виправляє формулювання й підписує пакет своїм іменем («Мій пакет фраз» → «Підписати й зберегти»).'},
+  templates:[
+    {name:'Пневмонія справа, нижня частка',study:'ogk',data:_T({infil:_c({side:'права',loc:'нижні',char:'інфільтр',seg:['S9','S10'],extra:['контури']}),pattern:_c({ch:['посил'],side:'справа'}),roots:_c({ch:['розш','малостр']})},['Правобічна пневмонія (S9, S10)'],['Rö-контроль через 10–14 днів'],{proj:['пряма','права бічна']})},
+    {name:'Пневмонія зліва, нижня частка',study:'ogk',data:_T({infil:_c({side:'ліва',loc:'нижні',char:'інфільтр',seg:['S9','S10'],extra:['контури']}),pattern:_c({ch:['посил'],side:'зліва'}),roots:_c({ch:['розш','малостр']})},['Лівобічна пневмонія (S9, S10)'],['Rö-контроль через 10–14 днів'],{proj:['пряма','ліва бічна']})},
+    {name:'Двобічна пневмонія',study:'ogk',data:_T({infil:_c({side:'обидві',loc:'нижньомед',char:'зливні',extra:['невіз']}),roots:_c({ch:['розш','інтенс','нечіткі']})},['Двобічна вогнищево-зливна пневмонія'],['Rö-контроль через 10–14 днів'])},
+    {name:'Гострий бронхіт',study:'ogk',data:_T({pattern:_c({ch:['посил','збагач'],side:'прикор'}),roots:_c({ch:['розш','тяж','малостр']})},['Гострий бронхіт'])},
+    {name:'ХОЗЛ, емфізема',study:'ogk',data:_T({pneum:_c({p:'підвищ',extra:['міжреб','діафр']}),pattern:_c({ch:['деформ','збідн']}),roots:_c({ch:['малостр','фібр']}),heart:_c({ch:'легеневе'})},['Хронічний обструктивний бронхіт','Емфізема легень','Хронічне легеневе серце'])},
+    {name:'Застій у малому колі',study:'ogk',data:_T({pattern:_c({ch:['застій'],side:'прикор'}),roots:_c({ch:['розш','нечіткі']}),heart:_c({ch:'вліво'})},['Застій у малому колі кровообігу'])},
+    {name:'Гідроторакс справа',study:'ogk',data:_T({sinus:_c({ch:'рідП',lvl:'до рівня VI ребра'})},['Правобічний гідроторакс'],['Rö-контроль після лікування'])},
+    {name:'Залишкові зміни ТБ',study:'ogk',data:_T({foci:_c({lobe:'верх',side:'права',count:'множ',size:'дрібні',dens:'щільні',extra:['фіброз','плевр']}),roots:_c({ch:['малостр'],extra:['правий']})},['ЗЗТБ'],['Консультація фтизіатра','Порівняти з попередніми знімками'])},
+    {name:'ДОА колінного суглоба II ст.',study:'bone',data:_T({space:_c({ch:'пом'}),surf:_c({ch:['скл','ост','горб']})},['Деформуючий остеоартроз II ст.'],[],{obj:'kol',side:'п',proj:['пряма','бічна']})},
+    {name:'Перелом променевої кістки в типовому місці',study:'bone',data:_T({frac:_c({type:'поп',where:'дистального метаепіфіза променевої кістки (в типовому місці)',disp:'зі'}),soft:_c({ch:'набряк'})},['Перелом дистального метаепіфіза променевої кістки в типовому місці зі зміщенням уламків'],['Консультація травматолога'],{obj:'zap',side:'п',proj:['пряма','бічна']})},
+    {name:'Остеохондроз поперекового відділу',study:'spine',data:_T({curves:_c({ch:['лордвипр']}),discs:_c({deg:'нерівн',lvl:'L4–L5, L5–S1'}),plates:_c({ch:['скл','ост'],lvl:'L3–S1'})},['Остеохондроз поперекового відділу хребта','Спондильоз'],['Консультація невролога'],{dept:'poper',proj:['пряма','бічна']})}
+  ]
+}];
+
 /* --- 030-version.js --- */
 /* ===== Версія і що нового =====
    До пілоту в кабінеті — 0.x бета; перша робоча версія після пілоту — 1.0.
@@ -1068,7 +1103,8 @@ const CHANGELOG=[
    'Перевірка «право / ліво»: попередження, якщо в описі справа, а у висновку зліва.',
    '«Терміново» для критичних знахідок; в архіві — підсвітка і «Повідомлено».',
    '«+ Ще дослідження цьому пацієнту» після «Готово» (напр. ОГК і коліно — два протоколи).',
-   'Вивантаження архіву в Excel (CSV) за вибраними фільтрами; у знайомстві — кроки «встановити» і «папка даних».']],
+   'Вивантаження архіву в Excel (CSV) за вибраними фільтрами; у знайомстві — кроки «встановити» і «папка даних».',
+   'Пакети фраз і типові описи: каталог у «Налаштуваннях», чернетка «Типові описи ОГК і кісток» (11 описів) для перевірки рентгенологом; підпис пакета автором зі стажем і датою; «Повернути як було до пакета».']],
  ['0.3.1',['Свої висновки: «+ свій висновок» під кнопками або «Запамʼятати як кнопку» біля поля «Свій текст висновку».',
    '«✎ Редагувати кнопки» у висновку й рекомендаціях: змінити текст, сховати, переставити, «Повернути як було».',
    'Висновок норми («Без патологічних змін» тощо) можна змінити для кожного виду дослідження.',
@@ -1677,7 +1713,7 @@ function renderMeter(){
 function renderTpl(){
   const r=$('tplRow');r.textContent='';const list=TPL.filter(t=>t.study===S.study);
   if(!list.length)return;r.append(el('span',{class:'note'},'Шаблони:'));
-  list.forEach(t=>{const w=el('span',{class:'tpl'});const a=el('button',{type:'button'},t.name);a.onclick=()=>{tick();applyTpl(t);};
+  list.forEach(t=>{const w=el('span',{class:'tpl'+(t.pack?' fromPack':'')});const a=el('button',{type:'button',title:t.pack?`Типовий опис з пакета «${t.pack}»${t.packAuthor?' · '+t.packAuthor:''}${t.packStatus==='затверджено'?'':' — чернетка, перевірте'}`:null},t.name);if(t.pack&&t.packStatus!=='затверджено')a.append(el('sup',{class:'draft'},' чернетка'));a.onclick=()=>{tick();applyTpl(t);};
     const x=el('button',{type:'button','aria-label':'Видалити шаблон '+t.name},'×');
     x.onclick=()=>{if(x.dataset.c){TPL=TPL.filter(q=>q!==t);saveTpl();renderTpl();}else{x.dataset.c='1';x.textContent='видалити?';setTimeout(()=>{x.dataset.c='';x.textContent='×';},3000);}};
     w.append(a,x);r.append(w);});
@@ -2336,7 +2372,7 @@ function renderSettings(){
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
   const sb=$('sBlank');if(!sb.options.length)BLANK_ORDER.forEach(b=>sb.append(el('option',{value:b},`${b} · ${BLANKS[b].n}`)));sb.value=SET.blank||'C';$('sBlankWhy').textContent=blankWhy(sb.value);
   const o=ORG();ORG_FIELDS.forEach(([id,k])=>{$(id).value=o[k]||'';});
-  renderNorms();renderMy();renderFolderInfo();$('sVer').textContent=`Skiagrama ${VERSION} бета. Працює без інтернету; оновлення приходять самі, коли є мережа.`;
+  renderNorms();renderMy();renderPacks();renderFolderInfo();$('sVer').textContent=`Skiagrama ${VERSION} бета. Працює без інтернету; оновлення приходять самі, коли є мережа.`;
 }
 function renderNorms(){
   const k=$('sNormStudy').value||'ogk';const root=$('sNorms');root.textContent='';
@@ -2361,17 +2397,61 @@ $('sBtnReset').onclick=e=>{const b=e.currentTarget;const k=$('sNormStudy').value
   if(!b.dataset.c){b.dataset.c='1';b.textContent='Точно? Усі зміни кнопок цього дослідження зникнуть';setTimeout(()=>{b.dataset.c='';b.textContent='Повернути кнопки цього дослідження як були';},3000);return;}
   [SET.btn,SET.btnAdd,SET.btnOrder].forEach(o=>Object.keys(o).forEach(x=>{if(x.startsWith(k+'.'))delete o[x];}));delete SET.lists['concl.'+k];delete SET.conclNorm[k];saveSet();b.dataset.c='';b.textContent='Повернути кнопки цього дослідження як були';renderZones();renderSide();toast('Кнопки повернуто');};
 /* пакет фраз */
-function phrasePack(){return {app:'skiagrama-phrases',v:1,saved:new Date().toISOString(),norms:SET.norms,my:SET.my,btn:SET.btn,btnAdd:SET.btnAdd,btnOrder:SET.btnOrder,lists:SET.lists,conclNorm:SET.conclNorm,templates:TPL};}
+function phrasePack(meta){return {app:'skiagrama-phrases',v:2,saved:new Date().toISOString(),meta:meta||{title:'Мій пакет фраз',status:'чернетка'},norms:SET.norms,my:SET.my,btn:SET.btn,btnAdd:SET.btnAdd,btnOrder:SET.btnOrder,lists:SET.lists,conclNorm:SET.conclNorm,templates:TPL.filter(t=>!t.pack)};}
+const PACK_KEYS=['norms','my','btn','btnAdd','btnOrder','lists','conclNorm'];
 function applyPhrasePack(d){
   if(!d||d.app!=='skiagrama-phrases')throw new Error('not a pack');
+  SET.packUndo=clone({set:Object.fromEntries(PACK_KEYS.map(k=>[k,SET[k]])),tpl:TPL,at:today(),title:(d.meta&&d.meta.title)||'пакет'});
   ['norms','btn','btnOrder','lists','conclNorm'].forEach(k=>{if(d[k]&&typeof d[k]==='object')SET[k]=Object.assign({},SET[k],d[k]);});
   if(d.my)Object.keys(d.my).forEach(k=>{const a=SET.my[k]||[];(d.my[k]||[]).forEach(p=>{if(!a.includes(p))a.push(p);});SET.my[k]=a;});
   if(d.btnAdd)Object.keys(d.btnAdd).forEach(k=>{const a=SET.btnAdd[k]||[];(d.btnAdd[k]||[]).forEach(x=>{if(x&&x.k&&!a.some(y=>y.k===x.k))a.push(x);});SET.btnAdd[k]=a;});
-  let nt=0;if(Array.isArray(d.templates))d.templates.forEach(t=>{if(!t||!t.name)return;TPL=TPL.filter(q=>!(q.study===t.study&&q.name===t.name));TPL.push(t);nt++;});
+  const m=d.meta||{};let nt=0;
+  if(Array.isArray(d.templates))d.templates.forEach(t=>{if(!t||!t.name)return;TPL=TPL.filter(q=>!(q.study===t.study&&q.name===t.name));TPL.push(Object.assign(clone(t),m.title?{pack:m.title,packStatus:m.status||'',packAuthor:m.author||''}:{}));nt++;});
+  if(m.title){SET.packs=(SET.packs||[]).filter(x=>x.id!==(m.id||m.title));SET.packs.push({id:m.id||m.title,title:m.title,version:m.version||'',status:m.status||'',author:m.author||'',experience:m.experience||'',approved:m.approved||'',installed:today(),templates:nt});}
   saveSet();saveTpl();return nt;
 }
-$('phExport').onclick=()=>{const ok=download(`Skiagrama_пакет_фраз_${today()}.json`,JSON.stringify(phrasePack(),null,1),'application/json');$('phMsg').textContent=ok?'Пакет фраз збережено у файл. Перенесіть його на інший ПК і натисніть «Завантажити пакет фраз».':'Не вдалося зберегти файл.';};
-$('phImport').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const nt=applyPhrasePack(JSON.parse(rd.result));renderSettings();renderAll();$('phMsg').textContent=`Пакет фраз завантажено${nt?`, шаблонів: ${nt}`:''}. Ваші фрази доповнено, архів не змінено.`;}catch(err){$('phMsg').textContent='Це не пакет фраз Skiagrama.';}e.target.value='';};rd.readAsText(f);});
+const packBadge=m=>el('span',{class:'pill '+(m.status==='затверджено'?'o':'w')},m.status==='затверджено'?'затверджено':'чернетка — не затверджено');
+const packWho=m=>m.author?`Автор: ${m.author}${m.experience?`, стаж ${m.experience} р.`:''}${m.approved?` · затверджено ${fmtD(m.approved)}`:''}`:'Автор не вказаний';
+function packSummary(d){const by={};(d.templates||[]).forEach(t=>{(by[t.study]=by[t.study]||[]).push(t.name);});
+  const n=k=>Object.keys(d[k]||{}).length;return {by,extra:[n('norms')&&`фраз норми: ${n('norms')}`,n('btn')+n('btnAdd')&&`змін кнопок: ${n('btn')+n('btnAdd')}`,n('lists')&&`списків висновків/рекомендацій: ${n('lists')}`].filter(Boolean)};}
+function openPackPreview(d){
+  const m=d.meta||{title:'Пакет фраз'};const sm=packSummary(d);
+  openDlg(box=>{dlgHead(box,m.title||'Пакет фраз');
+    const top=el('div',{class:'trow'});top.append(packBadge(m),el('span',{class:'note'},packWho(m)+(m.version?` · версія ${m.version}`:'')));box.append(top);
+    if(m.status!=='затверджено')box.append(el('p',{class:'banner'},'Пакет не затверджено рентгенологом. Перевірте кожен опис перед використанням у протоколах.'));
+    if(m.note)box.append(el('p',{class:'note'},m.note));
+    Object.keys(sm.by).forEach(st=>{box.append(el('h3',{style:'margin:6px 0 2px;font-size:15px'},`Типові описи — ${STUDIES[st]?STUDIES[st].n:st}`));const ul=el('ul',{class:'steps'});sm.by[st].forEach(n=>ul.append(el('li',null,n)));box.append(ul);});
+    if(sm.extra.length)box.append(el('p',{class:'note'},'Також: '+sm.extra.join(', ')+'.'));
+    box.append(el('p',{class:'note'},'Після встановлення типові описи зʼявляться в рядку «Шаблони» над зонами. Ваші фрази й кнопки доповнюються, а не стираються; повернути як було можна однією кнопкою.'));
+    const r=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Встановити');ok.onclick=()=>{const nt=applyPhrasePack(d);closeDlg();renderSettings();renderAll();toast(`Пакет «${m.title}» встановлено${nt?`: типових описів ${nt}`:''}`);};
+    const no=el('button',{type:'button',class:'btn'},'Скасувати');no.onclick=closeDlg;r.append(ok,no);box.append(r);});
+}
+function renderPacks(){
+  const cat=$('packCatalog');cat.textContent='';
+  PACKS.forEach(d=>{const m=d.meta;const sm=packSummary(d);const it=el('div',{class:'pack'});
+    const t=el('div',{class:'pt'});t.append(el('b',null,m.title),packBadge(m));it.append(t);
+    it.append(el('div',{class:'note'},Object.keys(sm.by).map(st=>`${STUDY_SHORT[st]||st}: ${sm.by[st].length}`).join(' · ')+' · '+packWho(m)));
+    const inst=(SET.packs||[]).find(x=>x.id===m.id);
+    const b=el('button',{type:'button',class:'btn sm'},inst?'Переглянути / встановити знову':'Переглянути й встановити');b.onclick=()=>openPackPreview(d);it.append(b);cat.append(it);});
+  const ib=$('packInstalled');ib.textContent='';const ps=SET.packs||[];
+  if(ps.length){ib.append(el('p',{class:'note'},'Встановлено: '+ps.map(p=>`«${p.title}»${p.status==='затверджено'?'':' (чернетка)'} — ${fmtD(p.installed)}`).join('; ')+'.'));}
+  $('packUndo').hidden=!SET.packUndo;if(SET.packUndo)$('packUndo').textContent=`Повернути як було до «${SET.packUndo.title}»`;
+}
+$('packUndo').onclick=e=>{const b=e.currentTarget;if(!SET.packUndo)return;if(!b.dataset.c){b.dataset.c='1';const t=b.textContent;b.textContent='Точно? Зміни з пакета зникнуть';setTimeout(()=>{b.dataset.c='';b.textContent=t;},3000);return;}
+  const u=SET.packUndo;PACK_KEYS.forEach(k=>{SET[k]=u.set[k]||{};});TPL=u.tpl||[];SET.packs=(SET.packs||[]).filter(p=>p.title!==u.title);delete SET.packUndo;saveSet();saveTpl();b.dataset.c='';renderSettings();renderAll();toast('Повернуто як було до пакета');};
+$('phExport').onclick=()=>{
+  openDlg(box=>{dlgHead(box,'Мій пакет фраз');
+    box.append(el('p',{class:'note'},'У файл підуть ваші фрази норми, зміни кнопок, свої висновки й рекомендації та шаблони. Підпишіть пакет — колега бачитиме, хто і коли його перевірив.'));
+    const f=el('div',{class:'fields'});const mk=(lab,val,cls,type)=>{const l=el('label',{class:'f'+(cls?' '+cls:'')},lab);const i=el('input',{type:type||'text'});i.value=val||'';l.append(i);f.append(l);return i;};
+    const ti=mk('Назва пакета','Типові описи ОГК і кісток','wide'),au=mk('Автор (ПІБ рентгенолога)',SET.doctor,'wide'),ex=mk('Стаж, років',''),ap=mk('Дата затвердження',today(),'','date');box.append(f);
+    const chk=el('label',{class:'chk'});const cb=el('input',{type:'checkbox'});chk.append(cb,document.createTextNode(' Затверджую: усі описи в пакеті перевірив(ла) особисто'));box.append(chk);
+    const r=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Зберегти пакет у файл');
+    ok.onclick=()=>{const meta={id:'my-'+Date.now().toString(36),title:ti.value.trim()||'Мій пакет фраз',version:'1.0',status:cb.checked&&au.value.trim()?'затверджено':'чернетка',author:au.value.trim(),experience:ex.value.trim(),approved:cb.checked?ap.value:''};
+      const ok2=download(`Skiagrama_${meta.title.replace(/[^\p{L}\p{N}]+/gu,'_')}_${today()}.json`,JSON.stringify(phrasePack(meta),null,1),'application/json');closeDlg();
+      $('phMsg').textContent=ok2?(meta.status==='затверджено'?`Пакет «${meta.title}» підписано (${meta.author}) і збережено у файл.`:'Пакет збережено як чернетку: щоб затвердити, вкажіть автора й поставте позначку.'):'Не вдалося зберегти файл.';};
+    if(!cb.checked)0;r.append(ok);box.append(r);setTimeout(()=>ti.focus(),30);});
+};
+$('phImport').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d||d.app!=='skiagrama-phrases')throw 0;openPackPreview(d);}catch(err){$('phMsg').textContent='Це не пакет фраз Skiagrama.';}e.target.value='';};rd.readAsText(f);});
 $('sNormReset').onclick=()=>{const k=$('sNormStudy').value;Object.keys(SET.norms).forEach(x=>{if(x.startsWith(k+'.'))delete SET.norms[x];});saveSet();renderNorms();toast('Стандартні фрази повернуто');};
 $('sDoctor').addEventListener('input',e=>{SET.doctor=e.target.value;saveSet();});
 $('sDepts').addEventListener('input',e=>{SET.depts=e.target.value;saveSet();fillDepts();});
@@ -2392,7 +2472,7 @@ function fillDepts(){const dl=$('deptList');dl.textContent='';SET.depts.split(',
 /* запуск */
 applyLook();$('vBadge').textContent=`v${VERSION} бета`;
 /* для автотестів: доступ до внутрішніх функцій (не впливає на роботу) */
-window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,phrasePack,
+window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,phrasePack,PACKS,get TPL(){return TPL;},applyTpl:t=>applyTpl(t),
   setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k),
   async useFolder(h){dirH=h;dirOK=true;await folderWrite();}};
 fillDepts();renderNames();updCtrlBadge();

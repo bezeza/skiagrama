@@ -87,6 +87,11 @@ input.miss{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset;backg
 @media (hover:none){.zpen{opacity:1}}
 .ppage.a5{width:210mm;height:148.5mm}
 .mpop b{font-weight:600}
+.packs{display:flex;flex-direction:column;gap:8px}
+.pack{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;background:var(--bg)}
+.pack .pt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tpl.fromPack button:first-child{color:var(--blue)}
+sup.draft{font-size:10px;color:var(--warn);font-weight:600}
 .chead{display:flex;align-items:center;gap:10px;justify-content:space-between}
 .urgbtn[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--surface)}
 .urgbtn{color:var(--bad)}

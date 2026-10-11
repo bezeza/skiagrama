@@ -338,7 +338,7 @@ function renderMeter(){
 function renderTpl(){
   const r=$('tplRow');r.textContent='';const list=TPL.filter(t=>t.study===S.study);
   if(!list.length)return;r.append(el('span',{class:'note'},'Шаблони:'));
-  list.forEach(t=>{const w=el('span',{class:'tpl'});const a=el('button',{type:'button'},t.name);a.onclick=()=>{tick();applyTpl(t);};
+  list.forEach(t=>{const w=el('span',{class:'tpl'+(t.pack?' fromPack':'')});const a=el('button',{type:'button',title:t.pack?`Типовий опис з пакета «${t.pack}»${t.packAuthor?' · '+t.packAuthor:''}${t.packStatus==='затверджено'?'':' — чернетка, перевірте'}`:null},t.name);if(t.pack&&t.packStatus!=='затверджено')a.append(el('sup',{class:'draft'},' чернетка'));a.onclick=()=>{tick();applyTpl(t);};
     const x=el('button',{type:'button','aria-label':'Видалити шаблон '+t.name},'×');
     x.onclick=()=>{if(x.dataset.c){TPL=TPL.filter(q=>q!==t);saveTpl();renderTpl();}else{x.dataset.c='1';x.textContent='видалити?';setTimeout(()=>{x.dataset.c='';x.textContent='×';},3000);}};
     w.append(a,x);r.append(w);});
