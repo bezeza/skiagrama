@@ -296,7 +296,8 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   const ctx=await b.newContext({viewport:{width:1440,height:900}});const errs=[];
   const open=async()=>{const p=await ctx.newPage();p.on('pageerror',e=>errs.push(e.message));await p.goto(FILE);
     await p.waitForFunction(()=>window.__skg&&window.__skg.archiveSaved);await p.evaluate(()=>window.__skg.archiveSaved());
-    if(await p.isVisible('#dlg:not([hidden])'))await p.click('text=Пропустити — заповню пізніше').catch(()=>{});return p;};
+    await p.waitForTimeout(450);if(await p.isVisible('#dlg:not([hidden])'))await p.click('text=Пропустити — заповню пізніше').catch(()=>{});
+    if(await p.isVisible('#dlg:not([hidden])'))await p.keyboard.press('Escape');return p;};
   // старий архів у localStorage переноситься в IndexedDB
   let p=await ctx.newPage();await p.goto(FILE);await p.waitForFunction(()=>window.__skg&&window.__skg.archiveSaved);await p.evaluate(()=>window.__skg.archiveSaved());
   await p.evaluate(()=>{localStorage.setItem('skiagrama.archive.v1',JSON.stringify([{id:'old1',ts:1,date:'2025-01-02',num:'1',name:'Старий запис',study:'ogk',concl:'Без патологічних змін.',text:'x'}]));});
