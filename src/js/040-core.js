@@ -5,6 +5,9 @@ let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Тера�
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
 SET.eed=Object.assign({...DEF_EED},SET.eed||{});SET.norms=SET.norms||{};SET.my=SET.my||{};
 ['org','btn','btnAdd','btnOrder','lists','conclNorm'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
+/* скорочення: «.кт» + пробіл → фраза; «__» — пропуск, Tab переходить до наступного */
+const DEF_ABBR={'кт':'КТ ОГК для уточнення характеру змін','конт':'Rö-контроль через __ днів','вог':'В __ долі __ легені визначається вогнищева тінь __ мм з __ контурами.'};
+if(!SET.abbr||typeof SET.abbr!=='object')SET.abbr=Object.assign({},DEF_ABBR);
 /* 2.2: за замовчуванням довгий протокол — на цілий аркуш (зворот половинки — лише опція) */
 if(!SET.v22){SET.printMode='full';SET.v22=true;store.set(SET_KEY,SET);}
 let TPL=store.get(TPL_KEY,[]);
@@ -190,7 +193,7 @@ function docData(){
   const P=protocol();
   return {name:$('pName').value.trim()||'[ПІБ]',age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),refDoc:$('pRefDoc').value.trim(),
     num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.join(', '),eed:$('pEed').value.trim(),
-    study:S.study,urgent:!!S.urgent,head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
+    study:S.study,urgent:!!S.urgent,status:statusOf(),head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,manual:S.manual};
 }
 function genText(P){P=P||protocol();return [P.head,P.ref,P.body.map(x=>x.t).join(' '),P.concl.t,P.rec,P.eed+'   '+P.doc].filter(Boolean).join('\n');}
 const protocolText=()=>S.manual!=null?S.manual:genText();
@@ -208,6 +211,40 @@ function lateralityIssue(){
   if(dL&&!dR&&cR&&!cL)return 'Бічність: в описі — зліва, а у висновку — справа. Перевірте.';
   return '';
 }
+/* «справа ↔ зліва»: міняє бік у фразі, зберігаючи велику літеру */
+const SIDE_RE=/(?<![\p{L}ʼ'])(справа|зліва|вправо|вліво|(прав|лів)(ий|ого|ому|им|ій|ої|ою|а|е|у|і|их|ими|оруч|обічн\p{L}*|осторонн\p{L}*))(?![\p{L}ʼ'])/giu;
+const SIDE_PAIR={справа:'зліва',зліва:'справа',вправо:'вліво',вліво:'вправо'};
+function swapSide(t){return String(t).replace(SIDE_RE,(w,all,stem)=>{const lw=w.toLowerCase();let r=SIDE_PAIR[lw];
+  if(!r)r=(stem.toLowerCase()==='прав'?'лів':'прав')+lw.slice(stem.length);
+  return w[0]!==w[0].toLowerCase()?r[0].toUpperCase()+r.slice(1):r;});}
+/* висновок суперечить опису: у висновку патологія, а її зона — «норма» */
+const CONTRA=[[/гідроторакс|плеврит|рідин|плевральн/,['sinus']],[/пневмоні|інфільтр/,['infil','foci']],[/ззтб|туберкул/,['foci','roots']],
+  [/пневмоторакс/,['pneum','sinus']],[/емфізем/,['pneum']],[/застій/,['pattern','roots']],[/бронхіт/,['pattern','roots']],[/кардіомегал|серц/,['heart']],
+  [/перелом/,['frac','bones','vault','bodies']],[/артроз/,['space','surf']],[/остеопороз/,['struct','bodies']],[/остеохондроз|спондил/,['discs','plates']],
+  [/компресійн/,['bodies']],[/лістез/,['list']],[/сколіоз/,['scol','curves']],[/перфорац|пневмоперитон/,['gas']],[/непрохідн/,['levels','loops']],
+  [/конкремент|сечокам|камен/,['stones']],[/гайморит/,['max']],[/фронтит/,['front']],[/етмоїдит/,['ethm']],[/синусит/,['max','front','ethm']],[/викривлен.*перегород/,['septum']]];
+function contradictions(){
+  if(S.manual!=null)return [];const out=[];const vz=visibleZones();const nc=normConclOf();
+  conclItems().forEach(it=>{if(it===nc)return;const l=it.toLowerCase();
+    for(const [re,ids] of CONTRA){if(!re.test(l))continue;const zs=vz.filter(d=>ids.includes(d.id));if(!zs.length)continue;
+      if(zs.every(d=>S.zones[d.id].st==='n')){out.push(`Висновок «${it}», а зона «${zs[0].name}» — норма. Перевірте.`);break;}}});
+  return out;
+}
+/* результат: n — норма, p — патологія, d — дообстеження (авто або вибір лікаря) */
+const STATUS={n:'Норма',p:'Патологія',d:'Дообстеження'};
+function autoStatus(){
+  const items=conclItems(),t=items.concat(recList()).join(' ').toLowerCase();
+  if(/дообстеж|уточнен|(^|[^\p{L}])(кт|мрт|мскт)([^\p{L}]|$)/u.test(t))return 'd';
+  const nc=normConclOf();const isN=i=>i===nc||/без патолог|патології не|без кістково/i.test(i);
+  if(items.length?items.every(isN):allNormal())return 'n';
+  return 'p';
+}
+const statusOf=()=>S.status||autoStatus();
+/* незаповнені пропуски «__» (крім рядка ЕЕД / лікар) */
+function hasGaps(){
+  const t=S.manual!=null?String(S.manual).split('\n').filter(l=>!/^ЕЕД|^Лікар/.test(l.trim())).join(' '):protocol().body.map(x=>x.t).concat(conclItems(),recList()).join(' ');
+  return /_{2,}/.test(t);
+}
 /* перевірка перед підписом */
 const REF_RE=/^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/i;
 function checks(){
@@ -220,6 +257,7 @@ function checks(){
   if((S.study==='bone'||S.study==='spine')&&!S.proj.length)w.push('Не вибрано проєкції.');
   const ref=$('pRef').value.trim();
   if(ref&&!REF_RE.test(ref))w.push('№ е-направлення має вигляд 0000-0000-0000-0000.');
+  if(hasGaps())w.push('Є незаповнені пропуски «__» — Tab переходить до наступного.');
   if(S.manual!=null)return w;
   visibleZones().forEach(d=>{if(zoneState(d)==='e')w.push(`«${d.name}»: заповніть зміни до кінця.`);});
   const ct=conclText();
@@ -228,6 +266,7 @@ function checks(){
   if(allNormal()&&items.length&&!items.every(i=>normRe.test(i)))w.push('Усі зони в нормі, а у висновку патологія — перевірте.');
   if(!allNormal()&&items.some(i=>normRe.test(i)))w.push('Є зміни в описі, а висновок «без патології» — перевірте.');
   const lat=lateralityIssue();if(lat)w.push(lat);
+  contradictions().forEach(x=>w.push(x));
   measResults().forEach(x=>{if(x.bad)w.push(`${x.def.n}: значення ${fx(x.v,x.def.kind==='kti'?2:0)} поза можливими межами — перевірте.`);if(x.r.c&&!S.concl.includes(renameConcl(x.r.c)))w.push(`${x.def.n} поза нормою, але не згадано у висновку.`);});
   return w;
 }

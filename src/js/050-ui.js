@@ -155,8 +155,14 @@ function updMeas(silent){
     box.append(MEAS[id].tbd?el('span',{class:'tbd'},t):document.createTextNode(t));});
   if(!silent){renderConcl();renderSide();renderNav();}
 }
+function renderStatus(){
+  const seg=$('statusSeg');seg.textContent='';const cur=statusOf();
+  Object.keys(STATUS).forEach(k=>{const b=el('button',{type:'button',class:'st-'+k,'aria-pressed':String(cur===k),'data-st':k},STATUS[k]);
+    b.onclick=()=>{tick();S.status=S.status===k?null:(k===autoStatus()?null:k);renderAll();};seg.append(b);});
+  $('statusNote').textContent=S.status?'вибрано вручну (клацніть ще раз — авто)':'визначено автоматично';
+}
 function renderConcl(){
-  $('urgBtn').setAttribute('aria-pressed',String(!!S.urgent));
+  $('urgBtn').setAttribute('aria-pressed',String(!!S.urgent));renderStatus();
   const sg=$('sugs');sg.textContent='';
   const sugs=suggestions().filter(([t])=>!S.concl.includes(t)&&!S.dismissed.includes(t));
   sugs.forEach(([t,why,tbd])=>{const row=el('div',{class:'ci'});const sp=el('span');sp.append(el('span',tbd?{class:'tbd'}:null,t));sp.append(el('span',{class:'why'},'Підказка: '+why));row.append(sp);

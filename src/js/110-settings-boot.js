@@ -6,7 +6,7 @@ function renderSettings(){
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
   const sb=$('sBlank');if(!sb.options.length)BLANK_ORDER.forEach(b=>sb.append(el('option',{value:b},`${b} · ${BLANKS[b].n}`)));sb.value=SET.blank||'C';$('sBlankWhy').textContent=blankWhy(sb.value);
   const o=ORG();ORG_FIELDS.forEach(([id,k])=>{$(id).value=o[k]||'';});
-  renderNorms();renderMy();renderPacks();renderFolderInfo();$('sVer').textContent=`Skiagrama ${VERSION} бета. Працює без інтернету; оновлення приходять самі, коли є мережа.`;
+  renderNorms();renderMy();renderAbbr();renderPacks();renderFolderInfo();$('sVer').textContent=`Skiagrama ${VERSION} бета. Працює без інтернету; оновлення приходять самі, коли є мережа.`;
 }
 function renderNorms(){
   const k=$('sNormStudy').value||'ogk';const root=$('sNorms');root.textContent='';
@@ -31,12 +31,12 @@ $('sBtnReset').onclick=e=>{const b=e.currentTarget;const k=$('sNormStudy').value
   if(!b.dataset.c){b.dataset.c='1';b.textContent='Точно? Усі зміни кнопок цього дослідження зникнуть';setTimeout(()=>{b.dataset.c='';b.textContent='Повернути кнопки цього дослідження як були';},3000);return;}
   [SET.btn,SET.btnAdd,SET.btnOrder].forEach(o=>Object.keys(o).forEach(x=>{if(x.startsWith(k+'.'))delete o[x];}));delete SET.lists['concl.'+k];delete SET.conclNorm[k];saveSet();b.dataset.c='';b.textContent='Повернути кнопки цього дослідження як були';renderZones();renderSide();toast('Кнопки повернуто');};
 /* пакет фраз */
-function phrasePack(meta){return {app:'skiagrama-phrases',v:2,saved:new Date().toISOString(),meta:meta||{title:'Мій пакет фраз',status:'чернетка'},norms:SET.norms,my:SET.my,btn:SET.btn,btnAdd:SET.btnAdd,btnOrder:SET.btnOrder,lists:SET.lists,conclNorm:SET.conclNorm,templates:TPL.filter(t=>!t.pack)};}
-const PACK_KEYS=['norms','my','btn','btnAdd','btnOrder','lists','conclNorm'];
+function phrasePack(meta){return {app:'skiagrama-phrases',v:2,saved:new Date().toISOString(),meta:meta||{title:'Мій пакет фраз',status:'чернетка'},norms:SET.norms,my:SET.my,btn:SET.btn,btnAdd:SET.btnAdd,btnOrder:SET.btnOrder,lists:SET.lists,conclNorm:SET.conclNorm,abbr:SET.abbr,templates:TPL.filter(t=>!t.pack)};}
+const PACK_KEYS=['norms','my','btn','btnAdd','btnOrder','lists','conclNorm','abbr'];
 function applyPhrasePack(d){
   if(!d||d.app!=='skiagrama-phrases')throw new Error('not a pack');
   SET.packUndo=clone({set:Object.fromEntries(PACK_KEYS.map(k=>[k,SET[k]])),tpl:TPL,at:today(),title:(d.meta&&d.meta.title)||'пакет'});
-  ['norms','btn','btnOrder','lists','conclNorm'].forEach(k=>{if(d[k]&&typeof d[k]==='object')SET[k]=Object.assign({},SET[k],d[k]);});
+  ['norms','btn','btnOrder','lists','conclNorm','abbr'].forEach(k=>{if(d[k]&&typeof d[k]==='object')SET[k]=Object.assign({},SET[k],d[k]);});
   if(d.my)Object.keys(d.my).forEach(k=>{const a=SET.my[k]||[];(d.my[k]||[]).forEach(p=>{if(!a.includes(p))a.push(p);});SET.my[k]=a;});
   if(d.btnAdd)Object.keys(d.btnAdd).forEach(k=>{const a=SET.btnAdd[k]||[];(d.btnAdd[k]||[]).forEach(x=>{if(x&&x.k&&!a.some(y=>y.k===x.k))a.push(x);});SET.btnAdd[k]=a;});
   const m=d.meta||{};let nt=0;
@@ -47,7 +47,7 @@ function applyPhrasePack(d){
 const packBadge=m=>el('span',{class:'pill '+(m.status==='затверджено'?'o':'w')},m.status==='затверджено'?'затверджено':'чернетка — не затверджено');
 const packWho=m=>m.author?`Автор: ${m.author}${m.experience?`, стаж ${m.experience} р.`:''}${m.approved?` · затверджено ${fmtD(m.approved)}`:''}`:'Автор не вказаний';
 function packSummary(d){const by={};(d.templates||[]).forEach(t=>{(by[t.study]=by[t.study]||[]).push(t.name);});
-  const n=k=>Object.keys(d[k]||{}).length;return {by,extra:[n('norms')&&`фраз норми: ${n('norms')}`,n('btn')+n('btnAdd')&&`змін кнопок: ${n('btn')+n('btnAdd')}`,n('lists')&&`списків висновків/рекомендацій: ${n('lists')}`].filter(Boolean)};}
+  const n=k=>Object.keys(d[k]||{}).length;return {by,extra:[n('norms')&&`фраз норми: ${n('norms')}`,n('btn')+n('btnAdd')&&`змін кнопок: ${n('btn')+n('btnAdd')}`,n('lists')&&`списків висновків/рекомендацій: ${n('lists')}`,n('abbr')&&`скорочень: ${n('abbr')}`].filter(Boolean)};}
 function openPackPreview(d){
   const m=d.meta||{title:'Пакет фраз'};const sm=packSummary(d);
   openDlg(box=>{dlgHead(box,m.title||'Пакет фраз');
@@ -100,13 +100,13 @@ $('sRevBacks').addEventListener('change',e=>{SET.revBacks=e.target.checked;saveS
 $('sWelcome').onclick=openWelcome;
 $('sExport').onclick=()=>{const ok=download(`Skiagrama_налаштування_${today()}.json`,JSON.stringify({app:'skiagrama-settings',v:2,settings:SET,templates:TPL},null,1),'application/json');$('sMsg').textContent=ok?'Налаштування і шаблони збережено у файл.':'Не вдалося зберегти файл.';};
 $('sImport').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(d.app!=='skiagrama-settings')throw 0;
-  SET=Object.assign(SET,d.settings||{});['org','btn','btnAdd','btnOrder','lists','conclNorm'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});TPL=Array.isArray(d.templates)?d.templates:TPL;saveSet();saveTpl();fillDepts();applyLook();renderSettings();$('sMsg').textContent='Налаштування завантажено.';}catch(err){$('sMsg').textContent='Це не файл налаштувань Skiagrama.';}e.target.value='';};rd.readAsText(f);});
+  SET=Object.assign(SET,d.settings||{});['org','btn','btnAdd','btnOrder','lists','conclNorm','abbr'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});TPL=Array.isArray(d.templates)?d.templates:TPL;saveSet();saveTpl();fillDepts();applyLook();renderSettings();$('sMsg').textContent='Налаштування завантажено.';}catch(err){$('sMsg').textContent='Це не файл налаштувань Skiagrama.';}e.target.value='';};rd.readAsText(f);});
 function fillDepts(){const dl=$('deptList');dl.textContent='';SET.depts.split(',').map(s=>s.trim()).filter(Boolean).forEach(d=>dl.append(el('option',{value:d})));}
 
 /* запуск */
 applyLook();$('vBadge').textContent=`v${VERSION} бета`;
 /* для автотестів: доступ до внутрішніх функцій (не впливає на роботу) */
-window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,phrasePack,PACKS,get TPL(){return TPL;},applyTpl:t=>applyTpl(t),
+window.__skg={get S(){return S;},get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,swapSide,autoStatus,statusOf,contradictions,checks,phrasePack,PACKS,get TPL(){return TPL;},applyTpl:t=>applyTpl(t),
   setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k),
   async useFolder(h){dirH=h;dirOK=true;await folderWrite();}};
 fillDepts();renderNames();updCtrlBadge();

@@ -149,7 +149,11 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 
 /* patient bar: one line, always visible on PC */
 .pbar{gap:6px;padding:10px 14px}
-.prow{display:grid;grid-template-columns:minmax(160px,2.4fr) minmax(58px,.55fr) minmax(76px,.8fr) minmax(128px,1.15fr) minmax(70px,.7fr);gap:8px}
+.prow{display:grid;grid-template-columns:minmax(140px,2.4fr) minmax(74px,.6fr) minmax(82px,.8fr) minmax(128px,1.15fr) minmax(84px,.8fr);gap:8px}
+.prow>label{white-space:nowrap;min-width:0}
+.pbar{container-type:inline-size}
+@container (max-width:600px){.prow{grid-template-columns:minmax(74px,.7fr) minmax(82px,.8fr) minmax(128px,1.2fr) minmax(84px,.8fr)}.prow .pn{grid-column:1/-1}}
+@container (max-width:420px){.prow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
 .prow input{min-height:38px;padding:6px 8px}
 .pbar details.more summary{font-size:12.5px;padding:0}
 @media (min-width:761px){.pbar{position:sticky;top:0;z-index:20;box-shadow:0 6px 14px rgba(11,28,42,.06)}}
@@ -437,3 +441,16 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   body.printing-batch .wrap{display:none !important}
   body.printing-batch #printArea{display:block !important}
 }
+/* 0.4: результат, скорочення */
+.statusrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px}
+.statusrow .gl{font-weight:600;font-size:13.5px;color:var(--muted)}
+.statusrow .seg button.st-n[aria-pressed="true"]{background:var(--ok-soft);color:var(--ok);font-weight:600}
+.statusrow .seg button.st-p[aria-pressed="true"]{background:var(--warn-soft);color:var(--warn);font-weight:600}
+.statusrow .seg button.st-d[aria-pressed="true"]{background:var(--blue-soft);color:var(--blue);font-weight:600}
+.statusrow .note{margin:0}
+.pill.i{background:var(--blue-soft);color:var(--blue)}
+.abbrs{display:grid;gap:6px;margin:8px 0}
+.abbr{display:grid;grid-template-columns:90px 1fr auto;gap:8px;align-items:center}
+.abbr code{font-weight:600;color:var(--blue)}
+.abbr.add{grid-template-columns:90px 1fr auto;margin-top:6px}
+@media (max-width:560px){.abbr,.abbr.add{grid-template-columns:70px 1fr auto}}

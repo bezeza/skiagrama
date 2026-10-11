@@ -2,8 +2,8 @@
 Object.keys(STUDIES).forEach(k=>$('aStudy').append(el('option',{value:k},STUDIES[k].n)));
 let selected=new Set();
 function aFiltered(){
-  const q=norm($('aSearch').value),f=$('aFrom').value,t=$('aTo').value,s=$('aStudy').value;
-  return A.filter(r=>(!q||norm(r.name).includes(q))&&(!f||r.date>=f)&&(!t||r.date<=t)&&(!s||r.study===s)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.ts-a.ts);
+  const q=norm($('aSearch').value),f=$('aFrom').value,t=$('aTo').value,s=$('aStudy').value,st=$('aStatus').value;
+  return A.filter(r=>(!q||norm(r.name).includes(q))&&(!f||r.date>=f)&&(!t||r.date<=t)&&(!s||r.study===s)&&(!st||r.status===st)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.ts-a.ts);
 }
 function ctrlItems(){return A.filter(r=>r.ctrlDue&&!r.ctrlDone).sort((a,b)=>a.ctrlDue.localeCompare(b.ctrlDue));}
 function updCtrlBadge(){const n=ctrlItems().filter(r=>r.ctrlDue<=today()).length;const b=$('ctrlBadge');b.textContent='';if(n)b.append(document.createTextNode(' '),el('span',{class:'pill b',title:'на контроль'},String(n)));}
@@ -21,6 +21,8 @@ function renderCtrl(){
 }
 function startControl(r){newPatient(false);S=blank(r.study);$('pName').value=r.name;$('pAge').value=r.age||'';$('pSex').value=r.sex||'';setEedDefault();$('pNum').value=nextNum();
   S.prevId=r.id;showView('desc');renderAll();toast('Попереднє дослідження підтягнуто — «Як минулого разу» або новий опис');}
+const ST_PILL={n:'o',p:'w',d:'i'};
+function tdConcl(r){const td=el('td',{class:'c'});if(r.status&&STATUS[r.status])td.append(el('span',{class:'pill st '+ST_PILL[r.status]},STATUS[r.status].toLowerCase()),document.createTextNode(' '));td.append(document.createTextNode(r.concl||''));return td;}
 function renderArchive(){
   renderCtrl();renderDaySum();
   const bb=$('backupBanner');const fOk=folderOK();
@@ -36,7 +38,7 @@ function renderArchive(){
     const td0=el('td');td0.append(c);tr.append(td0);
     const nm=el('td',null,`${r.name}${r.age?', '+r.age+' р.':''}${r.example?' (приклад)':''}`);
     if(r.urgent){nm.append(document.createTextNode(' '),el('span',{class:'pill '+(r.notified?'o':'b')},r.notified?'терміново · повідомлено':'терміново'));if(!r.notified)tr.classList.add('urgrow');}
-    tr.append(el('td',null,fmtD(r.date)),el('td',null,r.num),nm,el('td',null,r.what||''),el('td',{class:'c'},r.concl||''));
+    tr.append(el('td',null,fmtD(r.date)),el('td',null,r.num),nm,el('td',null,r.what||''),tdConcl(r));
     const tp=el('td');tp.append(el('span',{class:'pill '+(r.printed?'o':'w')},r.printed?'так':'ні'));tr.append(tp);
     const ta=el('td');const o=el('button',{type:'button',class:'btn sm'},'Відкрити');o.onclick=()=>openRecord(r);
     if(r.urgent&&!r.notified){const nb=el('button',{type:'button',class:'btn sm'},'Повідомлено');nb.title='Лікаря, що направив, повідомлено';nb.onclick=()=>{r.notified=true;saveA();renderArchive();};ta.append(nb,document.createTextNode(' '));}
@@ -49,27 +51,34 @@ const dayOf=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${pad(d.getMont
 function renderDaySum(){
   const box=$('dayBox');box.textContent='';const td=today();
   const todays=A.filter(r=>!r.example&&r.ts&&dayOf(r.ts)===td);const unpr=todays.filter(r=>!r.printed);const allUnpr=A.filter(r=>!r.example&&!r.printed);
-  if(!todays.length){box.append(el('p',{class:'note'},'Сьогодні протоколів ще немає.'+(allUnpr.length?` Ненадрукованих за весь час: ${allUnpr.length}.`:'')));return;}
+  if(!todays.length){box.append(el('p',{class:'note'},'Сьогодні протоколів ще немає.'+(allUnpr.length?` Ненадрукованих за весь час: ${allUnpr.length}.`:'')));ddButton(box);return;}
   const by={};todays.forEach(r=>{by[r.study]=(by[r.study]||0)+1;});
   const row=el('div',{class:'daynums'});
   const tile=(n,t,cls)=>{const d=el('div',{class:'dt'+(cls?' '+cls:'')});d.append(el('b',null,String(n)),el('span',null,t));row.append(d);};
   tile(todays.length,'протоколів сьогодні');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
   const ctl=todays.filter(r=>r.ctrlDue).length;if(ctl)tile(ctl,'на контроль');
   const urg=todays.filter(r=>r.urgent&&!r.notified).length;if(urg)tile(urg,'термінових не повідомлено','b');
+  const pat=todays.filter(r=>r.status==='p').length,dd=todays.filter(r=>r.status==='d').length;
+  if(pat)tile(pat,'з патологією');if(dd)tile(dd,'на дообстеження','w');
   box.append(row);
   box.append(el('p',{class:'note'},Object.keys(by).map(k=>`${STUDY_SHORT[k]||k} — ${by[k]}`).join(' · ')));
   if(unpr.length){const b=el('button',{type:'button',class:'btn primary'},`Вибрати й надрукувати сьогоднішні (${unpr.length})`);
     b.onclick=()=>{selected=new Set(unpr.map(r=>r.id));renderArchive();$('aPrint').click();};const r=el('div',{class:'trow'});r.append(b);box.append(r);}
+  ddButton(box);
 }
+function ddButton(box){const n=A.filter(r=>!r.example&&r.status==='d').length;if(!n)return;
+  const b=el('button',{type:'button',class:'btn',id:'ddList'});b.append(icEl('flag'),document.createTextNode(`Список на дообстеження (${n})`));
+  b.onclick=()=>{['aSearch','aFrom','aTo'].forEach(i=>$(i).value='');$('aStudy').value='';$('aStatus').value='d';renderArchive();$('aTable').scrollIntoView({block:'start',behavior:'smooth'});};
+  const r=el('div',{class:'trow'});r.append(b);box.append(r);}
 function updPrintBtn(){const n=[...selected].filter(id=>A.some(r=>r.id===id)).length;$('aPrint').textContent=n?`Друкувати вибрані (${n})`:'Друкувати вибрані';$('aPrint').disabled=!n;}
 function openRecord(r){
   if(r.state){S=clone(r.state);S.zones=Object.assign(blankZones(S.study),S.zones);S.open=null;}else{S=blank(r.study||'ogk');S.manual=r.text||'';}
   if(r.fields)setFields(r.fields);else{$('pName').value=r.name||'';$('pAge').value=r.age||'';$('pNum').value=r.num||'';$('pDate').value=r.date||'';$('pEed').value=r.eed||'';}
   editingId=r.id;clicks=0;t0=null;tDone=null;hist=[];firstPaint=true;showView('desc');renderAll();toast('Відкрито протокол з архіву');
 }
-['aSearch','aFrom','aTo','aStudy'].forEach(id=>$(id).addEventListener('input',renderArchive));
+['aSearch','aFrom','aTo','aStudy','aStatus'].forEach(id=>$(id).addEventListener('input',renderArchive));
 $('aToday').onclick=()=>{$('aFrom').value=today();$('aTo').value=today();renderArchive();};
-$('aClear').onclick=()=>{['aSearch','aFrom','aTo'].forEach(i=>$(i).value='');$('aStudy').value='';renderArchive();};
+$('aClear').onclick=()=>{['aSearch','aFrom','aTo'].forEach(i=>$(i).value='');$('aStudy').value='';$('aStatus').value='';renderArchive();};
 $('aSelUnprinted').onclick=()=>{selected=new Set(aFiltered().filter(r=>!r.printed).map(r=>r.id));renderArchive();if(!selected.size)toast('Ненадрукованих протоколів у вибірці немає');};
 $('aPrint').onclick=()=>{const items=A.filter(r=>selected.has(r.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts).map(recordItem);if(items.length)openPrint(items);};
 $('backupBtn').onclick=()=>{const ok=download(`Skiagrama_архів_${today()}.json`,JSON.stringify({app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A},null,1),'application/json');
@@ -96,6 +105,6 @@ $('demoA').onclick=()=>{
 /* вивантаження в Excel (CSV з «;» — так відкриває український Excel) */
 $('aCsv').onclick=()=>{const rows=aFiltered().filter(r=>!r.example);if(!rows.length){toast('За цими фільтрами протоколів немає');return;}
   const q=v=>{v=String(v==null?'':v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Висновок','Терміново','Надруковано','Контроль до'];
-  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.concl,r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
+  const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Висновок','Результат','Терміново','Надруковано','Контроль до'];
+  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.concl,STATUS[r.status]||'',r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
   const f=$('aFrom').value,t=$('aTo').value;const ok=download(`Skiagrama_архів_${f||'усі'}${t?'_'+t:''}.csv`,'\ufeff'+lines.join('\r\n'),'text/csv');toast(ok?`Вивантажено ${rows.length} протоколів`:'Не вдалося зберегти файл');};

@@ -180,7 +180,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   // пакет типових описів: кожен шаблон дає повний протокол без «…» і без зауважень по зонах
   const packRes=await p.evaluate(()=>{const K=window.__skg;const bad=[];let n=0;
     for(const t of K.PACKS[0].templates){K.study(t.study);K.applyTpl(t);n++;
-      const txt=document.getElementById('paper').textContent;const w=[...document.querySelectorAll('#checkList li')].map(l=>l.textContent).filter(x=>/заповніть|Бічність|порожній|без патології/.test(x));
+      const txt=document.getElementById('paper').textContent;const w=[...document.querySelectorAll('#checkList li')].map(l=>l.textContent).filter(x=>/заповніть|Бічність|порожній|без патології|а зона|пропуски/.test(x));
       if(/[…{}|]/.test(txt.replace('Rö-ч: …',''))||w.length)bad.push(t.name+': '+(w.join(' ')||txt.slice(0,80)));}
     K.study('ogk');return {n,bad};});
   ok(packRes.bad.length===0,`пакет «Типові описи»: ${packRes.n} шаблонів дають повні протоколи`+(packRes.bad.length?' — '+packRes.bad.join(' / '):''));
@@ -209,6 +209,75 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   const csv=dl[0]?require('fs').readFileSync(await dl[0].path(),'utf8'):'';
   ok(csv.startsWith('\ufeffДата;№;ПІБ')&&csv.split('\r\n').length>=2,'вивантаження архіву в Excel (CSV)');
   ok(/\d\s*протоколів сьогодні/.test(ds)&&ds.includes('не надруковано'),'підсумок дня в архіві: '+ds.replace(/\s+/g,' ').slice(0,80));
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
+/* ---------- 0.4: швидкість, безпека висновку, результат ---------- */
+{
+  console.log('\n0.4: швидкість, безпека висновку, результат');
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');await p.click('text=Пропустити — заповню пізніше');
+  const sw=await p.evaluate(()=>{const f=window.__skg.swapSide;return [f('правої легені'),f('Справа'),f('Правобічна пневмонія'),f('під лівим куполом'),f('правильної форми'),f('обох легень'),f('вліво')];});
+  ok(sw.join('|')==='лівої легені|Зліва|Лівобічна пневмонія|під правим куполом|правильної форми|обох легень|вправо','справа ↔ зліва: заміна слів ('+sw.join(', ')+')');
+  // подвійний клік по зоні та висновку
+  await p.click('#allNorm');
+  await p.evaluate(()=>{const K=window.__skg;K.setZones({infil:{st:'c',sel:{side:'права',loc:'нижні',char:'інфільтр'}}});K.S.concl=['Правобічна пневмонія'];K.renderAll();});
+  await p.dblclick('#ptext [data-zone="infil"]');
+  let t=await paper(p);
+  ok(t.includes('нижніх легеневих полях лівої легені'),'подвійний клік по зоні: права → ліва');
+  await p.dblclick('#ptext .concl');t=await paper(p);
+  ok(t.includes('Rö-ч: Лівобічна пневмонія.'),'подвійний клік по висновку: правобічна → лівобічна');
+  ok(!(await p.textContent('#checkList')).includes('Бічність'),'після заміни бічність узгоджена');
+  // суперечність: висновок «гідроторакс», зона синусів — норма
+  await p.evaluate(()=>{const K=window.__skg;K.S.concl=['Правобічний гідроторакс'];K.renderAll();});
+  ok((await p.textContent('#checkList')).includes('а зона «Синуси, плевра» — норма'),'безпека висновку: гідроторакс при нормі синусів');
+  await p.evaluate(()=>{const K=window.__skg;K.S.zones.sinus={st:'c',sel:{ch:'рідП'}};K.renderAll();});
+  ok(!(await p.textContent('#checkList')).includes('Синуси, плевра» — норма'),'попередження зникає, коли зону змінено');
+  // результат
+  ok(await p.evaluate(()=>window.__skg.statusOf())==='p','результат: патологія (авто)');
+  await p.click('#allNorm');await p.evaluate(()=>{window.__skg.S.concl=[];window.__skg.renderAll();});
+  ok(await p.evaluate(()=>window.__skg.statusOf())==='n','результат: норма (авто)');
+  await p.fill('#recFree','КТ ОГК для уточнення');
+  ok(await p.evaluate(()=>window.__skg.autoStatus())==='d','результат: дообстеження, коли рекомендовано КТ');
+  await p.fill('#recFree','');await p.click('#statusSeg >> text=Патологія');
+  ok(await p.evaluate(()=>window.__skg.S.status)==='p'&&(await p.textContent('#statusNote')).includes('вручну'),'результат вибирається вручну');
+  await p.click('#statusSeg >> text=Патологія');ok(await p.evaluate(()=>window.__skg.S.status)==null,'повторний клік повертає авто');
+  // скорочення в полі висновку і пропуски
+  await p.click('#conclFree');await p.keyboard.type('.кт ');
+  ok((await p.inputValue('#conclFree'))==='КТ ОГК для уточнення характеру змін ','скорочення .кт розгортається в полі висновку');
+  await p.fill('#conclFree','');await p.fill('#recFree','');await p.click('#recFree');await p.keyboard.type('.конт ');
+  const sel=await p.evaluate(()=>{const i=document.getElementById('recFree');return i.value.slice(i.selectionStart,i.selectionEnd);});
+  ok((await p.inputValue('#recFree')).startsWith('Rö-контроль через __ днів')&&sel==='__','після скорочення виділено пропуск «__»');
+  ok((await p.textContent('#checkList')).includes('пропуски «__»'),'нагадування про незаповнений пропуск');
+  await p.keyboard.type('10');
+  ok((await p.inputValue('#recFree')).startsWith('Rö-контроль через 10 днів')&&!(await p.textContent('#checkList')).includes('пропуски'),'пропуск заповнено — нагадування зникло');
+  // скорочення в тексті протоколу + Tab
+  await p.fill('#recFree','');
+  await p.click('#ptext .concl');await p.keyboard.press('End');await p.keyboard.type(' .вог ');
+  const pt=await p.evaluate(()=>({t:document.getElementById('ptext').innerText,s:String(getSelection())}));
+  ok(pt.t.includes('визначається вогнищева тінь __ мм')&&pt.s==='__','скорочення в протоколі, курсор на першому «__»');
+  await p.keyboard.type('верхній');await p.keyboard.press('Tab');
+  ok(await p.evaluate(()=>String(getSelection()))==='__','Tab — до наступного «__»');
+  await p.click('#pman >> text=Скинути правку');
+  // налаштування скорочень і пакет
+  await p.click('#navSettings');await p.fill('#sAbbrKey','.пп');await p.fill('#sAbbrVal','Правобічна пневмонія');await p.click('#sAbbrAdd');
+  ok((await p.textContent('#sAbbr')).includes('.пп'),'своє скорочення додано в «Налаштуваннях»');
+  ok(await p.evaluate(()=>window.__skg.phrasePack().abbr['пп']==='Правобічна пневмонія'),'скорочення потрапляють у пакет фраз');
+  await p.click('#view-settings [data-back]');
+  // архів: статус, фільтр, CSV, підсумок дня
+  await p.fill('#pName','Пацієнт Тест');await p.fill('#pAge','50');await p.fill('#pNum','777');await p.fill('#pEed','0,35');
+  await p.evaluate(()=>{const K=window.__skg;K.setZones({infil:{st:'c',sel:{side:'права',loc:'нижні',char:'інфільтр'}}});K.S.concl=['Правобічна пневмонія'];K.S.recs=[];K.renderAll();});
+  await p.fill('#recFree','КТ ОГК для уточнення');await p.keyboard.press('Control+s');
+  ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('skiagrama.archive.v1')).slice(-1)[0].status)==='d','у архів зберігається результат');
+  await p.click('#navArchive');
+  ok((await p.textContent('#aTable')).includes('дообстеження'),'в архіві позначка результату');
+  ok(await p.isVisible('#ddList'),'кнопка «Список на дообстеження»');
+  await p.selectOption('#aStatus','n');ok((await p.textContent('#aTable')).includes('За цими фільтрами протоколів немає'),'фільтр за результатом');
+  await p.click('#ddList');ok((await p.inputValue('#aStatus'))==='d'&&(await p.textContent('#aTable')).includes('Пацієнт Тест'),'«Список на дообстеження» показує потрібних');
+  const dl=await Promise.all([p.waitForEvent('download',{timeout:5000}).catch(()=>null),p.click('#aCsv')]);
+  const csv=dl[0]?require('fs').readFileSync(await dl[0].path(),'utf8'):'';
+  ok(csv.includes(';Результат;')&&csv.includes(';Дообстеження;'),'CSV: колонка «Результат»');
+  ok((await p.textContent('#dayBox')).includes('на дообстеження'),'підсумок дня: на дообстеження');
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }

@@ -88,6 +88,7 @@
 
   <div class="card" id="sec-concl">
     <div class="chead"><h2 data-ic="concl">Висновок</h2><button class="btn sm urgbtn" id="urgBtn" type="button" aria-pressed="false" data-ic="siren" title="Критична знахідка: пневмоторакс, вільний газ, перелом зі зміщенням…">Терміново</button></div>
+    <div class="statusrow" id="statusRow"><span class="gl">Результат</span><span class="seg" id="statusSeg" role="group" aria-label="Результат дослідження"></span><span class="note" id="statusNote"></span></div>
     <div id="sugs" class="chosen"></div>
     <div class="chosen" id="chosen"></div>
     <div class="chips" id="conclChips"></div>
@@ -145,6 +146,7 @@
       <label class="f">З дати<input id="aFrom" type="date"></label>
       <label class="f">По дату<input id="aTo" type="date"></label>
       <label class="f">Вид<select id="aStudy"><option value="">усі</option></select></label>
+      <label class="f">Результат<select id="aStatus"><option value="">усі</option><option value="n">норма</option><option value="p">патологія</option><option value="d">дообстеження</option></select></label>
     </div>
     <div class="trow">
       <button class="btn" id="aToday" type="button">Сьогодні</button>
@@ -243,6 +245,12 @@
     <h2 data-ic="star">Мої кнопки</h2>
     <p class="note">Власні фрази додаються прямо в зоні: розгорніть зону → «+ своя фраза». Тут можна переглянути й видалити всі.</p>
     <div id="sMy"></div>
+  </div>
+  <div class="card" id="abbrCard">
+    <h2 data-ic="bolt">Скорочення</h2>
+    <p class="note">Напишіть крапку і скорочення, потім пробіл: <code>.кт</code> → «КТ ОГК для уточнення характеру змін». Працює в протоколі, у полях висновку й рекомендацій. <code>__</code> у фразі — пропуск: курсор стане туди сам, Tab — до наступного.</p>
+    <div id="sAbbr" class="abbrs"></div>
+    <div class="abbr add"><input id="sAbbrKey" type="text" placeholder="кт" aria-label="Скорочення" autocomplete="off"><input id="sAbbrVal" type="text" placeholder="Фраза, напр. Rö-контроль через __ днів" aria-label="Фраза" autocomplete="off"><button class="btn sm" id="sAbbrAdd" type="button">Додати</button></div>
   </div>
   <div class="card" id="packsCard">
     <h2 data-ic="box">Пакети фраз і типові описи</h2>
