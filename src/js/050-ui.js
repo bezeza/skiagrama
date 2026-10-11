@@ -345,5 +345,5 @@ function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new S
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
 function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
-function updStudyCard(){$('sec-study').hidden=$('studyExtra').hidden&&$('projChips').hidden&&$('prevBox').hidden;}
+function updStudyCard(){}
 function renderAll(){renderStudy();renderPrev();updStudyCard();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();}

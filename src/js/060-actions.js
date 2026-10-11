@@ -68,7 +68,8 @@ $('copyConcl').onclick=()=>{copyText(conclText().t.replace(/^Rö-ч:\s*/,''),'В
 $('copyRec').onclick=()=>{const t=recText();if(!t){toast('Рекомендацій немає');return;}copyText(t.replace(/^Рекомендовано:\s*/,''),'Рекомендації');};
 $('paperBtn').onclick=()=>{paperView=!paperView;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
 $('pfsBtn').onclick=()=>{const o=['s','m','l','xl'];SET.pfs=o[(o.indexOf(SET.pfs)+1)%o.length];saveSet();applyLook();toast({s:'Текст протоколу: менший',m:'Текст протоколу: звичайний',l:'Текст протоколу: більший',xl:'Текст протоколу: великий'}[SET.pfs]);if(paperView)renderSide();};
-$('themeBtn').onclick=()=>{const order=['system','light','grey','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%order.length];saveSet();applyLook();};
+/* меню «▾» і «⋯»: закриваються після вибору або кліку поза ними */
+document.addEventListener('click',e=>{document.querySelectorAll('details.menu[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.mpop button'))d.open=false;});});
 window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);window.__rz=setTimeout(renderSide,200);}});
 
 /* Word і LibreOffice */
@@ -132,7 +133,7 @@ document.addEventListener('keydown',e=>{
 });
 
 /* перегляди */
-function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
+function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}
-$('navArchive').onclick=()=>showView('archive');$('navSettings').onclick=()=>showView('settings');
+$('navArchive').onclick=()=>showView('archive');$('navDesc').onclick=()=>showView('desc');$('navSettings').onclick=()=>showView('settings');
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showView('desc'));

@@ -36,7 +36,13 @@ a{color:var(--blue)}
 
 /* header */
 header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
-.brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.appnav{display:flex;gap:4px;margin:0 auto 0 18px}
+.appnav button{border:0;background:none;padding:8px 14px;border-radius:10px;font-weight:500;font-size:15px;min-height:40px;display:inline-flex;align-items:center;gap:6px}
+.appnav button:hover{background:var(--blue-soft)}
+.appnav button.on{background:var(--blue-soft);color:var(--blue)}
+.btn.search{color:var(--muted);min-width:190px;display:inline-flex;justify-content:space-between;align-items:center;gap:16px;font-weight:400}
+.btn.search kbd{font-family:var(--body);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px}
 .brand .bn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .brand h1{font-family:var(--display);font-weight:600;font-size:24px;margin:0;letter-spacing:-.3px}
 .brand small{display:block;color:var(--muted);font-size:12.5px}
@@ -62,7 +68,30 @@ header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;fle
 .card h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0}
 
 /* study tabs + section nav */
-.navcard{gap:10px}
+.zhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.zhead .navrow{flex:1 1 100%;order:3;min-width:0;margin-left:-9px}
+.zhead h2{margin-right:auto}
+.zhead .nz{display:contents}
+.zhead .sep{width:1px;height:20px;background:var(--line);margin:0 6px}
+.ztools{display:flex;gap:6px;align-items:center}
+.actbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.split{display:inline-flex}
+.split>.btn{border-radius:10px 0 0 10px}
+.split summary.btn{border-radius:0 10px 10px 0;border-left:0;padding:7px 10px}
+details.menu{position:relative}
+details.menu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+details.menu>summary::-webkit-details-marker{display:none}
+details.menu[open]>summary{background:var(--blue-soft);border-color:var(--blue)}
+.mpop{position:absolute;top:calc(100% + 4px);left:0;z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;min-width:230px}
+.mpop.right{left:auto;right:0}
+.mpop button{border:0;background:none;text-align:left;padding:9px 12px;border-radius:8px;font-size:14px;min-height:38px}
+.mpop button:hover{background:var(--blue-soft)}
+.mpop .note{padding:6px 12px 2px}
+.viewbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vbtn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;min-height:34px;font-size:13px}
+.vbtn:hover{border-color:var(--blue)}
+.vbtn[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.viewbar label.bsel select{min-height:34px;padding:4px 8px;font-size:13px;width:auto}
 .studytabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .studytabs button{border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
 .studytabs button+button{border-left:1px solid var(--line)}
@@ -264,7 +293,9 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   .studytabs{grid-template-columns:repeat(3,minmax(0,1fr))}
   .studytabs button:nth-child(4){border-left:0}
   .studytabs button:nth-child(n+4){border-top:1px solid var(--line)}
-  .navcard .navrow{display:none}
+  #sec-zones .navrow{display:none}
+  .appnav,.btn.search{display:none}
+  .viewbar label.bsel{font-size:0;gap:0}.viewbar label.bsel select{max-width:150px}
   .stepper{display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:15;background:var(--surface);padding:6px 0}
   .stepper .sn{flex:1;text-align:center;font-weight:600;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);min-height:42px}
   .side{position:fixed;inset:0;height:auto;z-index:60;border-radius:0;border:0;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 24px);transform:translateY(105%);visibility:hidden}

@@ -49,7 +49,13 @@ a{color:var(--blue)}
 
 /* header */
 header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
-.brand{display:flex;align-items:center;gap:12px;margin-right:auto;min-width:0}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.appnav{display:flex;gap:4px;margin:0 auto 0 18px}
+.appnav button{border:0;background:none;padding:8px 14px;border-radius:10px;font-weight:500;font-size:15px;min-height:40px;display:inline-flex;align-items:center;gap:6px}
+.appnav button:hover{background:var(--blue-soft)}
+.appnav button.on{background:var(--blue-soft);color:var(--blue)}
+.btn.search{color:var(--muted);min-width:190px;display:inline-flex;justify-content:space-between;align-items:center;gap:16px;font-weight:400}
+.btn.search kbd{font-family:var(--body);font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px}
 .brand .bn{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .brand h1{font-family:var(--display);font-weight:600;font-size:24px;margin:0;letter-spacing:-.3px}
 .brand small{display:block;color:var(--muted);font-size:12.5px}
@@ -75,7 +81,30 @@ header.top{max-width:1480px;margin:0 auto;padding:12px 20px 4px;display:flex;fle
 .card h2{font-family:var(--display);font-weight:500;font-size:17px;margin:0}
 
 /* study tabs + section nav */
-.navcard{gap:10px}
+.zhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.zhead .navrow{flex:1 1 100%;order:3;min-width:0;margin-left:-9px}
+.zhead h2{margin-right:auto}
+.zhead .nz{display:contents}
+.zhead .sep{width:1px;height:20px;background:var(--line);margin:0 6px}
+.ztools{display:flex;gap:6px;align-items:center}
+.actbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.split{display:inline-flex}
+.split>.btn{border-radius:10px 0 0 10px}
+.split summary.btn{border-radius:0 10px 10px 0;border-left:0;padding:7px 10px}
+details.menu{position:relative}
+details.menu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+details.menu>summary::-webkit-details-marker{display:none}
+details.menu[open]>summary{background:var(--blue-soft);border-color:var(--blue)}
+.mpop{position:absolute;top:calc(100% + 4px);left:0;z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;min-width:230px}
+.mpop.right{left:auto;right:0}
+.mpop button{border:0;background:none;text-align:left;padding:9px 12px;border-radius:8px;font-size:14px;min-height:38px}
+.mpop button:hover{background:var(--blue-soft)}
+.mpop .note{padding:6px 12px 2px}
+.viewbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vbtn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 10px;min-height:34px;font-size:13px}
+.vbtn:hover{border-color:var(--blue)}
+.vbtn[aria-pressed="true"]{background:var(--blue-soft);border-color:var(--blue);color:var(--blue)}
+.viewbar label.bsel select{min-height:34px;padding:4px 8px;font-size:13px;width:auto}
 .studytabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .studytabs button{border:0;background:var(--surface);padding:9px 6px;min-height:44px;font-weight:500;font-size:14px}
 .studytabs button+button{border-left:1px solid var(--line)}
@@ -277,7 +306,9 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   .studytabs{grid-template-columns:repeat(3,minmax(0,1fr))}
   .studytabs button:nth-child(4){border-left:0}
   .studytabs button:nth-child(n+4){border-top:1px solid var(--line)}
-  .navcard .navrow{display:none}
+  #sec-zones .navrow{display:none}
+  .appnav,.btn.search{display:none}
+  .viewbar label.bsel{font-size:0;gap:0}.viewbar label.bsel select{max-width:150px}
   .stepper{display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:15;background:var(--surface);padding:6px 0}
   .stepper .sn{flex:1;text-align:center;font-weight:600;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--bg);min-height:42px}
   .side{position:fixed;inset:0;height:auto;z-index:60;border-radius:0;border:0;overflow:auto;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 24px);transform:translateY(105%);visibility:hidden}
@@ -412,11 +443,16 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
       <small>від <a href="https://github.com/bezeza" target="_blank" rel="noopener">bezeza</a><span class="hide-m"> · АРМ лікаря-рентгенолога</span></small>
     </div>
   </div>
+  <nav class="appnav" aria-label="Розділи програми">
+    <button type="button" id="navDesc" class="on">Опис</button>
+    <button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button>
+  </nav>
   <div class="hbtns">
     <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
-    <button class="btn" id="themeBtn" type="button">Тема: авто</button>
-    <button class="btn norm" id="allNorm" type="button" title="Alt+N">Норма всюди</button>
-    <button class="btn" id="newPatient" type="button">Новий<span class="hide-m"> пацієнт</span></button>
+    <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span>Пошук…</span><kbd>Ctrl K</kbd></button>
+    <button class="btn" id="newPatient" type="button">+ Новий<span class="hide-m"> пацієнт</span></button>
+    <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування">⚙</button>
+    <button class="btn icon" id="navHelp" type="button" title="Довідка" aria-label="Довідка">?</button>
   </div>
 </header>
 <div class="banners noprint">
@@ -451,22 +487,20 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <datalist id="deptList"></datalist>
   </div>
 
-  <div class="card navcard">
-    <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
-    <div class="navrow"><span class="nk">Пацієнт</span><button type="button" data-go="sec-patient">Дані і знімок</button><span id="prevNav"></span></div>
-    <div class="navrow" id="navZones"><span class="nk">Опис</span></div>
-    <div class="navrow"><span class="nk">Висновок</span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
-    <div class="navrow"><span class="nk">Інструменти</span><button type="button" id="navUndo" title="Ctrl+Z">↶ Скасувати</button><button type="button" id="navRedo" title="Ctrl+Y або Ctrl+Shift+Z">↷ Повторити</button><button type="button" id="navSearch" title="Ctrl+K">Пошук</button><button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button><button type="button" id="navSettings">Налаштування</button><button type="button" id="navHelp">Довідка</button></div>
-    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
-  </div>
-
   <div class="card" id="sec-study">
+    <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
     <div class="fields" id="studyExtra"></div>
     <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
+    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
     <div class="prev" id="prevBox" hidden></div>
   </div>
 
   <div class="card" id="sec-zones">
+    <div class="zhead">
+      <h2>Опис</h2>
+      <div class="navrow"><span class="nz" id="navZones"></span><span class="sep" aria-hidden="true"></span><span id="prevNav"></span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
+      <div class="ztools"><button class="btn sm icon" id="navUndo" type="button" title="Скасувати (Ctrl+Z)" aria-label="Скасувати">↶</button><button class="btn sm icon" id="navRedo" type="button" title="Повторити (Ctrl+Y)" aria-label="Повторити">↷</button><button class="btn norm" id="allNorm" type="button" title="Alt+N">Норма всюди</button></div>
+    </div>
     <div class="stepper" id="stepper"><button class="btn icon" id="stPrev" type="button" aria-label="Попередня зона">‹</button><button class="sn" id="stName" type="button"></button><button class="btn icon" id="stNext" type="button" aria-label="Наступна зона">›</button></div>
     <div class="trow" id="tplRow"></div>
     <div class="trow" id="tplSave" hidden>
@@ -504,28 +538,25 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   <div class="sh noprint">
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
     <div class="shh"><h2>Протокол</h2><div class="psum" id="pSum"></div></div>
-    <button class="btn primary" id="copyAll" type="button" title="Ctrl+Enter">Копіювати</button>
   </div>
-  <div class="trow noprint">
-    <button class="btn icon" id="pfsBtn" type="button" title="Розмір тексту протоколу">Aa</button>
-    <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
-    <button class="btn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
+  <div class="actbar noprint">
+    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)">Готово</button>
+    <div class="split">
+      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)">Копіювати</button>
+      <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
+        <div class="mpop"><span class="note">Для h24 частинами:</span><button id="copyDesc" type="button">Опис</button><button id="copyConcl" type="button">Висновок</button><button id="copyRec" type="button">Рекомендації</button></div></details>
+    </div>
     <button class="btn" id="printBtn" type="button" title="Ctrl+P">Друк</button>
-  </div>
-  <div class="trow noprint">
-    <button class="btn primary" id="doneBtn" type="button" title="Ctrl+S">Готово</button>
-    <button class="btn" id="wordBtn" type="button">Word</button>
-    <button class="btn" id="odtBtn" type="button">LibreOffice</button>
-    <button class="btn" id="saveTpl" type="button">Як шаблон</button>
-  </div>
-  <div class="trow noprint">
-    <span class="note">Для h24:</span>
-    <button class="btn sm" id="copyDesc" type="button">Опис</button>
-    <button class="btn sm" id="copyConcl" type="button">Висновок</button>
-    <button class="btn sm" id="copyRec" type="button">Рекомендації</button>
+    <details class="menu"><summary class="btn icon" title="Ще" aria-label="Ще дії">⋯</summary>
+      <div class="mpop right"><button id="wordBtn" type="button">Зберегти як Word</button><button id="odtBtn" type="button">Зберегти для LibreOffice</button><button id="saveTpl" type="button">Зберегти як шаблон</button></div></details>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
+  <div class="viewbar noprint">
+    <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
+    <button class="vbtn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
+    <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
+  </div>
   <div class="pscroll"><article class="paper" id="paper"></article></div>
   <div class="meter noprint" id="meter"></div>
 </aside>
@@ -1027,7 +1058,7 @@ const saveSet=()=>{store.set(SET_KEY,SET);folderSoon();},saveTpl=()=>{store.set(
 const FONT={s:'14px',m:'15px',l:'16.5px',xl:'18px'},PFONT={s:'14.5px',m:'16px',l:'17.5px',xl:'19.5px'};
 const THEME_LABEL={system:'Тема: авто',light:'Тема: світла',grey:'Тема: кабінет',dark:'Тема: темна'};
 function applyLook(){const r=document.documentElement;if(SET.theme==='system')r.removeAttribute('data-theme');else r.setAttribute('data-theme',SET.theme);
-  r.style.setProperty('--fs',FONT[SET.font]||FONT.m);r.style.setProperty('--pfs',PFONT[SET.pfs]||PFONT.m);$('themeBtn').textContent=THEME_LABEL[SET.theme]||THEME_LABEL.system;}
+  r.style.setProperty('--fs',FONT[SET.font]||FONT.m);r.style.setProperty('--pfs',PFONT[SET.pfs]||PFONT.m);const tb=$('themeBtn');if(tb)tb.textContent=THEME_LABEL[SET.theme]||THEME_LABEL.system;}
 
 /* стан */
 const FIELDS=['pName','pAge','pSex','pNum','pDate','pEed','pDept','pRef','pRefDoc','pCount','conclFree','recFree'];
@@ -1582,7 +1613,7 @@ function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new S
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
 function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
-function updStudyCard(){$('sec-study').hidden=$('studyExtra').hidden&&$('projChips').hidden&&$('prevBox').hidden;}
+function updStudyCard(){}
 function renderAll(){renderStudy();renderPrev();updStudyCard();renderZones();renderMeas();renderConcl();renderRecs();renderTpl();renderNav();renderSide();}
 
 /* --- 060-actions.js --- */
@@ -1656,7 +1687,8 @@ $('copyConcl').onclick=()=>{copyText(conclText().t.replace(/^Rö-ч:\s*/,''),'В
 $('copyRec').onclick=()=>{const t=recText();if(!t){toast('Рекомендацій немає');return;}copyText(t.replace(/^Рекомендовано:\s*/,''),'Рекомендації');};
 $('paperBtn').onclick=()=>{paperView=!paperView;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
 $('pfsBtn').onclick=()=>{const o=['s','m','l','xl'];SET.pfs=o[(o.indexOf(SET.pfs)+1)%o.length];saveSet();applyLook();toast({s:'Текст протоколу: менший',m:'Текст протоколу: звичайний',l:'Текст протоколу: більший',xl:'Текст протоколу: великий'}[SET.pfs]);if(paperView)renderSide();};
-$('themeBtn').onclick=()=>{const order=['system','light','grey','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%order.length];saveSet();applyLook();};
+/* меню «▾» і «⋯»: закриваються після вибору або кліку поза ними */
+document.addEventListener('click',e=>{document.querySelectorAll('details.menu[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.mpop button'))d.open=false;});});
 window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);window.__rz=setTimeout(renderSide,200);}});
 
 /* Word і LibreOffice */
@@ -1720,9 +1752,9 @@ document.addEventListener('keydown',e=>{
 });
 
 /* перегляди */
-function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
+function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}
-$('navArchive').onclick=()=>showView('archive');$('navSettings').onclick=()=>showView('settings');
+$('navArchive').onclick=()=>showView('archive');$('navDesc').onclick=()=>showView('desc');$('navSettings').onclick=()=>showView('settings');
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showView('desc'));
 
 /* --- 070-archive.js --- */

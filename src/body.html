@@ -11,11 +11,16 @@
       <small>від <a href="https://github.com/bezeza" target="_blank" rel="noopener">bezeza</a><span class="hide-m"> · АРМ лікаря-рентгенолога</span></small>
     </div>
   </div>
+  <nav class="appnav" aria-label="Розділи програми">
+    <button type="button" id="navDesc" class="on">Опис</button>
+    <button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button>
+  </nav>
   <div class="hbtns">
     <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
-    <button class="btn" id="themeBtn" type="button">Тема: авто</button>
-    <button class="btn norm" id="allNorm" type="button" title="Alt+N">Норма всюди</button>
-    <button class="btn" id="newPatient" type="button">Новий<span class="hide-m"> пацієнт</span></button>
+    <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span>Пошук…</span><kbd>Ctrl K</kbd></button>
+    <button class="btn" id="newPatient" type="button">+ Новий<span class="hide-m"> пацієнт</span></button>
+    <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування">⚙</button>
+    <button class="btn icon" id="navHelp" type="button" title="Довідка" aria-label="Довідка">?</button>
   </div>
 </header>
 <div class="banners noprint">
@@ -50,22 +55,20 @@
     <datalist id="deptList"></datalist>
   </div>
 
-  <div class="card navcard">
-    <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
-    <div class="navrow"><span class="nk">Пацієнт</span><button type="button" data-go="sec-patient">Дані і знімок</button><span id="prevNav"></span></div>
-    <div class="navrow" id="navZones"><span class="nk">Опис</span></div>
-    <div class="navrow"><span class="nk">Висновок</span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
-    <div class="navrow"><span class="nk">Інструменти</span><button type="button" id="navUndo" title="Ctrl+Z">↶ Скасувати</button><button type="button" id="navRedo" title="Ctrl+Y або Ctrl+Shift+Z">↷ Повторити</button><button type="button" id="navSearch" title="Ctrl+K">Пошук</button><button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button><button type="button" id="navSettings">Налаштування</button><button type="button" id="navHelp">Довідка</button></div>
-    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
-  </div>
-
   <div class="card" id="sec-study">
+    <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
     <div class="fields" id="studyExtra"></div>
     <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
+    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
     <div class="prev" id="prevBox" hidden></div>
   </div>
 
   <div class="card" id="sec-zones">
+    <div class="zhead">
+      <h2>Опис</h2>
+      <div class="navrow"><span class="nz" id="navZones"></span><span class="sep" aria-hidden="true"></span><span id="prevNav"></span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
+      <div class="ztools"><button class="btn sm icon" id="navUndo" type="button" title="Скасувати (Ctrl+Z)" aria-label="Скасувати">↶</button><button class="btn sm icon" id="navRedo" type="button" title="Повторити (Ctrl+Y)" aria-label="Повторити">↷</button><button class="btn norm" id="allNorm" type="button" title="Alt+N">Норма всюди</button></div>
+    </div>
     <div class="stepper" id="stepper"><button class="btn icon" id="stPrev" type="button" aria-label="Попередня зона">‹</button><button class="sn" id="stName" type="button"></button><button class="btn icon" id="stNext" type="button" aria-label="Наступна зона">›</button></div>
     <div class="trow" id="tplRow"></div>
     <div class="trow" id="tplSave" hidden>
@@ -103,28 +106,25 @@
   <div class="sh noprint">
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
     <div class="shh"><h2>Протокол</h2><div class="psum" id="pSum"></div></div>
-    <button class="btn primary" id="copyAll" type="button" title="Ctrl+Enter">Копіювати</button>
   </div>
-  <div class="trow noprint">
-    <button class="btn icon" id="pfsBtn" type="button" title="Розмір тексту протоколу">Aa</button>
-    <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
-    <button class="btn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
+  <div class="actbar noprint">
+    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)">Готово</button>
+    <div class="split">
+      <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)">Копіювати</button>
+      <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
+        <div class="mpop"><span class="note">Для h24 частинами:</span><button id="copyDesc" type="button">Опис</button><button id="copyConcl" type="button">Висновок</button><button id="copyRec" type="button">Рекомендації</button></div></details>
+    </div>
     <button class="btn" id="printBtn" type="button" title="Ctrl+P">Друк</button>
-  </div>
-  <div class="trow noprint">
-    <button class="btn primary" id="doneBtn" type="button" title="Ctrl+S">Готово</button>
-    <button class="btn" id="wordBtn" type="button">Word</button>
-    <button class="btn" id="odtBtn" type="button">LibreOffice</button>
-    <button class="btn" id="saveTpl" type="button">Як шаблон</button>
-  </div>
-  <div class="trow noprint">
-    <span class="note">Для h24:</span>
-    <button class="btn sm" id="copyDesc" type="button">Опис</button>
-    <button class="btn sm" id="copyConcl" type="button">Висновок</button>
-    <button class="btn sm" id="copyRec" type="button">Рекомендації</button>
+    <details class="menu"><summary class="btn icon" title="Ще" aria-label="Ще дії">⋯</summary>
+      <div class="mpop right"><button id="wordBtn" type="button">Зберегти як Word</button><button id="odtBtn" type="button">Зберегти для LibreOffice</button><button id="saveTpl" type="button">Зберегти як шаблон</button></div></details>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
+  <div class="viewbar noprint">
+    <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
+    <button class="vbtn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
+    <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
+  </div>
   <div class="pscroll"><article class="paper" id="paper"></article></div>
   <div class="meter noprint" id="meter"></div>
 </aside>
