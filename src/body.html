@@ -27,15 +27,6 @@
 <!-- ============ ОПИС ============ -->
 <main class="wrap" id="view-desc">
 <section class="form noprint" aria-label="Опис дослідження">
-  <div class="card navcard">
-    <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
-    <div class="navrow"><span class="nk">Пацієнт</span><button type="button" data-go="sec-patient">Дані і знімок</button><span id="prevNav"></span></div>
-    <div class="navrow" id="navZones"><span class="nk">Опис</span></div>
-    <div class="navrow"><span class="nk">Висновок</span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
-    <div class="navrow"><span class="nk">Інструменти</span><button type="button" id="navUndo" title="Ctrl+Z">↶ Скасувати</button><button type="button" id="navRedo" title="Ctrl+Y або Ctrl+Shift+Z">↷ Повторити</button><button type="button" id="navSearch" title="Ctrl+K">Пошук</button><button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button><button type="button" id="navSettings">Налаштування</button><button type="button" id="navHelp">Довідка</button></div>
-    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
-  </div>
-
   <div class="card pbar" id="sec-patient">
     <div class="prow">
       <label class="f pn">ПІБ<input id="pName" type="text" autocomplete="off" list="nameList" placeholder="Прізвище І. Б."></label>
@@ -56,6 +47,15 @@
       </div>
     </details>
     <datalist id="deptList"></datalist>
+  </div>
+
+  <div class="card navcard">
+    <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
+    <div class="navrow"><span class="nk">Пацієнт</span><button type="button" data-go="sec-patient">Дані і знімок</button><span id="prevNav"></span></div>
+    <div class="navrow" id="navZones"><span class="nk">Опис</span></div>
+    <div class="navrow"><span class="nk">Висновок</span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
+    <div class="navrow"><span class="nk">Інструменти</span><button type="button" id="navUndo" title="Ctrl+Z">↶ Скасувати</button><button type="button" id="navRedo" title="Ctrl+Y або Ctrl+Shift+Z">↷ Повторити</button><button type="button" id="navSearch" title="Ctrl+K">Пошук</button><button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button><button type="button" id="navSettings">Налаштування</button><button type="button" id="navHelp">Довідка</button></div>
+    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
   </div>
 
   <div class="card" id="sec-study">
