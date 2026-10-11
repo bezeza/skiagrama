@@ -1,0 +1,252 @@
+<header class="top noprint">
+  <div class="brand">
+    <svg width="42" height="42" viewBox="0 0 100 100" aria-hidden="true">
+      <rect x="2" y="2" width="96" height="96" rx="22" fill="#0B1C2A"></rect>
+      <g fill="none" stroke="#DCE8F3" stroke-width="6.5" stroke-linecap="round">
+        <path d="M40 82 L37 56"></path><path d="M36 50 L34 30"></path>
+        <path d="M50 82 L50 52"></path><path d="M50 46 L50 18"></path>
+        <path d="M60 82 L63 56"></path><path d="M64 50 L66 32"></path>
+        <path d="M69 84 L76 64"></path><path d="M33 86 L24 70"></path>
+      </g>
+      <ellipse cx="63.8" cy="45" rx="8" ry="3" fill="none" stroke="#F2A65A" stroke-width="4.5"></ellipse>
+    </svg>
+    <div>
+      <div class="bn"><h1>Skiagrama</h1><button class="vbadge" id="vBadge" type="button" title="Що нового"></button></div>
+      <small>від <a href="https://github.com/bezeza" target="_blank" rel="noopener">bezeza</a><span class="hide-m"> · АРМ лікаря-рентгенолога</span></small>
+    </div>
+  </div>
+  <div class="hbtns">
+    <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
+    <button class="btn" id="themeBtn" type="button">Тема: авто</button>
+    <button class="btn norm" id="allNorm" type="button" title="Alt+N">Норма всюди</button>
+    <button class="btn" id="newPatient" type="button">Новий<span class="hide-m"> пацієнт</span></button>
+  </div>
+</header>
+<div class="banners noprint">
+  <div class="banner" id="updBanner" hidden><span>Доступна нова версія Skiagrama. Незбережений протокол не загубиться.</span><button class="btn primary sm" id="updBtn" type="button">Оновити зараз</button></div>
+  <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button></div>
+  <div class="banner" id="storeBanner" hidden>Браузер не дає зберігати дані на цьому пристрої: архів, шаблони й чернетка зникнуть після закриття сторінки.</div>
+</div>
+
+<!-- ============ ОПИС ============ -->
+<main class="wrap" id="view-desc">
+<section class="form noprint" aria-label="Опис дослідження">
+  <div class="card navcard">
+    <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
+    <div class="navrow"><span class="nk">Пацієнт</span><button type="button" data-go="sec-patient">Дані і знімок</button><span id="prevNav"></span></div>
+    <div class="navrow" id="navZones"><span class="nk">Опис</span></div>
+    <div class="navrow"><span class="nk">Висновок</span><button type="button" data-go="measPanel" id="navMeas">Вимірювання</button><button type="button" data-go="sec-concl" id="navConcl">Висновок</button><button type="button" data-go="sec-rec">Рекомендації</button></div>
+    <div class="navrow"><span class="nk">Інструменти</span><button type="button" id="navUndo" title="Ctrl+Z">↶ Скасувати</button><button type="button" id="navSearch" title="Ctrl+K">Пошук</button><button type="button" id="navArchive">Архів<span id="ctrlBadge"></span></button><button type="button" id="navSettings">Налаштування</button><button type="button" id="navHelp">Довідка</button></div>
+    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
+  </div>
+
+  <div class="card" id="sec-patient">
+    <h2>Пацієнт і знімок</h2>
+    <div class="fields">
+      <label class="f wide">ПІБ<input id="pName" type="text" autocomplete="off" list="nameList" placeholder="Прізвище І. Б."></label>
+      <label class="f">Вік, років<input id="pAge" type="number" min="0" max="120" inputmode="numeric"></label>
+      <label class="f">№ знімка<input id="pNum" type="text" inputmode="numeric"></label>
+      <label class="f">Дата знімка<input id="pDate" type="date"></label>
+      <label class="f">ЕЕД, мЗв<input id="pEed" type="text" inputmode="decimal"></label>
+    </div>
+    <datalist id="nameList"></datalist>
+    <div class="fields" id="studyExtra"></div>
+    <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
+    <details class="more">
+      <summary>Додатково: стать, відділення, е-направлення</summary>
+      <div class="fields">
+        <label class="f">Стать<select id="pSex"><option value="">—</option><option value="ч">ч</option><option value="ж">ж</option></select></label>
+        <label class="f">Кількість знімків<input id="pCount" type="number" min="1" max="20" value="1"></label>
+        <label class="f wide">Відділення<input id="pDept" type="text" list="deptList" autocomplete="off"></label>
+        <label class="f wide">№ е-направлення<input id="pRef" type="text" autocomplete="off" placeholder="0000-0000-0000-0000"><span class="msg" id="refMsg"></span></label>
+        <label class="f wide">Лікар, що направив<input id="pRefDoc" type="text" autocomplete="off"></label>
+      </div>
+    </details>
+    <datalist id="deptList"></datalist>
+    <div class="prev" id="prevBox" hidden></div>
+  </div>
+
+  <div class="card" id="sec-zones">
+    <div class="stepper" id="stepper"><button class="btn icon" id="stPrev" type="button" aria-label="Попередня зона">‹</button><button class="sn" id="stName" type="button"></button><button class="btn icon" id="stNext" type="button" aria-label="Наступна зона">›</button></div>
+    <div class="trow" id="tplRow"></div>
+    <div class="trow" id="tplSave" hidden>
+      <input id="tplName" type="text" placeholder="Назва шаблону, напр. «Пневмонія справа»" style="max-width:320px">
+      <button class="btn primary" id="tplSaveOk" type="button">Зберегти</button>
+      <button class="btn" id="tplSaveCancel" type="button">Скасувати</button>
+    </div>
+    <div id="zones"></div>
+  </div>
+
+  <div class="card" id="measPanel">
+    <h2>Вимірювання</h2>
+    <p class="note">Виміряйте в переглядачі знімків і введіть число — програма визначить ступінь і додасть фразу в опис.</p>
+    <div class="meas" id="meas"></div>
+  </div>
+
+  <div class="card" id="sec-concl">
+    <h2>Висновок</h2>
+    <div id="sugs" class="chosen"></div>
+    <div class="chosen" id="chosen"></div>
+    <div class="chips" id="conclChips"></div>
+    <label class="f">Свій текст висновку<input id="conclFree" type="text" autocomplete="off"></label>
+  </div>
+
+  <div class="card" id="sec-rec">
+    <h2>Рекомендації</h2>
+    <div class="chips" id="recChips"></div>
+    <label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label>
+  </div>
+</section>
+
+<aside class="side" id="side" aria-label="Протокол">
+  <div class="sh noprint">
+    <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
+    <h2>Протокол</h2>
+    <button class="btn primary" id="copyAll" type="button" title="Ctrl+Enter">Копіювати</button>
+  </div>
+  <div class="trow noprint">
+    <button class="btn icon" id="pfsBtn" type="button" title="Розмір тексту протоколу">Aa</button>
+    <button class="btn" id="paperBtn" type="button" aria-pressed="false" title="Показати, як протокол ляже на пів аркуша A4">Як на папері</button>
+    <button class="btn" id="printBtn" type="button" title="Ctrl+P">Друк</button>
+    <button class="btn" id="wordBtn" type="button">Word</button>
+    <button class="btn" id="odtBtn" type="button">LibreOffice</button>
+  </div>
+  <div class="trow noprint">
+    <button class="btn primary" id="doneBtn" type="button" title="Ctrl+S">Готово</button>
+    <button class="btn" id="editBtn" type="button">Правити текст</button>
+    <span class="note">Для h24:</span>
+    <button class="btn sm" id="copyDesc" type="button">Опис</button>
+    <button class="btn sm" id="copyConcl" type="button">Висновок</button>
+    <button class="btn sm" id="copyRec" type="button">Рекомендації</button>
+    <button class="btn sm" id="saveTpl" type="button">Як шаблон</button>
+  </div>
+  <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
+  <div class="pscroll"><article class="paper" id="paper"></article></div>
+  <div class="meter noprint" id="meter"></div>
+</aside>
+</main>
+
+<!-- ============ АРХІВ ============ -->
+<section class="view noprint" id="view-archive" hidden>
+  <div class="vh"><button class="btn" data-back type="button">← До опису</button><h2>Архів протоколів</h2></div>
+  <div class="banner" id="backupBanner" hidden></div>
+  <div class="card">
+    <h2>На контроль</h2>
+    <div class="ctrl" id="ctrlList"></div>
+  </div>
+  <div class="card">
+    <div class="fields">
+      <label class="f wide">Пошук за прізвищем<input id="aSearch" type="search" autocomplete="off"></label>
+      <label class="f">З дати<input id="aFrom" type="date"></label>
+      <label class="f">По дату<input id="aTo" type="date"></label>
+      <label class="f">Вид<select id="aStudy"><option value="">усі</option></select></label>
+    </div>
+    <div class="trow">
+      <button class="btn" id="aToday" type="button">Сьогодні</button>
+      <button class="btn" id="aClear" type="button">Усі дати</button>
+      <span style="flex:1"></span>
+      <button class="btn" id="aSelUnprinted" type="button">Вибрати ненадруковані</button>
+      <button class="btn primary" id="aPrint" type="button">Друкувати вибрані</button>
+    </div>
+  </div>
+  <div class="tscroll"><table class="j" id="aTable"></table></div>
+  <div class="card">
+    <h2>Резервна копія</h2>
+    <div class="trow">
+      <button class="btn" id="backupBtn" type="button">Зберегти копію архіву</button>
+      <label class="btn" for="restoreFile" style="display:inline-flex;align-items:center">Відновити з файлу</label>
+      <input id="restoreFile" type="file" accept=".json,application/json" hidden>
+      <button class="btn" id="demoA" type="button">Додати приклади</button>
+    </div>
+    <p class="note" id="backupMsg"></p>
+  </div>
+</section>
+
+<!-- ============ НАЛАШТУВАННЯ ============ -->
+<section class="view noprint" id="view-settings" hidden>
+  <div class="vh"><button class="btn" data-back type="button">← До опису</button><h2>Налаштування</h2></div>
+  <div class="card">
+    <h2>Папка даних</h2>
+    <p class="note" id="folderInfo"></p>
+    <div class="trow"><button class="btn primary" id="folderPick" type="button">Створити / обрати папку даних</button><button class="btn" id="folderForget" type="button" hidden>Від'єднати папку</button></div>
+  </div>
+  <div class="card">
+    <h2>Лікар і вигляд</h2>
+    <div class="fields">
+      <label class="f wide">Лікар-рентгенолог (для підпису)<input id="sDoctor" type="text"></label>
+      <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="dark">темна</option></select></label>
+      <label class="f">Розмір шрифту<select id="sFont"><option value="s">менший</option><option value="m">звичайний</option><option value="l">більший</option><option value="xl">великий</option></select></label>
+      <label class="f wide">Відділення (через кому)<input id="sDepts" type="text"></label>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Робота</h2>
+    <label class="chk"><input type="checkbox" id="sFlow"> Потоковий режим для флюорографії: після «Готово» одразу наступний пацієнт</label>
+    <label class="chk"><input type="checkbox" id="sFreq"> Часті фрази першими (порядок кнопок оновлюється раз на день)</label>
+    <div class="trow"><button class="btn" id="sFreqReset" type="button">Скинути статистику фраз</button></div>
+  </div>
+  <div class="card">
+    <h2>Друк</h2>
+    <div class="fields">
+      <label class="f wide">Довгий протокол (не вміщається в пів аркуша)<select id="sPrintMode">
+        <option value="flip">продовжити на звороті тієї ж половинки (перевертаю аркуш вручну)</option>
+        <option value="full">друкувати на цілому аркуші</option></select></label>
+      <label class="f wide">Як перевертаєте аркуш<select id="sFlipEdge">
+        <option value="long">як сторінку книги (верх лишається вгорі)</option>
+        <option value="short">знизу догори (верх стає внизу)</option></select></label>
+    </div>
+    <label class="chk"><input type="checkbox" id="sRevBacks"> Друкувати звороти у зворотному порядку</label>
+    <div class="trow"><button class="btn" id="sTest" type="button">Пробний аркуш для перевірки перевертання</button></div>
+    <p class="note">Зробіть пробний аркуш один раз: надрукуйте лицьову сторону, переверніть аркуш, як звикли, і надрукуйте зворот.</p>
+  </div>
+  <div class="card">
+    <h2>Типові ЕЕД за видом дослідження, мЗв</h2>
+    <div class="fields" id="sEed"></div>
+    <p class="note">Таблицю затверджує лікарня. Значення підставляється в нове дослідження.</p>
+  </div>
+  <div class="card">
+    <h2>Фрази норми</h2>
+    <div class="fields"><label class="f">Вид дослідження<select id="sNormStudy"></select></label></div>
+    <div class="form" id="sNorms"></div>
+    <div class="trow"><button class="btn" id="sNormReset" type="button">Повернути стандартні фрази</button></div>
+  </div>
+  <div class="card">
+    <h2>Мої кнопки</h2>
+    <p class="note">Власні фрази додаються прямо в зоні: розгорніть зону → «+ своя фраза». Тут можна переглянути й видалити всі.</p>
+    <div id="sMy"></div>
+  </div>
+  <div class="card">
+    <h2>Налаштування у файл</h2>
+    <div class="trow">
+      <button class="btn" id="sExport" type="button">Зберегти налаштування й шаблони</button>
+      <label class="btn" for="sImport" style="display:inline-flex;align-items:center">Завантажити з файлу</label>
+      <input id="sImport" type="file" accept=".json,application/json" hidden>
+      <button class="btn" id="sWelcome" type="button">Знайомство: дані лікаря</button>
+    </div>
+    <p class="note" id="sMsg"></p>
+    <p class="note" id="sVer"></p>
+  </div>
+</section>
+
+<div id="mbar" class="noprint">
+  <button class="mt" id="mbarText" type="button"><span id="mbarWarn"></span><b id="mbarConcl">Rö-ч: …</b></button>
+  <div class="mb">
+    <button class="btn" id="mbarNav" type="button">☰ Розділи</button>
+    <button class="btn" id="mbarOpen" type="button">Протокол</button>
+    <button class="btn primary" id="mbarCopy" type="button">Копіювати</button>
+  </div>
+</div>
+
+<div class="modal noprint" id="printModal" hidden>
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+    <div class="trow"><h2 id="pmTitle">Друк</h2><span style="flex:1"></span><button class="btn" id="pmClose" type="button">Закрити</button></div>
+    <p id="pmSummary" style="margin:0"></p>
+    <ol class="steps" id="pmSteps"></ol>
+    <div class="trow" id="pmBtns"></div>
+    <div class="pvgrid" id="pmPreview"></div>
+  </div>
+</div>
+<div class="modal noprint" id="dlg" hidden><div class="box narrow" role="dialog" aria-modal="true" id="dlgBox"></div></div>
+<div id="printArea"></div>
+<div id="measure" class="pdoc" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
