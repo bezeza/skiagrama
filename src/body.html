@@ -136,7 +136,7 @@
       <div class="fmtbar noprint" id="fmtBar" role="toolbar" aria-label="Форматування тексту протоколу"></div>
       <div class="pscroll"><article class="paper" id="paper"></article></div>
     </div>
-    <div class="hgrip noprint" id="hGrip" role="separator" aria-orientation="horizontal" aria-label="Межа між протоколом і висновком" tabindex="0" title="Потягніть угору чи вниз. Подвійний клік — порівну."></div>
+    <div class="hgrip noprint" id="hGrip" role="separator" aria-orientation="horizontal" aria-label="Межа між протоколом і висновком" tabindex="0" title="Потягніть угору чи вниз. Подвійний клік — межа сама, під довжину протоколу."></div>
     <div class="spart" id="partConcl"></div>
   </div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
@@ -208,6 +208,7 @@
   </div>
   <div class="card">
     <h2 data-ic="work">Робота</h2>
+    <label class="chk"><input type="checkbox" id="sAutoFold"> На ноутбуці згортати дані пацієнта в рядок після Enter у полі ЕЕД</label>
     <label class="chk"><input type="checkbox" id="sFlow"> Потоковий режим для флюорографії: після «Готово» одразу наступний пацієнт</label>
     <label class="chk"><input type="checkbox" id="sFreq"> Часті фрази першими (порядок кнопок оновлюється раз на день)</label>
     <div class="trow"><button class="btn" id="sFreqReset" type="button">Скинути статистику фраз</button></div>

@@ -48,7 +48,7 @@ $('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
 const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];
-function focusAfterPatient(){if(!isPhone()&&screenNow()==='laptop'&&$('pName').value.trim()&&!isFolded('sec-patient')){setFold('sec-patient',true);toast('Дані пацієнта згорнуто в рядок — клік, щоб змінити');}
+function focusAfterPatient(){if(SET.autoFold!==false&&!isPhone()&&screenNow()==='laptop'&&$('pName').value.trim()&&!isFolded('sec-patient')){setFold('sec-patient',true);toast('Дані пацієнта згорнуто в рядок — клік, щоб змінити');}
   const pc=$('projChips');const c=!pc.hidden&&pc.querySelector('.chip');if(c){c.focus();c.scrollIntoView({block:'nearest'});return;}
   const z=document.querySelector('#zones .seg button');if(z){z.focus();z.scrollIntoView({block:'nearest'});}}
 ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{

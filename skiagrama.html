@@ -646,6 +646,19 @@ main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
 .vpop .seg button.pic{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;font-size:11.5px;line-height:1.15;flex:1 1 0}
 .vpop .seg button[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
 .vpop .note{padding:0;font-size:12px}
+
+/* 0.5.1 правки: рядок розділів компактніше, стрілка пацієнта, рівні кнопки */
+#sec-patient{container-type:inline-size}
+.secrow>.fclose{margin:0 -4px 0 0}
+#sec-patient.folded .secrow>.fclose{display:none}
+.morerow>.fclose{display:none}
+.foldall{display:inline-flex;align-items:center;gap:5px}
+@container (max-width:700px){.secnav{gap:2px}.secnav button{padding:4px 7px;font-size:12.5px;gap:4px}.foldall .lbl{display:none}.foldall{padding:3px 7px}}
+@container (max-width:560px){.secnav button{padding:3px 5px;font-size:12px}}
+.viewbar .btn,.viewbar label.bsel select{min-height:38px;height:38px}
+.viewbar .btn{padding-block:4px}
+.viewbar .vseg{height:38px}
+.viewbar .vseg button{min-height:0;height:100%}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -800,7 +813,7 @@ main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
       <div class="fmtbar noprint" id="fmtBar" role="toolbar" aria-label="Форматування тексту протоколу"></div>
       <div class="pscroll"><article class="paper" id="paper"></article></div>
     </div>
-    <div class="hgrip noprint" id="hGrip" role="separator" aria-orientation="horizontal" aria-label="Межа між протоколом і висновком" tabindex="0" title="Потягніть угору чи вниз. Подвійний клік — порівну."></div>
+    <div class="hgrip noprint" id="hGrip" role="separator" aria-orientation="horizontal" aria-label="Межа між протоколом і висновком" tabindex="0" title="Потягніть угору чи вниз. Подвійний клік — межа сама, під довжину протоколу."></div>
     <div class="spart" id="partConcl"></div>
   </div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
@@ -872,6 +885,7 @@ main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
   </div>
   <div class="card">
     <h2 data-ic="work">Робота</h2>
+    <label class="chk"><input type="checkbox" id="sAutoFold"> На ноутбуці згортати дані пацієнта в рядок після Enter у полі ЕЕД</label>
     <label class="chk"><input type="checkbox" id="sFlow"> Потоковий режим для флюорографії: після «Готово» одразу наступний пацієнт</label>
     <label class="chk"><input type="checkbox" id="sFreq"> Часті фрази першими (порядок кнопок оновлюється раз на день)</label>
     <div class="trow"><button class="btn" id="sFreqReset" type="button">Скинути статистику фраз</button></div>
@@ -1323,7 +1337,7 @@ const CHANGELOG=[
  ['0.5',['Новий вигляд «Робоче місце»: висновок і рекомендації — праворуч одразу під протоколом, без порожнього місця. Межу протокол | висновок можна потягнути; подвійний клік — порівну.',
    'Меню «Вигляд» (кнопка з монітором угорі): тема; екран «ноутбук» чи «монітор»; розташування А «Класичне», Б «Робоче місце», В «Дзеркальне», Г «Один стовпчик»; масштаб. Те саме — у «Налаштуваннях».',
    'Масштаб усієї програми 90–150 % (Alt+ / Alt− / Alt+0) замість «Розміру шрифту». «Aa» — лише для тексту протоколу. Друк і файли не змінюються.',
-   'Будь-який блок згортається в один рядок з підсумком; червона крапка — якщо щось не заповнено. «Згорнути все / Розгорнути все». Стан пам’ятається; «Новий пацієнт» розгортає пацієнта. На ноутбуці дані пацієнта згортаються самі після заповнення.',
+   'Будь-який блок згортається в один рядок з підсумком; червона крапка — якщо щось не заповнено. «Згорнути все / Розгорнути все». Стан пам’ятається; «Новий пацієнт» розгортає пацієнта. На ноутбуці дані пацієнта згортаються самі після заповнення (вимикається в «Вигляді» чи «Налаштуваннях»). Межа протокол | висновок сама підлаштовується під довжину тексту, поки її не посунули.',
    '«Як на папері» → перемикач «Текст | Перегляд перед друком»; «Друк» — окремою кнопкою поруч.',
    'Форматування тексту протоколу: жирний, курсив, підкреслений, ліворуч / по центру / праворуч / по ширині, прибрати форматування. Зберігається на друці, у PDF, Word, LibreOffice та в архіві; копія для h24 — простим текстом.']],
  ['0.4',['Під рядком пацієнта — розділи: Пацієнт · Дослідження · Опис · Вимірювання · Висновок · Рекомендації; клік переносить туди, поточний розділ підсвічено. Обрана зона більше не ховається під панеллю пацієнта.',
@@ -2135,7 +2149,7 @@ $('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
 const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];
-function focusAfterPatient(){if(!isPhone()&&screenNow()==='laptop'&&$('pName').value.trim()&&!isFolded('sec-patient')){setFold('sec-patient',true);toast('Дані пацієнта згорнуто в рядок — клік, щоб змінити');}
+function focusAfterPatient(){if(SET.autoFold!==false&&!isPhone()&&screenNow()==='laptop'&&$('pName').value.trim()&&!isFolded('sec-patient')){setFold('sec-patient',true);toast('Дані пацієнта згорнуто в рядок — клік, щоб змінити');}
   const pc=$('projChips');const c=!pc.hidden&&pc.querySelector('.chip');if(c){c.focus();c.scrollIntoView({block:'nearest'});return;}
   const z=document.querySelector('#zones .seg button');if(z){z.focus();z.scrollIntoView({block:'nearest'});}}
 ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
@@ -2396,18 +2410,22 @@ function applyLayout(){
 }
 /* межа між протоколом і висновком */
 const splitDef=()=>screenNow()==='monitor'?0.6:0.55;
-function applySplit(){const v=SET.splitH||splitDef();$('sbody').style.setProperty('--split',(v*100).toFixed(1)+'%');}
+function autoSplit(){const sb=$('sbody'),pd=$('partDoc'),pa=$('paper');const h=sb.clientHeight;if(!h||!pa)return splitDef();
+  const need=pa.offsetHeight+(pd.offsetHeight-pd.querySelector('.pscroll').clientHeight)+20+12;
+  return Math.max(.3,Math.min(splitDef(),need/h));}
+function applySplit(){const v=SET.splitH||autoSplit();$('sbody').style.setProperty('--split',(v*100).toFixed(1)+'%');}
+let splitT=0;const applySplitSoon=()=>{if(SET.splitH)return;cancelAnimationFrame(splitT);splitT=requestAnimationFrame(applySplit);};
 (()=>{const g=$('hGrip');let d=null;
   g.addEventListener('pointerdown',e=>{if(layoutNow()==='A'||layoutNow()==='D')return;e.preventDefault();g.setPointerCapture(e.pointerId);const sb=$('sbody').getBoundingClientRect();d={top:sb.top,h:sb.height};document.body.classList.add('resizingv');});
   g.addEventListener('pointermove',e=>{if(!d)return;SET.splitH=+Math.max(.2,Math.min(.85,(e.clientY-d.top)/d.h)).toFixed(3);applySplit();});
   const end=()=>{if(!d)return;d=null;document.body.classList.remove('resizingv');saveSet();};
   g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
-  g.addEventListener('dblclick',()=>{delete SET.splitH;saveSet();applySplit();toast('Протокол і висновок — як було');});
-  g.addEventListener('keydown',e=>{if(e.key!=='ArrowUp'&&e.key!=='ArrowDown')return;e.preventDefault();SET.splitH=+Math.max(.2,Math.min(.85,(SET.splitH||splitDef())+(e.key==='ArrowUp'?-.05:.05))).toFixed(3);applySplit();saveSet();});})();
+  g.addEventListener('dblclick',()=>{delete SET.splitH;saveSet();applySplit();toast('Межа — сама, під довжину протоколу');});
+  g.addEventListener('keydown',e=>{if(e.key!=='ArrowUp'&&e.key!=='ArrowDown')return;e.preventDefault();SET.splitH=+Math.max(.2,Math.min(.85,(SET.splitH||autoSplit())+(e.key==='ArrowUp'?-.05:.05))).toFixed(3);applySplit();saveSet();});})();
 
 /* згортання блоків: стрілка біля заголовка, у згорнутому — рядок-підсумок */
 const FOLDS=[
-  {id:'sec-patient',t:'Пацієнт',at:'.morerow',how:'prepend'},
+  {id:'sec-patient',t:'Пацієнт',at:'.secrow',how:'prepend'},
   {id:'sec-study',t:'Дослідження',at:'.cntrow',how:'append'},
   {id:'sec-zones',t:'Опис',at:'.zhead h2',how:'before'},
   {id:'measPanel',t:'Вимірювання',at:'h2',how:'before'},
@@ -2440,7 +2458,9 @@ function foldInfo(id){
   }return ['',''];
 }
 function renderFolds(){FOLDS.forEach(f=>{const card=$(f.id);if(!card||!card.classList.contains('folded'))return;const h=card.querySelector(':scope>.foldh');if(!h)return;const [t,d]=foldInfo(f.id);h.querySelector('.fsum').textContent=t;const dt=h.querySelector('.fdot');dt.className='dot fdot'+(d?' '+d:'');dt.hidden=!d;});
-  const fb=$('foldAll');if(fb)fb.textContent=FOLD_ALL.some(id=>isFolded(id))?'Розгорнути все':'Згорнути все';}
+  const fb=$('foldAll');if(fb){const any=FOLD_ALL.some(id=>isFolded(id)),t=any?'Розгорнути все':'Згорнути все';
+    fb.innerHTML=(any?'<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3l4 4 4-4M4 9l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':'<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 7l4-4 4 4M4 13l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>')+`<span class="lbl">${t}</span>`;
+    fb.title=t+' (блоки ліворуч)';fb.setAttribute('aria-label',t);}}
 const FOLD_ALL=['sec-patient','sec-study','measPanel','sec-concl','sec-rec'];
 function applyFolds(){
   FOLDS.forEach(f=>{const card=$(f.id);if(card)card.classList.toggle('folded',isFolded(f.id));});
@@ -2457,6 +2477,7 @@ function renderViewMenu(){const box=$('viewPop');if(!box)return;box.textContent=
   row('Тема',[['system','авто'],['light','світла'],['grey','кабінет'],['dark','темна']],SET.theme,k=>{SET.theme=k;saveSet();applyLook();renderViewMenu();if(!$('view-settings').hidden)$('sTheme').value=k;});
   row('Екран',[['auto','авто'],['laptop','ноутбук'],['monitor','монітор']],SET.screen||'auto',k=>setScreen(k));
   row('Розташування',Object.keys(LAYOUTS).map(k=>[k,`${k==='A'?'А':k==='B'?'Б':k==='C'?'В':'Г'} · ${LAYOUTS[k]}`,`<svg width="30" height="22" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">${LAY_PIC[k]}</svg><span>${LAYOUTS[k]}</span>`]),layoutNow(),k=>{SET.layout=k;saveSet();applyLayout();renderViewMenu();renderSide();toast('Розташування: '+LAYOUTS[k]);});
+  if(!isPhone())row('Пацієнт після заповнення',[['on','згортати в рядок'],['off','не згортати']],SET.autoFold===false?'off':'on',k=>{SET.autoFold=k==='on';saveSet();renderViewMenu();if(!$('view-settings').hidden)$('sAutoFold').checked=SET.autoFold;toast(SET.autoFold?'Дані пацієнта згортатимуться після Enter у полі ЕЕД (ноутбук)':'Дані пацієнта не згортаються самі');});
   const r=el('div',{class:'vrow'});r.append(el('span',{class:'vl'},'Масштаб'));const s=el('div',{class:'seg'});
   const m=el('button',{type:'button','data-keep':'1',title:'Зменшити (Alt+−)','aria-label':'Зменшити масштаб'},'A−');m.onclick=()=>stepScale(-1);
   const cur=el('button',{type:'button','data-keep':'1',title:'Повернути 100 % (Alt+0)'},`${SET.scale||100} %`);cur.onclick=()=>setScale(100);
@@ -2514,6 +2535,7 @@ $('paperBtn').onclick=()=>setView(!paperView);
 function initView(){initFolds();initFmt();
   const vm=$('viewMenu');if(vm)vm.addEventListener('toggle',()=>{if(vm.open)renderViewMenu();});
   $('foldAll').onclick=toggleFoldAll;
+  if(window.ResizeObserver){const ro=new ResizeObserver(applySplitSoon);ro.observe($('paper'));ro.observe($('sbody'));}
   document.addEventListener('keydown',e=>{if(!e.altKey||e.ctrlKey||e.metaKey)return;if(e.key==='='||e.key==='+'||e.code==='NumpadAdd'){e.preventDefault();stepScale(1);}else if(e.key==='-'||e.code==='NumpadSubtract'){e.preventDefault();stepScale(-1);}else if(e.key==='0'&&!typing(e)){e.preventDefault();setScale(100);}});
   let lastPhone=isPhone();window.addEventListener('resize',()=>{applyScale();if(isPhone()!==lastPhone){lastPhone=isPhone();applyLayout();}});
   /* одноразово: старий «Розмір шрифту» → масштаб */
@@ -3264,7 +3286,7 @@ $('navFeedback').onclick=openFeedback;
 /* ===== Налаштування і запуск ===== */
 function renderSettings(){
   $('sDoctor').value=SET.doctor;$('sDocTitle').value=SET.docTitle||'';$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sScale').value=String(SET.scale||100);$('sScreen').value=SET.screen||'auto';$('sLayout').value=layoutNow();
-  $('sFlow').checked=!!SET.flow;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
+  $('sFlow').checked=!!SET.flow;$('sAutoFold').checked=SET.autoFold!==false;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
   const e=$('sEed');e.textContent='';Object.keys(STUDIES).forEach(k=>{const l=el('label',{class:'f'},STUDIES[k].n);const i=el('input',{type:'text',inputmode:'decimal'});i.value=SET.eed[k]||'';i.addEventListener('input',()=>{SET.eed[k]=i.value.trim();saveSet();});l.append(i);e.append(l);});
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
   const sb=$('sBlank');if(!sb.options.length)BLANK_ORDER.forEach(b=>sb.append(el('option',{value:b},`${b} · ${BLANKS[b].n}`)));sb.value=SET.blank||'C';$('sBlankWhy').textContent=blankWhy(sb.value);
@@ -3358,6 +3380,7 @@ $('sScale').addEventListener('change',e=>setScale(+e.target.value,true));
 $('sScreen').addEventListener('change',e=>setScreen(e.target.value));
 $('sLayout').addEventListener('change',e=>{SET.layout=e.target.value;saveSet();applyLayout();renderSide();});
 $('sFlow').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
+$('sAutoFold').addEventListener('change',e=>{SET.autoFold=e.target.checked;saveSet();});
 $('sFreq').addEventListener('change',e=>{SET.freq=e.target.checked;saveSet();});
 $('sFreqReset').onclick=()=>{USE={counts:{},rank:{},day:today()};saveUse();toast('Статистику фраз скинуто');};
 $('sPrintMode').addEventListener('change',e=>{SET.printMode=e.target.value;saveSet();});

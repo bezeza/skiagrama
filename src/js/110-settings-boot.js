@@ -1,7 +1,7 @@
 /* ===== Налаштування і запуск ===== */
 function renderSettings(){
   $('sDoctor').value=SET.doctor;$('sDocTitle').value=SET.docTitle||'';$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sScale').value=String(SET.scale||100);$('sScreen').value=SET.screen||'auto';$('sLayout').value=layoutNow();
-  $('sFlow').checked=!!SET.flow;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
+  $('sFlow').checked=!!SET.flow;$('sAutoFold').checked=SET.autoFold!==false;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
   const e=$('sEed');e.textContent='';Object.keys(STUDIES).forEach(k=>{const l=el('label',{class:'f'},STUDIES[k].n);const i=el('input',{type:'text',inputmode:'decimal'});i.value=SET.eed[k]||'';i.addEventListener('input',()=>{SET.eed[k]=i.value.trim();saveSet();});l.append(i);e.append(l);});
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
   const sb=$('sBlank');if(!sb.options.length)BLANK_ORDER.forEach(b=>sb.append(el('option',{value:b},`${b} · ${BLANKS[b].n}`)));sb.value=SET.blank||'C';$('sBlankWhy').textContent=blankWhy(sb.value);
@@ -95,6 +95,7 @@ $('sScale').addEventListener('change',e=>setScale(+e.target.value,true));
 $('sScreen').addEventListener('change',e=>setScreen(e.target.value));
 $('sLayout').addEventListener('change',e=>{SET.layout=e.target.value;saveSet();applyLayout();renderSide();});
 $('sFlow').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
+$('sAutoFold').addEventListener('change',e=>{SET.autoFold=e.target.checked;saveSet();});
 $('sFreq').addEventListener('change',e=>{SET.freq=e.target.checked;saveSet();});
 $('sFreqReset').onclick=()=>{USE={counts:{},rank:{},day:today()};saveUse();toast('Статистику фраз скинуто');};
 $('sPrintMode').addEventListener('change',e=>{SET.printMode=e.target.value;saveSet();});
