@@ -307,7 +307,7 @@ $('paper').addEventListener('click',e=>{if(paperView)return;const z=e.target.clo
 /* рядок пацієнта і бланк */
 function shortFio(n){const p=String(n||'').trim().split(/\s+/).filter(Boolean);if(p.length<2)return p.join(' ');return p[0]+' '+p.slice(1).map(x=>/^\p{L}\.(\p{L}\.)?$/u.test(x)||/^[(\[]/.test(x)?x:x.charAt(0).toUpperCase()+'.').join(' ');}
 function patientLine(){const n=shortFio($('pName').value),a=$('pAge').value.trim(),no=$('pNum').value.trim(),d=$('pDate').value;
-  return [n?n+(a?`, ${a} р.`:''):(a?a+' р.':''),no?'№ '+no:'',d?fmtD(d):''].filter(Boolean).join(' · ');}
+  return [n?n+(a?`, ${ageStr(a)}`:''):(a?ageStr(a):''),no?'№ '+no:'',d?fmtD(d):''].filter(Boolean).join(' · ');}
 function renderPatientSum(){const t=patientLine();$('pSum').textContent=t||'Пацієнта не вказано';$('pSum').classList.toggle('empty',!t);$('mbarPat').textContent=t;}
 function renderBlankSel(){const s=$('blankSel');if(!s.options.length)BLANK_ORDER.forEach(b=>s.append(el('option',{value:b,title:BLANKS[b].why},`${b} · ${BLANKS[b].sn}`)));s.value=curBlank();s.title=BLANKS[curBlank()].why;}
 let advT=null;
@@ -352,7 +352,7 @@ function renderTpl(){
 }
 function applyTpl(t){const d=clone(t.data);Object.assign(S,{zones:Object.assign(blankZones(S.study),d.zones),concl:d.concl||[],recs:d.recs||[],proj:d.proj||S.proj,meas:d.meas||{},dismissed:[],open:null,manual:null});['obj','side','dept','skull'].forEach(k=>{if(d[k])S[k]=d[k];});renderAll();}
 function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new Set();
-  [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?r.age+' р. · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
+  [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?ageStr(r.age)+' · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
 function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}

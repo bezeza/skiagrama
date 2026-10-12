@@ -8,6 +8,8 @@ const pad=n=>String(n).padStart(2,'0');
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 const addDays=(iso,n)=>{const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 const fmtD=v=>{if(!v)return '__.__.__';const [y,m,d]=v.split('-');return `${d}.${m}.${y.slice(2)}`;};
+/* вік: число → «67 р.»; «5 міс.», «1 р. 6 міс.» — як є */
+const ageStr=a=>{a=String(a??'').trim();return /^\d+$/.test(a)?a+' р.':a;};
 const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const clone=o=>JSON.parse(JSON.stringify(o));

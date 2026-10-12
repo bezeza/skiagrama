@@ -378,6 +378,32 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }
+/* ---------- Дані пацієнта: крайові випадки ---------- */
+{
+  console.log('\nДані пацієнта: крайові випадки');
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.click('text=Пропустити — заповню пізніше');
+  const td=new Date();const iso=d=>d.toISOString().slice(0,10);const dmy=d=>`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+  const b5=new Date(td);b5.setMonth(b5.getMonth()-5);b5.setDate(Math.min(b5.getDate(),28));
+  await p.fill('#pAge',dmy(b5));await p.press('#pAge','Enter');
+  ok(/^[45] міс\.$/.test(await p.inputValue('#pAge'))&&(await paper(p)).includes(' міс.')&&!(await paper(p)).includes('міс. р.'),'немовля: вік у місяцях, без «р.»');
+  await p.fill('#pAge','31.02.1990');await p.press('#pAge','Enter');
+  ok((await p.textContent('#ageMsg')).includes('не існує'),'неіснуюча дата народження — попередження');
+  await p.fill('#pAge','2090');await p.press('#pAge','Enter');ok((await p.textContent('#ageMsg')).includes('пізніше'),'рік народження в майбутньому — попередження');
+  await p.fill('#pAge','67');
+  await p.fill('#pEed','0.35');await p.press('#pEed','Tab');ok((await p.inputValue('#pEed'))==='0,35','ЕЕД «0.35» → «0,35»');
+  await p.fill('#pName','петренко іван');await p.press('#pName','Tab');ok((await p.inputValue('#pName'))==='Петренко Іван','ПІБ з малої → з великої');
+  const fut=new Date(td);fut.setDate(fut.getDate()+30);await p.fill('#pDate',iso(fut));
+  ok(await p.evaluate(()=>window.__skg.checks().some(x=>x.includes('майбутньому'))),'дата знімка в майбутньому — зауваження');
+  await p.fill('#pDate',iso(td));
+  await p.evaluate(()=>{window.__skg.A.push({id:'dup1',ts:Date.now(),date:new Date().toISOString().slice(0,10),num:'4321',name:'Інший Пацієнт',study:'ogk',concl:''});});
+  await p.fill('#pNum','4321');ok(await p.evaluate(()=>window.__skg.checks().some(x=>x.includes('№ 4321 уже є'))),'повтор № знімка за рік — зауваження');
+  ok(await p.evaluate(()=>{window.__skg.S.blank='A';return window.__skg.checks().some(x=>x.includes('назву закладу'));}),'бланк A без реквізитів — зауваження');
+  await p.evaluate(()=>{const K=window.__skg;K.S.blank='C';K.S.concl=['Деформуючий остеоартроз II ст.','Остеопороз'];K.renderAll();});
+  const c=await p.evaluate(()=>document.querySelector('#ptext .concl').textContent.trim());ok(c==='Rö-ч: Деформуючий остеоартроз II ст. Остеопороз.','висновок зі скороченням без «ст..»: '+c);
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);
 process.exit(fail?1:0);

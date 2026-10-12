@@ -206,12 +206,12 @@ function suggestions(){
 function conclItems(){const a=[...S.concl];const f=$('conclFree').value.trim().replace(/\.$/,'');if(f)a.push(f);return a;}
 function conclText(){
   const a=conclItems();
-  if(a.length)return {t:'Rö-ч: '+a.join('. ')+'.',tbd:false};
+  if(a.length)return {t:'Rö-ч: '+a.map(x=>String(x).trim().replace(/\.+$/,'')).join('. ')+'.',tbd:false};
   if(allNormal())return {t:'Rö-ч: '+normConclOf()+'.',tbd:!!study().normTbd&&!(SET.conclNorm||{})[S.study],auto:1};
   return {t:'Rö-ч: …',tbd:false};
 }
 function recList(){const a=[...S.recs];const f=$('recFree').value.trim().replace(/\.$/,'');if(f)a.push(f);return a;}
-function recText(){const a=recList();return a.length?'Рекомендовано: '+a.join('; ')+'.':'';}
+function recText(){const a=recList().map(x=>String(x).trim().replace(/[.;]+$/,''));return a.length?'Рекомендовано: '+a.join('; ')+'.':'';}
 function dynText(){if(!S.dyn||!S.prevId)return '';const p=A.find(r=>r.id===S.prevId);if(!p)return '';return `Порівняно з дослідженням від ${fmtD(p.date)}: ${S.dyn}.`;}
 function protocol(){
   const name=$('pName').value.trim()||'[ПІБ]',age=$('pAge').value.trim();
@@ -219,7 +219,7 @@ function protocol(){
   measResults().filter(x=>!x.bad).forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
   const dy=dynText();if(dy)body.push({t:dy,zone:'prev'});
   const eed=$('pEed').value.trim();
-  return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()}: ${SET.doctor||'____________'}`};
+  return {head:`${name}${age?', '+ageStr(age):''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()}: ${SET.doctor||'____________'}`};
 }
 const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографія ОГК',bone:`Rö-графія ${objPhrase()}`,spine:`Rö-графія ${deptGen()} відділу хребта`,abd:'Оглядова Rö-графія ОЧП',skull:`Rö-графія ${S.skull==='ppn'?'ППН':'черепа'}`}[S.study]);
 function docData(){
@@ -286,6 +286,12 @@ function checks(){
   if(!$('pAge').value.trim())w.push('Не вказано вік.');
   if(!$('pNum').value.trim())w.push('Не вказано № знімка.');
   if(!$('pDate').value)w.push('Не вказано дату знімка.');
+  else if($('pDate').value>today())w.push('Дата знімка в майбутньому — перевірте.');
+  const ag=$('pAge').value.trim();if(/^\d+$/.test(ag)&&+ag>120)w.push(`Вік ${ag} — перевірте (можна ввести дату народження).`);
+  else if(ag&&!/^\d{1,3}$/.test(ag)&&!/^\d{1,3}\s*(міс|дн|р)\.?(\s*\d{1,2}\s*міс\.?)?$/.test(ag))w.push(`Вік «${ag}» — перевірте.`);
+  const no=$('pNum').value.trim(),yr=($('pDate').value||today()).slice(0,4);
+  if(no){const dup=A.find(r=>!r.example&&r.id!==editingId&&String(r.num).trim()===no&&(r.date||'').slice(0,4)===yr&&norm(r.name)!==norm($('pName').value));if(dup)w.push(`№ ${no} уже є в архіві за ${yr} р. (${dup.name||'без ПІБ'}, ${fmtD(dup.date)}) — перевірте.`);}
+  if(['A','B','D'].includes(curBlank())&&!ORG().name)w.push(`Бланк ${curBlank()}: не заповнено назву закладу — «Налаштування» → «Бланк і реквізити закладу».`);
   if(!$('pEed').value.trim())w.push('Не вказано ЕЕД.');
   if((S.study==='bone'||S.study==='spine')&&!S.proj.length)w.push('Не вибрано проєкції.');
   const ref=$('pRef').value.trim();

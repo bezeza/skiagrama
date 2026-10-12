@@ -508,6 +508,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .studytabs button{flex-direction:column;gap:4px;padding:8px 4px 7px}
 .studytabs button .simg{width:36px;height:36px;display:block;border-radius:50%;flex:none}
 .studytabs button[aria-selected="true"] .simg{box-shadow:0 0 0 2px rgba(255,255,255,.75)}
+#ageMsg.bad{color:var(--bad)}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -898,6 +899,8 @@ const pad=n=>String(n).padStart(2,'0');
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 const addDays=(iso,n)=>{const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 const fmtD=v=>{if(!v)return '__.__.__';const [y,m,d]=v.split('-');return `${d}.${m}.${y.slice(2)}`;};
+/* вік: число → «67 р.»; «5 міс.», «1 р. 6 міс.» — як є */
+const ageStr=a=>{a=String(a??'').trim();return /^\d+$/.test(a)?a+' р.':a;};
 const norm=s=>String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -1042,14 +1045,14 @@ const ABD_ZONES=[
  {id:'levels',name:'Рівні рідини',norm:'Горизонтальних рівнів рідини (чаш Клойбера) не виявлено.',groups:[
    {id:'count',l:'Кількість',req:1,o:[['множ','множинні','множинні'],['поод','поодинокі','поодинокі']]},
    {id:'where',l:'Де',req:1,o:[['тонка','тонкої кишки','тонка кишка'],['товста','товстої кишки','товста кишка'],['обидві','тонкої і товстої кишки','обидві']]}],
-  tpl:'Визначаються {count} горизонтальні рівні рідини (чаші Клойбера) в проекції {where}.'},
+  tpl:'Визначаються {count} горизонтальні рівні рідини (чаші Клойбера) в проєкції {where}.'},
  {id:'loops',name:'Петлі кишечника',norm:'',groups:[
    {id:'where',l:'Петлі',req:1,o:[['тонка','тонкої кишки','тонка кишка'],['товста','товстої кишки','товста кишка']]}],
   tpl:'Петлі {where} розширені, пневматизовані.'},
- {id:'stones',name:'Конкременти',norm:'Тіней конкрементів у проекції нирок і сечоводів не виявлено.',tbd:1,groups:[
+ {id:'stones',name:'Конкременти',norm:'Тіней конкрементів у проєкції нирок і сечоводів не виявлено.',tbd:1,groups:[
    {id:'side',l:'Де',req:1,o:[['пн','правої нирки','права нирка'],['лн','лівої нирки','ліва нирка'],['пс','правого сечоводу','правий сечовід'],['лс','лівого сечоводу','лівий сечовід'],['мх','сечового міхура','сечовий міхур']]},
    {id:'size',l:'Розмір',type:'text',ph:'напр. розміром 6×4 мм'}],
-  tpl:'У проекції {side} визначається тінь конкременту{ |size}.'}
+  tpl:'У проєкції {side} визначається тінь конкременту{ |size}.'}
 ];
 const SKULL_ZONES=[
  {id:'vault',name:'Кістки склепіння',mode:'cherep',norm:'Кістки склепіння черепа без травматичних і деструктивних змін.',groups:[
@@ -1162,7 +1165,9 @@ const PACKS=[{
    Дрібні правки номер не змінюють. */
 const VERSION='0.4';
 const CHANGELOG=[
- ['0.4',['Підпис однаковий у тексті протоколу і на всіх бланках: «Лікар-рентгенолог ______ ПІБ»; посаду можна змінити в «Налаштуваннях» (напр. «Лікар-радіолог»).','Нова іконка: рентгенограма кисті з обручкою — на згадку про перший рентгенівський знімок 1895 року. Вкладки досліджень — з рентгенівськими іконками: ОГК, ФГ, кістки, хребет, ОЧП, череп.','Архів тепер у сховищі браузера IndexedDB: раніше вміщалося близько 1800 протоколів, тепер — десятки тисяч; старий архів переноситься сам. Тисячі записів відкриваються миттєво (по 300, «Показати ще»).',
+ ['0.4',['Дані пацієнта: немовлятам вік у місяцях («5 міс.»); неіснуюча дата народження чи рік у майбутньому — попередження; ЕЕД «0.35» → «0,35»; ПІБ з малої літери — з великої.',
+   'Нові зауваження перед «Готово»: дата знімка в майбутньому, № знімка вже є в архіві за цей рік, на бланку A/B/D не заповнено назву закладу.',
+   'Висновок, що закінчується скороченням («II ст.»), більше не дає двох крапок; «у проєкції» — за чинним правописом.','Підпис однаковий у тексті протоколу і на всіх бланках: «Лікар-рентгенолог ______ ПІБ»; посаду можна змінити в «Налаштуваннях» (напр. «Лікар-радіолог»).','Нова іконка: рентгенограма кисті з обручкою — на згадку про перший рентгенівський знімок 1895 року. Вкладки досліджень — з рентгенівськими іконками: ОГК, ФГ, кістки, хребет, ОЧП, череп.','Архів тепер у сховищі браузера IndexedDB: раніше вміщалося близько 1800 протоколів, тепер — десятки тисяч; старий архів переноситься сам. Тисячі записів відкриваються миттєво (по 300, «Показати ще»).',
    'Дві вкладки з програмою не затирають архів одна одній; видалений протокол не повертається; попередження «відкрита в іншій вкладці».',
    'Без миші: «1…9» ставить фокус на кнопки зони, ←→ ↑↓ — по кнопках, пробіл — вибрати, фокус не губиться; Alt+Enter — прийняти підказки висновку; пошук Ctrl+K не губить першу літеру.',
    'Шрифти вбудовані у файл: без інтернету програма виглядає так само і не звертається до Google.',
@@ -1422,12 +1427,12 @@ function suggestions(){
 function conclItems(){const a=[...S.concl];const f=$('conclFree').value.trim().replace(/\.$/,'');if(f)a.push(f);return a;}
 function conclText(){
   const a=conclItems();
-  if(a.length)return {t:'Rö-ч: '+a.join('. ')+'.',tbd:false};
+  if(a.length)return {t:'Rö-ч: '+a.map(x=>String(x).trim().replace(/\.+$/,'')).join('. ')+'.',tbd:false};
   if(allNormal())return {t:'Rö-ч: '+normConclOf()+'.',tbd:!!study().normTbd&&!(SET.conclNorm||{})[S.study],auto:1};
   return {t:'Rö-ч: …',tbd:false};
 }
 function recList(){const a=[...S.recs];const f=$('recFree').value.trim().replace(/\.$/,'');if(f)a.push(f);return a;}
-function recText(){const a=recList();return a.length?'Рекомендовано: '+a.join('; ')+'.':'';}
+function recText(){const a=recList().map(x=>String(x).trim().replace(/[.;]+$/,''));return a.length?'Рекомендовано: '+a.join('; ')+'.':'';}
 function dynText(){if(!S.dyn||!S.prevId)return '';const p=A.find(r=>r.id===S.prevId);if(!p)return '';return `Порівняно з дослідженням від ${fmtD(p.date)}: ${S.dyn}.`;}
 function protocol(){
   const name=$('pName').value.trim()||'[ПІБ]',age=$('pAge').value.trim();
@@ -1435,7 +1440,7 @@ function protocol(){
   measResults().filter(x=>!x.bad).forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
   const dy=dynText();if(dy)body.push({t:dy,zone:'prev'});
   const eed=$('pEed').value.trim();
-  return {head:`${name}${age?', '+age+' р.':''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()}: ${SET.doctor||'____________'}`};
+  return {head:`${name}${age?', '+ageStr(age):''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()}: ${SET.doctor||'____________'}`};
 }
 const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографія ОГК',bone:`Rö-графія ${objPhrase()}`,spine:`Rö-графія ${deptGen()} відділу хребта`,abd:'Оглядова Rö-графія ОЧП',skull:`Rö-графія ${S.skull==='ppn'?'ППН':'черепа'}`}[S.study]);
 function docData(){
@@ -1502,6 +1507,12 @@ function checks(){
   if(!$('pAge').value.trim())w.push('Не вказано вік.');
   if(!$('pNum').value.trim())w.push('Не вказано № знімка.');
   if(!$('pDate').value)w.push('Не вказано дату знімка.');
+  else if($('pDate').value>today())w.push('Дата знімка в майбутньому — перевірте.');
+  const ag=$('pAge').value.trim();if(/^\d+$/.test(ag)&&+ag>120)w.push(`Вік ${ag} — перевірте (можна ввести дату народження).`);
+  else if(ag&&!/^\d{1,3}$/.test(ag)&&!/^\d{1,3}\s*(міс|дн|р)\.?(\s*\d{1,2}\s*міс\.?)?$/.test(ag))w.push(`Вік «${ag}» — перевірте.`);
+  const no=$('pNum').value.trim(),yr=($('pDate').value||today()).slice(0,4);
+  if(no){const dup=A.find(r=>!r.example&&r.id!==editingId&&String(r.num).trim()===no&&(r.date||'').slice(0,4)===yr&&norm(r.name)!==norm($('pName').value));if(dup)w.push(`№ ${no} уже є в архіві за ${yr} р. (${dup.name||'без ПІБ'}, ${fmtD(dup.date)}) — перевірте.`);}
+  if(['A','B','D'].includes(curBlank())&&!ORG().name)w.push(`Бланк ${curBlank()}: не заповнено назву закладу — «Налаштування» → «Бланк і реквізити закладу».`);
   if(!$('pEed').value.trim())w.push('Не вказано ЕЕД.');
   if((S.study==='bone'||S.study==='spine')&&!S.proj.length)w.push('Не вибрано проєкції.');
   const ref=$('pRef').value.trim();
@@ -1834,7 +1845,7 @@ $('paper').addEventListener('click',e=>{if(paperView)return;const z=e.target.clo
 /* рядок пацієнта і бланк */
 function shortFio(n){const p=String(n||'').trim().split(/\s+/).filter(Boolean);if(p.length<2)return p.join(' ');return p[0]+' '+p.slice(1).map(x=>/^\p{L}\.(\p{L}\.)?$/u.test(x)||/^[(\[]/.test(x)?x:x.charAt(0).toUpperCase()+'.').join(' ');}
 function patientLine(){const n=shortFio($('pName').value),a=$('pAge').value.trim(),no=$('pNum').value.trim(),d=$('pDate').value;
-  return [n?n+(a?`, ${a} р.`:''):(a?a+' р.':''),no?'№ '+no:'',d?fmtD(d):''].filter(Boolean).join(' · ');}
+  return [n?n+(a?`, ${ageStr(a)}`:''):(a?ageStr(a):''),no?'№ '+no:'',d?fmtD(d):''].filter(Boolean).join(' · ');}
 function renderPatientSum(){const t=patientLine();$('pSum').textContent=t||'Пацієнта не вказано';$('pSum').classList.toggle('empty',!t);$('mbarPat').textContent=t;}
 function renderBlankSel(){const s=$('blankSel');if(!s.options.length)BLANK_ORDER.forEach(b=>s.append(el('option',{value:b,title:BLANKS[b].why},`${b} · ${BLANKS[b].sn}`)));s.value=curBlank();s.title=BLANKS[curBlank()].why;}
 let advT=null;
@@ -1879,7 +1890,7 @@ function renderTpl(){
 }
 function applyTpl(t){const d=clone(t.data);Object.assign(S,{zones:Object.assign(blankZones(S.study),d.zones),concl:d.concl||[],recs:d.recs||[],proj:d.proj||S.proj,meas:d.meas||{},dismissed:[],open:null,manual:null});['obj','side','dept','skull'].forEach(k=>{if(d[k])S[k]=d[k];});renderAll();}
 function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new Set();
-  [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?r.age+' р. · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
+  [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?ageStr(r.age)+' · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
 function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
@@ -1914,16 +1925,27 @@ function ageFromBirth(v,ref){
   v=String(v||'').trim();let d,m,y;let mt=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})$/.exec(v)||/^(\d{2})(\d{2})(\d{4})$/.exec(v);
   const R=new Date((ref||today())+'T12:00:00');
   if(mt){d=+mt[1];m=+mt[2];y=+mt[3];if(y<100)y+=y>R.getFullYear()%100?1900:2000;}
-  else if(/^(19|20)\d{2}$/.test(v)){y=+v;return {age:R.getFullYear()-y,approx:true,y};}
+  else if(/^(18|19|20)\d{2}$/.test(v)){y=+v;const a=R.getFullYear()-y;
+    if(a<0)return {err:`Рік народження ${y} — пізніше за дату знімка. Перевірте.`};if(a>120)return {err:`Рік народження ${y} — вік понад 120 років. Перевірте.`};
+    return {age:a,approx:true,y};}
   else return null;
-  if(m<1||m>12||d<1||d>31)return null;
+  const B=new Date(y,m-1,d,12);if(m<1||m>12||B.getMonth()!==m-1||B.getDate()!==d)return {err:`Дати ${pad(d)}.${pad(m)}.${y} не існує. Перевірте.`};
+  if(B>R)return {err:`Дата народження ${pad(d)}.${pad(m)}.${y} — пізніше за дату знімка. Перевірте.`};
   let a=R.getFullYear()-y;if(R.getMonth()+1<m||(R.getMonth()+1===m&&R.getDate()<d))a--;
-  if(a<0||a>125)return null;return {age:a,d:`${pad(d)}.${pad(m)}.${y}`};
+  if(a>120)return {err:`Вік понад 120 років — перевірте дату народження.`};
+  if(a<1){let mo=(R.getFullYear()-y)*12+R.getMonth()-(m-1);if(R.getDate()<d)mo--;mo=Math.max(0,mo);
+    return {age:mo?`${mo} міс.`:`${Math.max(0,Math.round((R-B)/864e5))} дн.`,d:`${pad(d)}.${pad(m)}.${y}`};}
+  return {age:a,d:`${pad(d)}.${pad(m)}.${y}`};
 }
 function applyBirth(){const i=$('pAge');const r=ageFromBirth(i.value,$('pDate').value);const msg=$('ageMsg');
-  if(!r)return false;i.value=String(r.age);msg.textContent=r.approx?`Вік ${r.age} р. — за роком народження ${r.y} (приблизно, ±1 рік)`:`Вік ${r.age} р. — дата народження ${r.d}`;msg.hidden=false;
+  if(!r)return false;msg.classList.toggle('bad',!!r.err);if(r.err){msg.textContent=r.err;msg.hidden=false;return false;}
+  i.value=String(r.age);msg.textContent=r.approx?`Вік ${ageStr(r.age)} — за роком народження ${r.y} (приблизно, ±1 рік)`:`Вік ${ageStr(r.age)} — дата народження ${r.d}`;msg.hidden=false;
   tick('text');renderSide();return true;}
 $('pAge').addEventListener('blur',applyBirth);
+/* ЕЕД: «0.35» → «0,35», без «мЗв»; ПІБ з малої → з великої */
+$('pEed').addEventListener('blur',e=>{const v=e.target.value.trim().replace(/\s*м?зв\.?$/i,'').replace('.',',');if(v!==e.target.value){e.target.value=v;renderSide();}});
+function capName(v){return v.replace(/[\p{L}ʼ'’-]+\.?/gu,w=>{if(w!==w.toLowerCase())return w;if(/^\p{L}\.$/u.test(w))return w.toUpperCase();return w.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):x).join('-');});}
+$('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.target.value){e.target.value=v;renderSide();}});
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
 const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];
@@ -2171,7 +2193,7 @@ function renderCtrl(){
   if(!shown.length){root.append(el('p',{class:'note'},items.length?`Найближчий контроль — ${fmtD(items[0].ctrlDue)} (${items[0].name}).`:'Пацієнтів на контролі немає. Термін береться з рекомендації «Rö-контроль через …».'));return;}
   shown.forEach(r=>{const it=el('div',{class:'it'});const over=r.ctrlDue<=td;
     it.append(el('span',{class:'pill '+(over?'b':'w')},over?(r.ctrlDue===td?'сьогодні':'з '+fmtD(r.ctrlDue)):fmtD(r.ctrlDue)));
-    const t=el('span',{class:'t'});t.append(el('b',null,`${r.name}${r.age?', '+r.age+' р.':''}`));t.append(document.createTextNode(` — ${STUDIES[r.study]?STUDIES[r.study].n:''} від ${fmtD(r.date)}: ${r.concl}`));it.append(t);
+    const t=el('span',{class:'t'});t.append(el('b',null,`${r.name}${r.age?', '+ageStr(r.age):''}`));t.append(document.createTextNode(` — ${STUDIES[r.study]?STUDIES[r.study].n:''} від ${fmtD(r.date)}: ${r.concl}`));it.append(t);
     const o=el('button',{type:'button',class:'btn sm'},'Новий опис');o.onclick=()=>startControl(r);
     const d=el('button',{type:'button',class:'btn sm'},'Знято з контролю');d.onclick=()=>{r.ctrlDone=true;saveA();renderCtrl();updCtrlBadge();};
     it.append(o,d);root.append(it);});
@@ -2194,7 +2216,7 @@ function renderArchive(){
   rows.slice(0,aLimit).forEach(r=>{const tr=el('tr',r.example?{class:'ex'}:null);
     const c=el('input',{type:'checkbox','aria-label':'Вибрати для друку'});c.checked=selected.has(r.id);c.onchange=()=>{c.checked?selected.add(r.id):selected.delete(r.id);updPrintBtn();};
     const td0=el('td');td0.append(c);tr.append(td0);
-    const nm=el('td',null,`${r.name}${r.age?', '+r.age+' р.':''}${r.example?' (приклад)':''}`);
+    const nm=el('td',null,`${r.name}${r.age?', '+ageStr(r.age):''}${r.example?' (приклад)':''}`);
     if(r.urgent){nm.append(document.createTextNode(' '),el('span',{class:'pill '+(r.notified?'o':'b')},r.notified?'терміново · повідомлено':'терміново'));if(!r.notified)tr.classList.add('urgrow');}
     tr.append(el('td',null,fmtD(r.date)),el('td',null,r.num),nm,el('td',null,r.what||''),tdConcl(r));
     const tp=el('td');tp.append(el('span',{class:'pill '+(r.printed?'o':'w')},r.printed?'так':'ні'));tr.append(tp);
@@ -2309,7 +2331,7 @@ const BLANKS={
  B:{n:'сучасний діловий',sn:'сучасний',why:'сучасний вигляд, дані пацієнта сіткою, розділи легко читати',
    build(doc,cmp){const o=ORG();
      const h=`<div class="bkB-h"><div class="bkB-org">${LOGO_SVG}<div><b>${esc(o.name||'[Назва закладу]')}</b><span>${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · '))}</span></div></div><div class="bkB-r"><small>ПРОТОКОЛ ДОСЛІДЖЕННЯ</small><b>${esc(doc.what)}</b><span>№ ${esc(doc.num||'___')} · ${dLong(doc.date)}</span></div></div><div class="bkB-bar"></div>`;
-     const pt=`<div class="bkB-pt"><div class="w"><small>ПАЦІЄНТ</small><b>${esc(doc.name)}</b></div><div><small>ВІК, СТАТЬ</small><span>${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', ')||'—')}</span></div><div><small>ЕЕД</small><span>${esc(doc.eed?doc.eed+' мЗв':'___')}</span></div>${doc.dept?`<div class="w"><small>ВІДДІЛЕННЯ</small><span>${esc(doc.dept)}</span></div>`:''}${doc.proj?`<div class="w"><small>ПРОЄКЦІЇ</small><span>${esc(doc.proj)}</span></div>`:''}</div>`;
+     const pt=`<div class="bkB-pt"><div class="w"><small>ПАЦІЄНТ</small><b>${esc(doc.name)}</b></div><div><small>ВІК, СТАТЬ</small><span>${esc([doc.age?ageStr(doc.age):'',sexW(doc.sex)].filter(Boolean).join(', ')||'—')}</span></div><div><small>ЕЕД</small><span>${esc(doc.eed?doc.eed+' мЗв':'___')}</span></div>${doc.dept?`<div class="w"><small>ВІДДІЛЕННЯ</small><span>${esc(doc.dept)}</span></div>`:''}${doc.proj?`<div class="w"><small>ПРОЄКЦІЇ</small><span>${esc(doc.proj)}</span></div>`:''}</div>`;
      const sec=(l,inner)=>`<div class="bkB-sec"><span>${l}</span><div>${inner}</div></div>`;
      const u=[{h,blk:true},{h:pt,blk:true}];
      if(doc.manual!=null)u.push({h:sec('ОПИС',unitsHTML(manualBody(doc))),blk:true});
@@ -2320,7 +2342,7 @@ const BLANKS={
      const top=cmp?`<div class="bk-mini"><b>${esc(o.name||'[Назва закладу]')}</b> · ${esc(o.cab)}</div>`:
        `<div class="bkA-h"><div class="s">Міністерство охорони здоров’я України</div><div class="n">${esc([o.name||'[Назва закладу]',o.sub].filter(Boolean).join(' '))}</div><div class="s">${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:'',o.edrpou?'код ЄДРПОУ '+o.edrpou:''].filter(Boolean).join(' · '))}</div></div><div class="bkA-rule"></div>`;
      const t=`<div class="bkA-t"><b>ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ</b><span>№ ${esc(doc.num||'___')} від ${dLong(doc.date)}</span></div>`;
-     const rows=[['Пацієнт:',`<b>${esc(doc.name)}</b>${doc.age?', '+esc(doc.age)+' р.':''}${doc.sex?', '+sexW(doc.sex):''}`]];
+     const rows=[['Пацієнт:',`<b>${esc(doc.name)}</b>${doc.age?', '+esc(ageStr(doc.age)):''}${doc.sex?', '+sexW(doc.sex):''}`]];
      if(doc.dept||doc.ref)rows.push(['Направлення:',esc([doc.dept,doc.refDoc?'лікар '+doc.refDoc:'',doc.ref?'е-напр. '+doc.ref:''].filter(Boolean).join(' · '))]);
      rows.push(['Дослідження:',esc(doc.what+(doc.proj?` (${doc.proj})`:'')+(doc.eed?` · ЕЕД ${doc.eed} мЗв`:''))]);
      const u=[{h:top+t,blk:true},{h:`<div class="bk-grid">${rows.map(r=>`<span class="l">${r[0]}</span><span>${r[1]}</span>`).join('')}</div>`,blk:true}];
@@ -2331,7 +2353,7 @@ const BLANKS={
    build(doc,cmp){const o=ORG();
      const req=`<div class="bkD-req"><div><span>Найменування міністерства: <u>МОЗ України</u></span><span>Заклад: <b><u>${esc(o.name||'[Назва закладу]')}</u></b></span>${cmp?'':`<span>Місцезнаходження: <u>${esc(o.addr||'[адреса]')}</u></span>`}<span>Код за ЄДРПОУ: <u>${esc(o.edrpou||'[________]')}</u></span></div><div><b>МЕДИЧНА ДОКУМЕНТАЦІЯ</b>${cmp?'':'<span>Форма первинної облікової документації</span>'}<span>№ ${esc(o.form||'[___]')}${o.order?' · '+esc(o.order):''}</span></div></div>`;
      const t=`<div class="bkD-t">ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ № <u>${esc(doc.num||'___')}</u></div>`;
-     const f=`<div class="bkD-f"><span>1. ПІБ</span><span class="u"><b>${esc(doc.name)}</b></span><span>Вік</span><span class="u">${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', '))}</span><span>2. Відділення</span><span class="u">${esc(doc.dept||'—')}</span><span>Дата</span><span class="u">${dLong(doc.date)}</span><span>3. Дослідження</span><span class="u">${esc(doc.what+(doc.proj?` (${doc.proj})`:''))}</span><span>ЕЕД</span><span class="u">${esc(doc.eed?doc.eed+' мЗв':'')}</span></div>`;
+     const f=`<div class="bkD-f"><span>1. ПІБ</span><span class="u"><b>${esc(doc.name)}</b></span><span>Вік</span><span class="u">${esc([doc.age?ageStr(doc.age):'',sexW(doc.sex)].filter(Boolean).join(', '))}</span><span>2. Відділення</span><span class="u">${esc(doc.dept||'—')}</span><span>Дата</span><span class="u">${dLong(doc.date)}</span><span>3. Дослідження</span><span class="u">${esc(doc.what+(doc.proj?` (${doc.proj})`:''))}</span><span>ЕЕД</span><span class="u">${esc(doc.eed?doc.eed+' мЗв':'')}</span></div>`;
      const u=[{h:req+t+f,blk:true},{t:'4. Опис:',p:'bl'}];
      if(doc.manual!=null)u.push(...manualBody(doc));
      else{doc.body.forEach(x=>u.push({t:x,p:'b'}));u.push({h:`5. Висновок: <b>${esc(doc.concl)}</b>`,p:'c'});if(doc.rec)u.push({t:'6. Рекомендації: '+doc.rec,p:'rc'});}

@@ -13,7 +13,7 @@ function renderCtrl(){
   if(!shown.length){root.append(el('p',{class:'note'},items.length?`Найближчий контроль — ${fmtD(items[0].ctrlDue)} (${items[0].name}).`:'Пацієнтів на контролі немає. Термін береться з рекомендації «Rö-контроль через …».'));return;}
   shown.forEach(r=>{const it=el('div',{class:'it'});const over=r.ctrlDue<=td;
     it.append(el('span',{class:'pill '+(over?'b':'w')},over?(r.ctrlDue===td?'сьогодні':'з '+fmtD(r.ctrlDue)):fmtD(r.ctrlDue)));
-    const t=el('span',{class:'t'});t.append(el('b',null,`${r.name}${r.age?', '+r.age+' р.':''}`));t.append(document.createTextNode(` — ${STUDIES[r.study]?STUDIES[r.study].n:''} від ${fmtD(r.date)}: ${r.concl}`));it.append(t);
+    const t=el('span',{class:'t'});t.append(el('b',null,`${r.name}${r.age?', '+ageStr(r.age):''}`));t.append(document.createTextNode(` — ${STUDIES[r.study]?STUDIES[r.study].n:''} від ${fmtD(r.date)}: ${r.concl}`));it.append(t);
     const o=el('button',{type:'button',class:'btn sm'},'Новий опис');o.onclick=()=>startControl(r);
     const d=el('button',{type:'button',class:'btn sm'},'Знято з контролю');d.onclick=()=>{r.ctrlDone=true;saveA();renderCtrl();updCtrlBadge();};
     it.append(o,d);root.append(it);});
@@ -36,7 +36,7 @@ function renderArchive(){
   rows.slice(0,aLimit).forEach(r=>{const tr=el('tr',r.example?{class:'ex'}:null);
     const c=el('input',{type:'checkbox','aria-label':'Вибрати для друку'});c.checked=selected.has(r.id);c.onchange=()=>{c.checked?selected.add(r.id):selected.delete(r.id);updPrintBtn();};
     const td0=el('td');td0.append(c);tr.append(td0);
-    const nm=el('td',null,`${r.name}${r.age?', '+r.age+' р.':''}${r.example?' (приклад)':''}`);
+    const nm=el('td',null,`${r.name}${r.age?', '+ageStr(r.age):''}${r.example?' (приклад)':''}`);
     if(r.urgent){nm.append(document.createTextNode(' '),el('span',{class:'pill '+(r.notified?'o':'b')},r.notified?'терміново · повідомлено':'терміново'));if(!r.notified)tr.classList.add('urgrow');}
     tr.append(el('td',null,fmtD(r.date)),el('td',null,r.num),nm,el('td',null,r.what||''),tdConcl(r));
     const tp=el('td');tp.append(el('span',{class:'pill '+(r.printed?'o':'w')},r.printed?'так':'ні'));tr.append(tp);

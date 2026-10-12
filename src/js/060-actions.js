@@ -18,16 +18,27 @@ function ageFromBirth(v,ref){
   v=String(v||'').trim();let d,m,y;let mt=/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2}|\d{4})$/.exec(v)||/^(\d{2})(\d{2})(\d{4})$/.exec(v);
   const R=new Date((ref||today())+'T12:00:00');
   if(mt){d=+mt[1];m=+mt[2];y=+mt[3];if(y<100)y+=y>R.getFullYear()%100?1900:2000;}
-  else if(/^(19|20)\d{2}$/.test(v)){y=+v;return {age:R.getFullYear()-y,approx:true,y};}
+  else if(/^(18|19|20)\d{2}$/.test(v)){y=+v;const a=R.getFullYear()-y;
+    if(a<0)return {err:`Рік народження ${y} — пізніше за дату знімка. Перевірте.`};if(a>120)return {err:`Рік народження ${y} — вік понад 120 років. Перевірте.`};
+    return {age:a,approx:true,y};}
   else return null;
-  if(m<1||m>12||d<1||d>31)return null;
+  const B=new Date(y,m-1,d,12);if(m<1||m>12||B.getMonth()!==m-1||B.getDate()!==d)return {err:`Дати ${pad(d)}.${pad(m)}.${y} не існує. Перевірте.`};
+  if(B>R)return {err:`Дата народження ${pad(d)}.${pad(m)}.${y} — пізніше за дату знімка. Перевірте.`};
   let a=R.getFullYear()-y;if(R.getMonth()+1<m||(R.getMonth()+1===m&&R.getDate()<d))a--;
-  if(a<0||a>125)return null;return {age:a,d:`${pad(d)}.${pad(m)}.${y}`};
+  if(a>120)return {err:`Вік понад 120 років — перевірте дату народження.`};
+  if(a<1){let mo=(R.getFullYear()-y)*12+R.getMonth()-(m-1);if(R.getDate()<d)mo--;mo=Math.max(0,mo);
+    return {age:mo?`${mo} міс.`:`${Math.max(0,Math.round((R-B)/864e5))} дн.`,d:`${pad(d)}.${pad(m)}.${y}`};}
+  return {age:a,d:`${pad(d)}.${pad(m)}.${y}`};
 }
 function applyBirth(){const i=$('pAge');const r=ageFromBirth(i.value,$('pDate').value);const msg=$('ageMsg');
-  if(!r)return false;i.value=String(r.age);msg.textContent=r.approx?`Вік ${r.age} р. — за роком народження ${r.y} (приблизно, ±1 рік)`:`Вік ${r.age} р. — дата народження ${r.d}`;msg.hidden=false;
+  if(!r)return false;msg.classList.toggle('bad',!!r.err);if(r.err){msg.textContent=r.err;msg.hidden=false;return false;}
+  i.value=String(r.age);msg.textContent=r.approx?`Вік ${ageStr(r.age)} — за роком народження ${r.y} (приблизно, ±1 рік)`:`Вік ${ageStr(r.age)} — дата народження ${r.d}`;msg.hidden=false;
   tick('text');renderSide();return true;}
 $('pAge').addEventListener('blur',applyBirth);
+/* ЕЕД: «0.35» → «0,35», без «мЗв»; ПІБ з малої → з великої */
+$('pEed').addEventListener('blur',e=>{const v=e.target.value.trim().replace(/\s*м?зв\.?$/i,'').replace('.',',');if(v!==e.target.value){e.target.value=v;renderSide();}});
+function capName(v){return v.replace(/[\p{L}ʼ'’-]+\.?/gu,w=>{if(w!==w.toLowerCase())return w;if(/^\p{L}\.$/u.test(w))return w.toUpperCase();return w.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):x).join('-');});}
+$('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.target.value){e.target.value=v;renderSide();}});
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
 const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];

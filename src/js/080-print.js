@@ -38,7 +38,7 @@ const BLANKS={
  B:{n:'сучасний діловий',sn:'сучасний',why:'сучасний вигляд, дані пацієнта сіткою, розділи легко читати',
    build(doc,cmp){const o=ORG();
      const h=`<div class="bkB-h"><div class="bkB-org">${LOGO_SVG}<div><b>${esc(o.name||'[Назва закладу]')}</b><span>${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · '))}</span></div></div><div class="bkB-r"><small>ПРОТОКОЛ ДОСЛІДЖЕННЯ</small><b>${esc(doc.what)}</b><span>№ ${esc(doc.num||'___')} · ${dLong(doc.date)}</span></div></div><div class="bkB-bar"></div>`;
-     const pt=`<div class="bkB-pt"><div class="w"><small>ПАЦІЄНТ</small><b>${esc(doc.name)}</b></div><div><small>ВІК, СТАТЬ</small><span>${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', ')||'—')}</span></div><div><small>ЕЕД</small><span>${esc(doc.eed?doc.eed+' мЗв':'___')}</span></div>${doc.dept?`<div class="w"><small>ВІДДІЛЕННЯ</small><span>${esc(doc.dept)}</span></div>`:''}${doc.proj?`<div class="w"><small>ПРОЄКЦІЇ</small><span>${esc(doc.proj)}</span></div>`:''}</div>`;
+     const pt=`<div class="bkB-pt"><div class="w"><small>ПАЦІЄНТ</small><b>${esc(doc.name)}</b></div><div><small>ВІК, СТАТЬ</small><span>${esc([doc.age?ageStr(doc.age):'',sexW(doc.sex)].filter(Boolean).join(', ')||'—')}</span></div><div><small>ЕЕД</small><span>${esc(doc.eed?doc.eed+' мЗв':'___')}</span></div>${doc.dept?`<div class="w"><small>ВІДДІЛЕННЯ</small><span>${esc(doc.dept)}</span></div>`:''}${doc.proj?`<div class="w"><small>ПРОЄКЦІЇ</small><span>${esc(doc.proj)}</span></div>`:''}</div>`;
      const sec=(l,inner)=>`<div class="bkB-sec"><span>${l}</span><div>${inner}</div></div>`;
      const u=[{h,blk:true},{h:pt,blk:true}];
      if(doc.manual!=null)u.push({h:sec('ОПИС',unitsHTML(manualBody(doc))),blk:true});
@@ -49,7 +49,7 @@ const BLANKS={
      const top=cmp?`<div class="bk-mini"><b>${esc(o.name||'[Назва закладу]')}</b> · ${esc(o.cab)}</div>`:
        `<div class="bkA-h"><div class="s">Міністерство охорони здоров’я України</div><div class="n">${esc([o.name||'[Назва закладу]',o.sub].filter(Boolean).join(' '))}</div><div class="s">${esc([o.cab,o.addr,o.tel?'тел. '+o.tel:'',o.edrpou?'код ЄДРПОУ '+o.edrpou:''].filter(Boolean).join(' · '))}</div></div><div class="bkA-rule"></div>`;
      const t=`<div class="bkA-t"><b>ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ</b><span>№ ${esc(doc.num||'___')} від ${dLong(doc.date)}</span></div>`;
-     const rows=[['Пацієнт:',`<b>${esc(doc.name)}</b>${doc.age?', '+esc(doc.age)+' р.':''}${doc.sex?', '+sexW(doc.sex):''}`]];
+     const rows=[['Пацієнт:',`<b>${esc(doc.name)}</b>${doc.age?', '+esc(ageStr(doc.age)):''}${doc.sex?', '+sexW(doc.sex):''}`]];
      if(doc.dept||doc.ref)rows.push(['Направлення:',esc([doc.dept,doc.refDoc?'лікар '+doc.refDoc:'',doc.ref?'е-напр. '+doc.ref:''].filter(Boolean).join(' · '))]);
      rows.push(['Дослідження:',esc(doc.what+(doc.proj?` (${doc.proj})`:'')+(doc.eed?` · ЕЕД ${doc.eed} мЗв`:''))]);
      const u=[{h:top+t,blk:true},{h:`<div class="bk-grid">${rows.map(r=>`<span class="l">${r[0]}</span><span>${r[1]}</span>`).join('')}</div>`,blk:true}];
@@ -60,7 +60,7 @@ const BLANKS={
    build(doc,cmp){const o=ORG();
      const req=`<div class="bkD-req"><div><span>Найменування міністерства: <u>МОЗ України</u></span><span>Заклад: <b><u>${esc(o.name||'[Назва закладу]')}</u></b></span>${cmp?'':`<span>Місцезнаходження: <u>${esc(o.addr||'[адреса]')}</u></span>`}<span>Код за ЄДРПОУ: <u>${esc(o.edrpou||'[________]')}</u></span></div><div><b>МЕДИЧНА ДОКУМЕНТАЦІЯ</b>${cmp?'':'<span>Форма первинної облікової документації</span>'}<span>№ ${esc(o.form||'[___]')}${o.order?' · '+esc(o.order):''}</span></div></div>`;
      const t=`<div class="bkD-t">ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ № <u>${esc(doc.num||'___')}</u></div>`;
-     const f=`<div class="bkD-f"><span>1. ПІБ</span><span class="u"><b>${esc(doc.name)}</b></span><span>Вік</span><span class="u">${esc([doc.age?doc.age+' р.':'',sexW(doc.sex)].filter(Boolean).join(', '))}</span><span>2. Відділення</span><span class="u">${esc(doc.dept||'—')}</span><span>Дата</span><span class="u">${dLong(doc.date)}</span><span>3. Дослідження</span><span class="u">${esc(doc.what+(doc.proj?` (${doc.proj})`:''))}</span><span>ЕЕД</span><span class="u">${esc(doc.eed?doc.eed+' мЗв':'')}</span></div>`;
+     const f=`<div class="bkD-f"><span>1. ПІБ</span><span class="u"><b>${esc(doc.name)}</b></span><span>Вік</span><span class="u">${esc([doc.age?ageStr(doc.age):'',sexW(doc.sex)].filter(Boolean).join(', '))}</span><span>2. Відділення</span><span class="u">${esc(doc.dept||'—')}</span><span>Дата</span><span class="u">${dLong(doc.date)}</span><span>3. Дослідження</span><span class="u">${esc(doc.what+(doc.proj?` (${doc.proj})`:''))}</span><span>ЕЕД</span><span class="u">${esc(doc.eed?doc.eed+' мЗв':'')}</span></div>`;
      const u=[{h:req+t+f,blk:true},{t:'4. Опис:',p:'bl'}];
      if(doc.manual!=null)u.push(...manualBody(doc));
      else{doc.body.forEach(x=>u.push({t:x,p:'b'}));u.push({h:`5. Висновок: <b>${esc(doc.concl)}</b>`,p:'c'});if(doc.rec)u.push({t:'6. Рекомендації: '+doc.rec,p:'rc'});}
