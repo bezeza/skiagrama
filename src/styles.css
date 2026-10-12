@@ -487,7 +487,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .cntrow .cntl{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);font-weight:600}
 .cntrow .cntl input{width:64px;min-height:34px;padding:4px 8px;text-align:center}
 .cntrow .note{margin:0}
-.pbar .samept{margin-top:6px;align-self:flex-start}
+
 /* ручка ширини протоколу */
 .side{position:sticky}
 .sgrip{position:absolute;left:-13px;top:0;bottom:0;width:10px;cursor:col-resize;z-index:5;border-radius:6px}
@@ -496,3 +496,20 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 body.resizing{cursor:col-resize;user-select:none}
 @media (min-width:761px){main.wrap.customw{grid-template-columns:minmax(380px,1fr) var(--sidew)}}
 @media (max-width:760px){.sgrip{display:none}}
+/* рядок розділів у липкій панелі пацієнта; відступ прокрутки під панель */
+.secrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px -4px -4px;padding-top:6px;border-top:1px solid var(--line)}
+.secnav{display:flex;gap:4px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+.morerow{display:flex;align-items:flex-start;gap:10px}
+.morerow>details{flex:1 1 auto;min-width:0}
+.morerow .samept{flex:none;white-space:nowrap;min-height:30px;padding:3px 10px;font-size:13px}
+.secnav button{border:0;background:none;padding:5px 10px;border-radius:8px;font-size:13.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;color:var(--ink);min-height:32px}
+.secnav button:hover{background:var(--blue-soft)}
+.secnav button.on{background:var(--blue-soft);color:var(--blue)}
+@media (max-width:760px){.secnav{display:none}.secrow{border-top:0;padding-top:0}}
+.zone,#sec-study,#sec-zones,#measPanel,#sec-concl,#sec-rec,#prevBox{scroll-margin-top:calc(var(--pbarh,0px) + 12px)}
+.hl{animation:hl 1.3s ease-out}
+@keyframes hl{0%{box-shadow:0 0 0 3px var(--blue)}100%{box-shadow:0 0 0 3px transparent}}
+@media (prefers-reduced-motion:reduce){.hl{animation:none}}
+.split.np>.btn{border-radius:10px 0 0 10px}
+.split.np summary.btn{border-radius:0 10px 10px 0;border-left:0;padding:7px 10px}
+.split.np .mpop button{display:block;width:100%}

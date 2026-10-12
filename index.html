@@ -517,7 +517,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .cntrow .cntl{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);font-weight:600}
 .cntrow .cntl input{width:64px;min-height:34px;padding:4px 8px;text-align:center}
 .cntrow .note{margin:0}
-.pbar .samept{margin-top:6px;align-self:flex-start}
+
 /* ручка ширини протоколу */
 .side{position:sticky}
 .sgrip{position:absolute;left:-13px;top:0;bottom:0;width:10px;cursor:col-resize;z-index:5;border-radius:6px}
@@ -526,6 +526,23 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 body.resizing{cursor:col-resize;user-select:none}
 @media (min-width:761px){main.wrap.customw{grid-template-columns:minmax(380px,1fr) var(--sidew)}}
 @media (max-width:760px){.sgrip{display:none}}
+/* рядок розділів у липкій панелі пацієнта; відступ прокрутки під панель */
+.secrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:6px -4px -4px;padding-top:6px;border-top:1px solid var(--line)}
+.secnav{display:flex;gap:4px;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+.morerow{display:flex;align-items:flex-start;gap:10px}
+.morerow>details{flex:1 1 auto;min-width:0}
+.morerow .samept{flex:none;white-space:nowrap;min-height:30px;padding:3px 10px;font-size:13px}
+.secnav button{border:0;background:none;padding:5px 10px;border-radius:8px;font-size:13.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px;color:var(--ink);min-height:32px}
+.secnav button:hover{background:var(--blue-soft)}
+.secnav button.on{background:var(--blue-soft);color:var(--blue)}
+@media (max-width:760px){.secnav{display:none}.secrow{border-top:0;padding-top:0}}
+.zone,#sec-study,#sec-zones,#measPanel,#sec-concl,#sec-rec,#prevBox{scroll-margin-top:calc(var(--pbarh,0px) + 12px)}
+.hl{animation:hl 1.3s ease-out}
+@keyframes hl{0%{box-shadow:0 0 0 3px var(--blue)}100%{box-shadow:0 0 0 3px transparent}}
+@media (prefers-reduced-motion:reduce){.hl{animation:none}}
+.split.np>.btn{border-radius:10px 0 0 10px}
+.split.np summary.btn{border-radius:0 10px 10px 0;border-left:0;padding:7px 10px}
+.split.np .mpop button{display:block;width:100%}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -557,7 +574,7 @@ body.resizing{cursor:col-resize;user-select:none}
   <div class="hbtns">
     <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
     <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span><i data-i="search"></i>Пошук…</span><kbd>Ctrl K</kbd></button>
-    <button class="btn" id="newPatient" type="button"><i data-i="userplus"></i>Новий<span class="hide-m"> пацієнт</span></button>
+    <div class="split np"><button class="btn" id="newPatient" type="button"><i data-i="userplus"></i>Новий<span class="hide-m"> пацієнт</span></button><details class="menu"><summary class="btn" title="Ще дослідження цьому пацієнту" aria-label="Інші дії з пацієнтом">▾</summary><div class="mpop right"><button id="samePtMenu" type="button"><b>Ще дослідження цьому пацієнту</b><span class="note" style="display:block;padding:0">ПІБ, вік, дата лишаються; новий № і ЕЕД</span></button><button id="newPtMenu" type="button">Новий пацієнт</button></div></details></div>
     <button class="btn icon" id="themeBtn" type="button" title="Тема" aria-label="Тема"></button>
     <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування"><i data-i="gear"></i></button>
     <button class="btn icon" id="navFeedback" type="button" title="Помилка чи ідея — повідомити розробнику" aria-label="Помилка чи ідея"><i data-i="chat"></i></button>
@@ -584,7 +601,7 @@ body.resizing{cursor:col-resize;user-select:none}
     </div>
     <datalist id="nameList"></datalist>
     <div class="msg ageMsg" id="ageMsg" hidden></div>
-    <button class="btn sm samept" id="samePtTop" type="button" hidden title="Новий протокол тому самому пацієнту: ПІБ, вік, дата лишаються; свій № і ЕЕД">+ Ще дослідження цьому пацієнту</button>
+    <div class="morerow">
     <details class="more">
       <summary>Додатково: стать, відділення, е-направлення</summary>
       <div class="fields">
@@ -594,7 +611,10 @@ body.resizing{cursor:col-resize;user-select:none}
         <label class="f wide">Лікар, що направив<input id="pRefDoc" type="text" autocomplete="off"></label>
       </div>
     </details>
+    <button class="btn sm samept" id="samePtTop" type="button" title="Новий протокол тому самому пацієнту: ПІБ, вік, дата лишаються; свій № і ЕЕД">+ Ще дослідження цьому пацієнту</button>
+    </div>
     <datalist id="deptList"></datalist>
+    <nav class="secnav secrow" id="secNav" aria-label="Розділи протоколу"></nav>
   </div>
 
   <div class="card" id="sec-study">
@@ -1184,7 +1204,8 @@ const PACKS=[{
    Дрібні правки номер не змінюють. */
 const VERSION='0.4';
 const CHANGELOG=[
- ['0.4',['«Зберегти як» Word (.docx) і LibreOffice (.odt) — тепер бланк, а не просто текст: шапка закладу, рамка під штамп, дані пацієнта, підпис; розмір сторінки — як при друці.',
+ ['0.4',['Під рядком пацієнта — розділи: Пацієнт · Дослідження · Опис · Вимірювання · Висновок · Рекомендації; клік переносить туди, поточний розділ підсвічено. Обрана зона більше не ховається під панеллю пацієнта.',
+   '«Новий пацієнт ▾» → «Ще дослідження цьому пацієнту»; та сама кнопка — праворуч у рядку «Додатково».','«Зберегти як» Word (.docx) і LibreOffice (.odt) — тепер бланк, а не просто текст: шапка закладу, рамка під штамп, дані пацієнта, підпис; розмір сторінки — як при друці.',
    'Ширину панелі протоколу можна змінити: потягніть ручку між кнопками і протоколом; подвійний клік — як було.',
    '«+ Ще дослідження цьому пацієнту» тепер завжди видно в рядку пацієнта. Кількість знімків рахується сама за проєкціями (обидва суглоби — удвічі), іде в архів і Excel.','Дані пацієнта: немовлятам вік у місяцях («5 міс.»); неіснуюча дата народження чи рік у майбутньому — попередження; ЕЕД «0.35» → «0,35»; ПІБ з малої літери — з великої.',
    'Нові зауваження перед «Готово»: дата знімка в майбутньому, № знімка вже є в архіві за цей рік, на бланку A/B/D не заповнено назву закладу.',
@@ -1587,7 +1608,7 @@ function renderStudy(){
 /* лічильник знімків: проєкції × (обидва суглоби → 2); ручне число не перезаписуємо */
 function autoCount(){if(S.study==='fg')return 1;const n=Math.max(1,S.proj.length);return S.study==='bone'&&S.side==='о'?n*2:n;}
 function syncCount(){const i=$('pCount');if(!S.countManual)i.value=String(autoCount());$('cntNote').textContent=S.countManual?'змінено вручну':(S.study==='bone'&&S.side==='о'?'за проєкціями, обидва боки — удвічі':'рахується за проєкціями');$('cntAuto').hidden=!S.countManual;
-  const sp=$('samePtTop');if(sp)sp.hidden=!$('pName').value.trim();}
+}
 function setEedDefault(){$('pEed').value=SET.eed[S.study]||'';}
 function nextNum(){const y=($('pDate').value||today()).slice(0,4);const n=num(SET.lastNum);return (isFinite(n)&&SET.lastNumYear===y)?String(n+1):'';}
 const DOT_T={n:'норма',c:'зміни',x:'не згадується',e:'не дозаповнено'};
@@ -1597,14 +1618,23 @@ function renderNav(){
     b.onclick=()=>gotoZone(d.id);nz.append(b);});
   $('navMeas').hidden=!activeMeas().length;
   const dc=$('navConcl');dc.textContent='Висновок';const ct=conclText();dc.append(el('span',{class:'dot '+(ct.t.includes('…')?'e':ct.auto?'n':'c'),'aria-hidden':'true'}));
-  renderStepper();
+  renderStepper();renderSecNav();
 }
-function gotoZone(id){S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z)z.scrollIntoView({block:'start',behavior:'smooth'});}
+/* рядок розділів у липкій панелі пацієнта: Пацієнт · Дослідження · Опис · Вимірювання · Висновок · Рекомендації */
+function renderSecNav(){const n=$('secNav');if(!n)return;n.textContent='';
+  const zs=visibleZones().map(zoneState);const zd=zs.includes('e')?'e':zs.includes('c')?'c':'n';const ct=conclText();
+  const items=[['sec-patient','Пацієнт',null],['sec-study','Дослідження',null],['sec-zones','Опис',zd]];if(activeMeas().length)items.push(['measPanel','Вимірювання',null]);
+  items.push(['sec-concl','Висновок',ct.t.includes('…')?'e':ct.auto?'n':'c'],['sec-rec','Рекомендації',S.recs.length||$('recFree').value.trim()?'c':null]);
+  items.forEach(([id,t,d])=>{const b=el('button',{type:'button','data-sec':id,class:secCur===id?'on':null});b.append(document.createTextNode(t));if(d)b.append(el('span',{class:'dot '+d,'aria-hidden':'true'}));b.onclick=()=>goSec(id);n.append(b);});}
+let secCur='sec-patient';
+function goSec(id){const t=$(id);if(!t)return;if(id==='sec-patient'){window.scrollTo({top:0,behavior:'smooth'});return;}t.scrollIntoView({block:'start',behavior:'smooth'});flashEl(t);}
+function flashEl(e){e.classList.remove('hl');void e.offsetWidth;e.classList.add('hl');setTimeout(()=>e.classList.remove('hl'),1300);}
+function gotoZone(id){S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}
 function renderStepper(){const vz=visibleZones();let i=vz.findIndex(d=>d.id===S.focus);if(i<0)i=0;const d=vz[i];if(!d)return;
   $('stName').textContent=`${d.name} · ${i+1}/${vz.length}`;$('stName').onclick=()=>openNavSheet();
   $('stPrev').disabled=i===0;$('stNext').disabled=i===vz.length-1;
   $('stPrev').onclick=()=>gotoZone(vz[Math.max(0,i-1)].id);$('stNext').onclick=()=>gotoZone(vz[Math.min(vz.length-1,i+1)].id);}
-function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z)z.scrollIntoView({block:'start',behavior:'smooth'});}}
+function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}}
 
 /* Кнопки зони: звичайний режим і редагування (олівець ✎).
    Завдання для тебе: знайди в 020-data.js зону «Інфільтрація» (id:'infil') і подивись,
@@ -1946,8 +1976,10 @@ $('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName')
   S.prevId=findPrev();renderPrev();renderSide();});
 $('pCount').addEventListener('input',()=>{S.countManual=true;syncCount();saveDraftSoon();});
 $('cntAuto').onclick=()=>{tick();S.countManual=false;syncCount();};
-$('samePtTop').onclick=()=>{if(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length){if(!editingId&&!confirm('Поточний протокол ще не збережено («Готово»). Почати нове дослідження цьому пацієнту?'))return;}sameStudyPatient();};
-$('pName').addEventListener('input',()=>{$('samePtTop').hidden=!$('pName').value.trim();});
+function samePtAsk(){if(!$('pName').value.trim()){toast('Спершу введіть ПІБ пацієнта');$('pName').focus();return;}
+  if(!editingId&&(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length)&&!confirm('Поточний протокол ще не збережено («Готово»). Почати нове дослідження цьому пацієнту?'))return;sameStudyPatient();}
+$('samePtMenu').onclick=samePtAsk;$('newPtMenu').onclick=()=>$('newPatient').click();
+$('samePtTop').onclick=samePtAsk;
 ['pAge','pSex','pDept','pRefDoc','pNum','pDate','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
 ['conclFree','recFree'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();renderNav();}));
 /* вік із дати народження: «12.03.1954», «12031954» або рік «1954» */
@@ -2094,6 +2126,14 @@ function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;i
   g.addEventListener('dblclick',()=>{delete SET.sideW;saveSet();applySideW();if(paperView)renderSide();toast('Ширина протоколу — як було');});
   g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width)+(e.key==='ArrowLeft'?40:-40));applySideW();saveSet();});
   window.addEventListener('resize',applySideW);applySideW();})();
+/* липка панель пацієнта: її висота — відступ, щоб обраний розділ чи зона не ховались під нею */
+(()=>{const pb=$('sec-patient');const set=()=>{const h=window.innerWidth>760?Math.ceil(pb.getBoundingClientRect().height):0;document.documentElement.style.setProperty('--pbarh',h+'px');};
+  if(window.ResizeObserver)new ResizeObserver(set).observe(pb);window.addEventListener('resize',set);set();
+  const ids=['sec-study','sec-zones','measPanel','sec-concl','sec-rec'];
+  const upd=()=>{const top=(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pbarh'))||0)+40;let cur='sec-patient';
+    ids.forEach(id=>{const e=$(id);if(e&&!e.hidden&&e.offsetParent&&e.getBoundingClientRect().top<=top)cur=id;});
+    if(cur!==secCur){secCur=cur;document.querySelectorAll('#secNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===cur));}};
+  window.addEventListener('scroll',()=>{if(!upd.t)upd.t=requestAnimationFrame(()=>{upd.t=0;upd();});},{passive:true});})();
 /* перегляди */
 function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}
@@ -2805,6 +2845,8 @@ function openHelp(){
 <li>Текст протоколу правиться прямо в ньому. Alt+клік по реченню — відкрити його зону.</li>
 <li>Кілька досліджень одному пацієнту (напр. ОГК і коліно) — після «Готово» натисніть «+ Ще дослідження цьому пацієнту»: окремий протокол зі своїм № і ЕЕД, дані пацієнта лишаються.</li>
 <li>«Терміново» біля висновку — для критичних знахідок; в архіві такі протоколи підсвічені, доки не натиснете «Повідомлено».</li>
+<li><b>Розділи</b> під рядком пацієнта: клік — перехід до пацієнта, дослідження, опису, висновку чи рекомендацій.</li>
+<li><b>Ще дослідження цьому пацієнту</b>: «Новий пацієнт ▾» вгорі або кнопка праворуч від «Додатково».</li>
 <li><b>Ширина протоколу</b>: потягніть ручку між кнопками й протоколом; подвійний клік по ній — як було.</li>
 <li><b>Зберегти як</b> → Word або LibreOffice — бланк, який можна правити й друкувати з Word.</li>
 <li><b>Подвійне клацання</b> по реченню протоколу міняє бік: справа ↔ зліва (у зоні, у висновку, у назві дослідження кістки).</li>

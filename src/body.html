@@ -13,7 +13,7 @@
   <div class="hbtns">
     <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
     <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span><i data-i="search"></i>Пошук…</span><kbd>Ctrl K</kbd></button>
-    <button class="btn" id="newPatient" type="button"><i data-i="userplus"></i>Новий<span class="hide-m"> пацієнт</span></button>
+    <div class="split np"><button class="btn" id="newPatient" type="button"><i data-i="userplus"></i>Новий<span class="hide-m"> пацієнт</span></button><details class="menu"><summary class="btn" title="Ще дослідження цьому пацієнту" aria-label="Інші дії з пацієнтом">▾</summary><div class="mpop right"><button id="samePtMenu" type="button"><b>Ще дослідження цьому пацієнту</b><span class="note" style="display:block;padding:0">ПІБ, вік, дата лишаються; новий № і ЕЕД</span></button><button id="newPtMenu" type="button">Новий пацієнт</button></div></details></div>
     <button class="btn icon" id="themeBtn" type="button" title="Тема" aria-label="Тема"></button>
     <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування"><i data-i="gear"></i></button>
     <button class="btn icon" id="navFeedback" type="button" title="Помилка чи ідея — повідомити розробнику" aria-label="Помилка чи ідея"><i data-i="chat"></i></button>
@@ -40,7 +40,7 @@
     </div>
     <datalist id="nameList"></datalist>
     <div class="msg ageMsg" id="ageMsg" hidden></div>
-    <button class="btn sm samept" id="samePtTop" type="button" hidden title="Новий протокол тому самому пацієнту: ПІБ, вік, дата лишаються; свій № і ЕЕД">+ Ще дослідження цьому пацієнту</button>
+    <div class="morerow">
     <details class="more">
       <summary>Додатково: стать, відділення, е-направлення</summary>
       <div class="fields">
@@ -50,7 +50,10 @@
         <label class="f wide">Лікар, що направив<input id="pRefDoc" type="text" autocomplete="off"></label>
       </div>
     </details>
+    <button class="btn sm samept" id="samePtTop" type="button" title="Новий протокол тому самому пацієнту: ПІБ, вік, дата лишаються; свій № і ЕЕД">+ Ще дослідження цьому пацієнту</button>
+    </div>
     <datalist id="deptList"></datalist>
+    <nav class="secnav secrow" id="secNav" aria-label="Розділи протоколу"></nav>
   </div>
 
   <div class="card" id="sec-study">

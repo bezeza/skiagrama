@@ -13,8 +13,10 @@ $('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName')
   S.prevId=findPrev();renderPrev();renderSide();});
 $('pCount').addEventListener('input',()=>{S.countManual=true;syncCount();saveDraftSoon();});
 $('cntAuto').onclick=()=>{tick();S.countManual=false;syncCount();};
-$('samePtTop').onclick=()=>{if(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length){if(!editingId&&!confirm('Поточний протокол ще не збережено («Готово»). Почати нове дослідження цьому пацієнту?'))return;}sameStudyPatient();};
-$('pName').addEventListener('input',()=>{$('samePtTop').hidden=!$('pName').value.trim();});
+function samePtAsk(){if(!$('pName').value.trim()){toast('Спершу введіть ПІБ пацієнта');$('pName').focus();return;}
+  if(!editingId&&(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length)&&!confirm('Поточний протокол ще не збережено («Готово»). Почати нове дослідження цьому пацієнту?'))return;sameStudyPatient();}
+$('samePtMenu').onclick=samePtAsk;$('newPtMenu').onclick=()=>$('newPatient').click();
+$('samePtTop').onclick=samePtAsk;
 ['pAge','pSex','pDept','pRefDoc','pNum','pDate','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
 ['conclFree','recFree'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();renderNav();}));
 /* вік із дати народження: «12.03.1954», «12031954» або рік «1954» */
@@ -161,6 +163,14 @@ function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;i
   g.addEventListener('dblclick',()=>{delete SET.sideW;saveSet();applySideW();if(paperView)renderSide();toast('Ширина протоколу — як було');});
   g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width)+(e.key==='ArrowLeft'?40:-40));applySideW();saveSet();});
   window.addEventListener('resize',applySideW);applySideW();})();
+/* липка панель пацієнта: її висота — відступ, щоб обраний розділ чи зона не ховались під нею */
+(()=>{const pb=$('sec-patient');const set=()=>{const h=window.innerWidth>760?Math.ceil(pb.getBoundingClientRect().height):0;document.documentElement.style.setProperty('--pbarh',h+'px');};
+  if(window.ResizeObserver)new ResizeObserver(set).observe(pb);window.addEventListener('resize',set);set();
+  const ids=['sec-study','sec-zones','measPanel','sec-concl','sec-rec'];
+  const upd=()=>{const top=(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pbarh'))||0)+40;let cur='sec-patient';
+    ids.forEach(id=>{const e=$(id);if(e&&!e.hidden&&e.offsetParent&&e.getBoundingClientRect().top<=top)cur=id;});
+    if(cur!==secCur){secCur=cur;document.querySelectorAll('#secNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===cur));}};
+  window.addEventListener('scroll',()=>{if(!upd.t)upd.t=requestAnimationFrame(()=>{upd.t=0;upd();});},{passive:true});})();
 /* перегляди */
 function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}

@@ -433,6 +433,24 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }
+/* ---------- Навігація: обрана зона видна, рядок розділів, «Ще дослідження» ---------- */
+{
+  console.log('\nНавігація');
+  const ctx=await b.newContext({viewport:{width:1366,height:768}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.click('text=Пропустити — заповню пізніше');await p.click('#allNorm');
+  ok(await p.isVisible('#samePtTop')&&await p.isVisible('#secNav'),'кнопка «Ще дослідження» і рядок розділів видно одразу');
+  for(const z of ['Серце','Корені']){await p.click(`#navZones >> text=${z}`);await p.waitForTimeout(800);
+    const r=await p.evaluate(z=>{const pb=document.getElementById('sec-patient').getBoundingClientRect().bottom;const e=[...document.querySelectorAll('.zone h3')].find(h=>h.textContent.includes(z)).closest('.zone').getBoundingClientRect();return e.top>=pb-1&&e.top<innerHeight-60;},z);
+    ok(r,`обрана зона «${z}» видна, не під панеллю пацієнта`);}
+  await p.click('#secNav >> text=Висновок');await p.waitForTimeout(800);
+  ok(await p.evaluate(()=>{const pb=document.getElementById('sec-patient').getBoundingClientRect().bottom;const t=document.getElementById('sec-concl').getBoundingClientRect().top;return t>=pb-1&&t<pb+60;})&&(await p.textContent('#secNav button.on')).includes('Висновок'),'рядок розділів: «Висновок» — перехід і підсвічування');
+  await p.click('#secNav >> text=Пацієнт');await p.waitForTimeout(800);ok(await p.evaluate(()=>scrollY)<5,'рядок розділів: «Пацієнт» — вгору');
+  await p.click('.split.np summary');await p.click('#samePtMenu');ok((await p.textContent('#toast')).includes('ПІБ'),'без ПІБ — підказка ввести ПІБ');
+  await p.fill('#pName','Пацієнт Меню');await p.fill('#pAge','33');await p.click('.split.np summary');await p.click('#samePtMenu');
+  ok((await p.inputValue('#pName'))==='Пацієнт Меню'&&(await p.inputValue('#pAge'))==='33','«Новий пацієнт ▾» → «Ще дослідження цьому пацієнту»: ПІБ і вік лишились');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);
 process.exit(fail?1:0);

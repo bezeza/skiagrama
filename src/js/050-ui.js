@@ -28,7 +28,7 @@ function renderStudy(){
 /* лічильник знімків: проєкції × (обидва суглоби → 2); ручне число не перезаписуємо */
 function autoCount(){if(S.study==='fg')return 1;const n=Math.max(1,S.proj.length);return S.study==='bone'&&S.side==='о'?n*2:n;}
 function syncCount(){const i=$('pCount');if(!S.countManual)i.value=String(autoCount());$('cntNote').textContent=S.countManual?'змінено вручну':(S.study==='bone'&&S.side==='о'?'за проєкціями, обидва боки — удвічі':'рахується за проєкціями');$('cntAuto').hidden=!S.countManual;
-  const sp=$('samePtTop');if(sp)sp.hidden=!$('pName').value.trim();}
+}
 function setEedDefault(){$('pEed').value=SET.eed[S.study]||'';}
 function nextNum(){const y=($('pDate').value||today()).slice(0,4);const n=num(SET.lastNum);return (isFinite(n)&&SET.lastNumYear===y)?String(n+1):'';}
 const DOT_T={n:'норма',c:'зміни',x:'не згадується',e:'не дозаповнено'};
@@ -38,14 +38,23 @@ function renderNav(){
     b.onclick=()=>gotoZone(d.id);nz.append(b);});
   $('navMeas').hidden=!activeMeas().length;
   const dc=$('navConcl');dc.textContent='Висновок';const ct=conclText();dc.append(el('span',{class:'dot '+(ct.t.includes('…')?'e':ct.auto?'n':'c'),'aria-hidden':'true'}));
-  renderStepper();
+  renderStepper();renderSecNav();
 }
-function gotoZone(id){S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z)z.scrollIntoView({block:'start',behavior:'smooth'});}
+/* рядок розділів у липкій панелі пацієнта: Пацієнт · Дослідження · Опис · Вимірювання · Висновок · Рекомендації */
+function renderSecNav(){const n=$('secNav');if(!n)return;n.textContent='';
+  const zs=visibleZones().map(zoneState);const zd=zs.includes('e')?'e':zs.includes('c')?'c':'n';const ct=conclText();
+  const items=[['sec-patient','Пацієнт',null],['sec-study','Дослідження',null],['sec-zones','Опис',zd]];if(activeMeas().length)items.push(['measPanel','Вимірювання',null]);
+  items.push(['sec-concl','Висновок',ct.t.includes('…')?'e':ct.auto?'n':'c'],['sec-rec','Рекомендації',S.recs.length||$('recFree').value.trim()?'c':null]);
+  items.forEach(([id,t,d])=>{const b=el('button',{type:'button','data-sec':id,class:secCur===id?'on':null});b.append(document.createTextNode(t));if(d)b.append(el('span',{class:'dot '+d,'aria-hidden':'true'}));b.onclick=()=>goSec(id);n.append(b);});}
+let secCur='sec-patient';
+function goSec(id){const t=$(id);if(!t)return;if(id==='sec-patient'){window.scrollTo({top:0,behavior:'smooth'});return;}t.scrollIntoView({block:'start',behavior:'smooth'});flashEl(t);}
+function flashEl(e){e.classList.remove('hl');void e.offsetWidth;e.classList.add('hl');setTimeout(()=>e.classList.remove('hl'),1300);}
+function gotoZone(id){S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}
 function renderStepper(){const vz=visibleZones();let i=vz.findIndex(d=>d.id===S.focus);if(i<0)i=0;const d=vz[i];if(!d)return;
   $('stName').textContent=`${d.name} · ${i+1}/${vz.length}`;$('stName').onclick=()=>openNavSheet();
   $('stPrev').disabled=i===0;$('stNext').disabled=i===vz.length-1;
   $('stPrev').onclick=()=>gotoZone(vz[Math.max(0,i-1)].id);$('stNext').onclick=()=>gotoZone(vz[Math.min(vz.length-1,i+1)].id);}
-function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z)z.scrollIntoView({block:'start',behavior:'smooth'});}}
+function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}}
 
 /* Кнопки зони: звичайний режим і редагування (олівець ✎).
    Завдання для тебе: знайди в 020-data.js зону «Інфільтрація» (id:'infil') і подивись,
