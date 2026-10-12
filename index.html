@@ -512,6 +512,20 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .studytabs button .simg{width:36px;height:36px;display:block;border-radius:50%;flex:none}
 .studytabs button[aria-selected="true"] .simg{box-shadow:0 0 0 2px rgba(255,255,255,.75)}
 #ageMsg.bad{color:var(--bad)}
+/* лічильник знімків і «ще дослідження» */
+.cntrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px}
+.cntrow .cntl{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;color:var(--muted);font-weight:600}
+.cntrow .cntl input{width:64px;min-height:34px;padding:4px 8px;text-align:center}
+.cntrow .note{margin:0}
+.pbar .samept{margin-top:6px;align-self:flex-start}
+/* ручка ширини протоколу */
+.side{position:sticky}
+.sgrip{position:absolute;left:-13px;top:0;bottom:0;width:10px;cursor:col-resize;z-index:5;border-radius:6px}
+.sgrip::after{content:'';position:absolute;left:3px;top:50%;width:4px;height:44px;margin-top:-22px;border-radius:3px;background:var(--line);transition:background .15s}
+.sgrip:hover::after,.sgrip:focus-visible::after,body.resizing .sgrip::after{background:var(--blue)}
+body.resizing{cursor:col-resize;user-select:none}
+@media (min-width:761px){main.wrap.customw{grid-template-columns:minmax(380px,1fr) var(--sidew)}}
+@media (max-width:760px){.sgrip{display:none}}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -570,11 +584,11 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     </div>
     <datalist id="nameList"></datalist>
     <div class="msg ageMsg" id="ageMsg" hidden></div>
+    <button class="btn sm samept" id="samePtTop" type="button" hidden title="Новий протокол тому самому пацієнту: ПІБ, вік, дата лишаються; свій № і ЕЕД">+ Ще дослідження цьому пацієнту</button>
     <details class="more">
       <summary>Додатково: стать, відділення, е-направлення</summary>
       <div class="fields">
         <label class="f">Стать<select id="pSex"><option value="">—</option><option value="ч">ч</option><option value="ж">ж</option></select></label>
-        <label class="f">Кількість знімків<input id="pCount" type="number" min="1" max="20" value="1"></label>
         <label class="f wide">Відділення<input id="pDept" type="text" list="deptList" autocomplete="off"></label>
         <label class="f wide">№ е-направлення<input id="pRef" type="text" autocomplete="off" placeholder="0000-0000-0000-0000"><span class="msg" id="refMsg"></span></label>
         <label class="f wide">Лікар, що направив<input id="pRefDoc" type="text" autocomplete="off"></label>
@@ -587,6 +601,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
     <div class="fields" id="studyExtra"></div>
     <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
+    <div class="cntrow"><label class="cntl" title="Рахується сам: кількість вибраних проєкцій (обидва суглоби — удвічі). Можна змінити вручну.">Знімків<input id="pCount" type="number" min="1" max="40" value="1"></label><span class="note" id="cntNote">рахується за проєкціями</span><button class="btn sm" id="cntAuto" type="button" hidden>рахувати автоматично</button></div>
     <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
     <div class="prev" id="prevBox" hidden></div>
   </div>
@@ -632,6 +647,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 </section>
 
 <aside class="side" id="side" aria-label="Протокол">
+  <div class="sgrip" id="sideGrip" role="separator" aria-orientation="vertical" aria-label="Ширина панелі протоколу" tabindex="0" title="Потягніть, щоб зробити протокол ширшим або вужчим. Подвійний клік — як було."></div>
   <div class="sh noprint">
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
     <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
@@ -645,7 +661,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     </div>
     <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
     <details class="menu"><summary class="btn" title="Зберегти протокол у файл: PDF, Word, LibreOffice" aria-label="Зберегти як"><i data-i="save"></i><span class="lbl">Зберегти як</span>&nbsp;▾</summary>
-      <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.doc)</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.fodt)</button></div></details>
+      <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.docx) — бланк, можна правити</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.odt) — бланк, можна правити</button></div></details>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
@@ -1168,7 +1184,9 @@ const PACKS=[{
    Дрібні правки номер не змінюють. */
 const VERSION='0.4';
 const CHANGELOG=[
- ['0.4',['Дані пацієнта: немовлятам вік у місяцях («5 міс.»); неіснуюча дата народження чи рік у майбутньому — попередження; ЕЕД «0.35» → «0,35»; ПІБ з малої літери — з великої.',
+ ['0.4',['«Зберегти як» Word (.docx) і LibreOffice (.odt) — тепер бланк, а не просто текст: шапка закладу, рамка під штамп, дані пацієнта, підпис; розмір сторінки — як при друці.',
+   'Ширину панелі протоколу можна змінити: потягніть ручку між кнопками і протоколом; подвійний клік — як було.',
+   '«+ Ще дослідження цьому пацієнту» тепер завжди видно в рядку пацієнта. Кількість знімків рахується сама за проєкціями (обидва суглоби — удвічі), іде в архів і Excel.','Дані пацієнта: немовлятам вік у місяцях («5 міс.»); неіснуюча дата народження чи рік у майбутньому — попередження; ЕЕД «0.35» → «0,35»; ПІБ з малої літери — з великої.',
    'Нові зауваження перед «Готово»: дата знімка в майбутньому, № знімка вже є в архіві за цей рік, на бланку A/B/D не заповнено назву закладу.',
    'Висновок, що закінчується скороченням («II ст.»), більше не дає двох крапок; «у проєкції» — за чинним правописом.','Підпис однаковий у тексті протоколу і на всіх бланках: «Лікар-рентгенолог ______ ПІБ»; посаду можна змінити в «Налаштуваннях» (напр. «Лікар-радіолог»).','Нова іконка: рентгенограма кисті з обручкою — на згадку про перший рентгенівський знімок 1895 року. Вкладки досліджень — з рентгенівськими іконками: ОГК, ФГ, кістки, хребет, ОЧП, череп.','Архів тепер у сховищі браузера IndexedDB: раніше вміщалося близько 1800 протоколів, тепер — десятки тисяч; старий архів переноситься сам. Тисячі записів відкриваються миттєво (по 300, «Показати ще»).',
    'Дві вкладки з програмою не затирають архів одна одній; видалений протокол не повертається; попередження «відкрита в іншій вкладці».',
@@ -1564,7 +1582,12 @@ function renderStudy(){
   const pc=$('projChips');pc.hidden=!['bone','spine','skull','ogk'].includes(S.study);[...pc.querySelectorAll('.chip')].forEach(n=>n.remove());
   PROJ.forEach(p=>{const on=S.proj.includes(p);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},p);
     b.onclick=()=>{tick();on?S.proj.splice(S.proj.indexOf(p),1):S.proj.push(p);renderAll();};pc.append(b);});
+  syncCount();
 }
+/* лічильник знімків: проєкції × (обидва суглоби → 2); ручне число не перезаписуємо */
+function autoCount(){if(S.study==='fg')return 1;const n=Math.max(1,S.proj.length);return S.study==='bone'&&S.side==='о'?n*2:n;}
+function syncCount(){const i=$('pCount');if(!S.countManual)i.value=String(autoCount());$('cntNote').textContent=S.countManual?'змінено вручну':(S.study==='bone'&&S.side==='о'?'за проєкціями, обидва боки — удвічі':'рахується за проєкціями');$('cntAuto').hidden=!S.countManual;
+  const sp=$('samePtTop');if(sp)sp.hidden=!$('pName').value.trim();}
 function setEedDefault(){$('pEed').value=SET.eed[S.study]||'';}
 function nextNum(){const y=($('pDate').value||today()).slice(0,4);const n=num(SET.lastNum);return (isFinite(n)&&SET.lastNumYear===y)?String(n+1):'';}
 const DOT_T={n:'норма',c:'зміни',x:'не згадується',e:'не дозаповнено'};
@@ -1921,7 +1944,11 @@ $('pRef').addEventListener('input',e=>{const f=fmtRef(e.target.value);if(f!==e.t
 $('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName').value);const hit=byName(name).slice().sort((a,b)=>b.ts-a.ts)[0];
   if(hit&&!$('pAge').value)$('pAge').value=hit.age||'';if(hit&&!$('pSex').value)$('pSex').value=hit.sex||'';
   S.prevId=findPrev();renderPrev();renderSide();});
-['pAge','pSex','pDept','pRefDoc','pNum','pDate','pCount','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
+$('pCount').addEventListener('input',()=>{S.countManual=true;syncCount();saveDraftSoon();});
+$('cntAuto').onclick=()=>{tick();S.countManual=false;syncCount();};
+$('samePtTop').onclick=()=>{if(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length){if(!editingId&&!confirm('Поточний протокол ще не збережено («Готово»). Почати нове дослідження цьому пацієнту?'))return;}sameStudyPatient();};
+$('pName').addEventListener('input',()=>{$('samePtTop').hidden=!$('pName').value.trim();});
+['pAge','pSex','pDept','pRefDoc','pNum','pDate','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
 ['conclFree','recFree'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();renderNav();}));
 /* вік із дати народження: «12.03.1954», «12031954» або рік «1954» */
 function ageFromBirth(v,ref){
@@ -2004,23 +2031,8 @@ window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);wi
 /* Word і LibreOffice */
 function groupsOf(units){const groups=[];units.forEach(u=>{const g=groups[groups.length-1];if(g&&g.p===u.p)g.t.push(u.t);else groups.push({p:u.p,c:u.c,t:[u.t]});});return groups;}
 const fileBase=()=>`Rö_${($('pName').value.trim()||'протокол').replace(/[^\p{L}\p{N}]+/gu,'_')}_${$('pDate').value||today()}`;
-$('wordBtn').onclick=()=>{
-  const body=groupsOf(currentUnits()).map(g=>`<p${g.c==='pt'||g.c==='concl'?' style="font-weight:bold"':''}>${esc(g.t.join(' '))}</p>`).join('');
-  const html=`<html><head><meta charset="utf-8"><style>body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.45}p{margin:0 0 4pt}</style></head><body><div style="height:2.2cm"></div>${body}</body></html>`;
-  if(!download(fileBase()+'.doc','﻿'+html,'application/msword'))toast('Не вдалося зберегти файл');
-};
-$('odtBtn').onclick=()=>{
-  const ps=groupsOf(currentUnits()).map(g=>`<text:p text:style-name="${g.c==='pt'||g.c==='concl'?'B':'N'}">${esc(g.t.join(' '))}</text:p>`).join('');
-  const xml=`<?xml version="1.0" encoding="UTF-8"?>
-<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" office:version="1.2" office:mimetype="application/vnd.oasis.opendocument.text">
-<office:automatic-styles>
-<style:style style:name="N" style:family="paragraph"><style:paragraph-properties fo:margin-bottom="0.12cm"/><style:text-properties style:font-name="Times New Roman" fo:font-family="'Times New Roman'" fo:font-size="12pt"/></style:style>
-<style:style style:name="B" style:family="paragraph" style:parent-style-name="N"><style:paragraph-properties fo:margin-bottom="0.12cm"/><style:text-properties fo:font-family="'Times New Roman'" fo:font-size="12pt" fo:font-weight="bold"/></style:style>
-<style:style style:name="S" style:family="paragraph"><style:paragraph-properties fo:margin-top="2.2cm"/></style:style>
-</office:automatic-styles>
-<office:body><office:text><text:p text:style-name="S"/>${ps}</office:text></office:body></office:document>`;
-  if(!download(fileBase()+'.fodt',xml,'application/vnd.oasis.opendocument.text-flat-xml'))toast('Не вдалося зберегти файл');
-};
+$('wordBtn').onclick=()=>saveDocx();
+$('odtBtn').onclick=()=>saveOdt();
 
 /* Готово → архів */
 function done(){const w=checks();if(w.length){renderChecks(true);openSheet();$('checkBox').scrollIntoView({block:'nearest'});return;}doSave();}
@@ -2044,7 +2056,7 @@ function doSave(){
     name:$('pName').value.trim(),age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),
     study:S.study,what:headerLine().replace(/^На\s*/,'').replace(/ від .*$/,''),eed:$('pEed').value.trim(),
     concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,doc:docData(),blank:curBlank(),
-    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
+    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),count:Math.max(1,+$('pCount').value||1),notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
   saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
@@ -2071,6 +2083,17 @@ document.addEventListener('keydown',e=>{
     const z=S.zones[d.id];if(z.st==='c'&&S.open===d.id){z.st='n';S.open=null;}else{z.st='c';S.open=d.id;}S.focus=d.id;renderAll();const n=$('zone-'+d.id);if(n){n.scrollIntoView({block:'nearest'});const f=z.st==='c'?n.querySelector('.group button.chip, .group input'):null;if(f)f.focus({preventScroll:true});}}
 });
 
+/* ширина панелі протоколу: тягнемо «ручку» між формою і протоколом */
+function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;if(SET.sideW&&window.innerWidth>760){w.style.setProperty('--sidew',SET.sideW+'px');w.classList.add('customw');}else{w.classList.remove('customw');w.style.removeProperty('--sidew');}}
+(()=>{const g=$('sideGrip');let drag=null;
+  const lim=x=>{const w=document.querySelector('main.wrap').getBoundingClientRect();return Math.round(Math.max(320,Math.min(w.width-420,x)));};
+  g.addEventListener('pointerdown',e=>{if(window.innerWidth<=760)return;e.preventDefault();g.setPointerCapture(e.pointerId);drag={x:e.clientX,w:$('side').getBoundingClientRect().width};document.body.classList.add('resizing');});
+  g.addEventListener('pointermove',e=>{if(!drag)return;SET.sideW=lim(drag.w+(drag.x-e.clientX));applySideW();});
+  const end=()=>{if(!drag)return;drag=null;document.body.classList.remove('resizing');saveSet();if(paperView)renderSide();};
+  g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
+  g.addEventListener('dblclick',()=>{delete SET.sideW;saveSet();applySideW();if(paperView)renderSide();toast('Ширина протоколу — як було');});
+  g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width)+(e.key==='ArrowLeft'?40:-40));applySideW();saveSet();});
+  window.addEventListener('resize',applySideW);applySideW();})();
 /* перегляди */
 function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}
@@ -2239,7 +2262,7 @@ function renderDaySum(){
   const by={};todays.forEach(r=>{by[r.study]=(by[r.study]||0)+1;});
   const row=el('div',{class:'daynums'});
   const tile=(n,t,cls)=>{const d=el('div',{class:'dt'+(cls?' '+cls:'')});d.append(el('b',null,String(n)),el('span',null,t));row.append(d);};
-  tile(todays.length,'протоколів сьогодні');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
+  tile(todays.length,'протоколів сьогодні');const imgs=todays.reduce((a,r)=>a+(+r.count||1),0);if(imgs!==todays.length)tile(imgs,'знімків');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
   const ctl=todays.filter(r=>r.ctrlDue).length;if(ctl)tile(ctl,'на контроль');
   const urg=todays.filter(r=>r.urgent&&!r.notified).length;if(urg)tile(urg,'термінових не повідомлено','b');
   const pat=todays.filter(r=>r.status==='p').length,dd=todays.filter(r=>r.status==='d').length;
@@ -2289,8 +2312,8 @@ $('demoA').onclick=()=>{
 /* вивантаження в Excel (CSV з «;» — так відкриває український Excel) */
 $('aCsv').onclick=()=>{const rows=aFiltered().filter(r=>!r.example);if(!rows.length){toast('За цими фільтрами протоколів немає');return;}
   const q=v=>{v=String(v==null?'':v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Висновок','Результат','Терміново','Надруковано','Контроль до'];
-  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.concl,STATUS[r.status]||'',r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
+  const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Знімків','Висновок','Результат','Терміново','Надруковано','Контроль до'];
+  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.count||'',r.concl,STATUS[r.status]||'',r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
   const f=$('aFrom').value,t=$('aTo').value;const ok=download(`Skiagrama_архів_${f||'усі'}${t?'_'+t:''}.csv`,'\ufeff'+lines.join('\r\n'),'text/csv');toast(ok?`Вивантажено ${rows.length} протоколів`:'Не вдалося зберегти файл');};
 
 /* --- 080-print.js --- */
@@ -2472,6 +2495,153 @@ function testSheet(){
 }
 $('sTest').onclick=testSheet;
 
+/* --- 085-docexport.js --- */
+/* ===== Збереження бланка у Word (.docx) і LibreOffice (.odt) =====
+   Бланк описується однією моделлю (абзаци й таблиці), з неї пишуться обидва формати.
+   Файли — справжні zip-архіви (без стиснення), без сторонніх бібліотек, працює офлайн. */
+
+/* --- zip (метод «store») --- */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u){let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=CRC_T[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  const enc=new TextEncoder();const parts=[],central=[];let off=0;
+  const d=new Date(),dt=((d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1))&0xFFFF,dd=(((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate())&0xFFFF;
+  files.forEach(f=>{
+    const name=enc.encode(f.name),data=typeof f.data==='string'?enc.encode(f.data):f.data,crc=crc32(data);
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);
+    h.setUint16(10,dt,true);h.setUint16(12,dd,true);h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,name.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),name,data);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);
+    c.setUint16(12,dt,true);c.setUint16(14,dd,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,name.length,true);c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer),name);off+=30+name.length+data.length;});
+  const csize=central.reduce((a,b)=>a+b.length,0);
+  const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,csize,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...central,new Uint8Array(e.buffer)],{type:'application/zip'});
+}
+function downloadBlob(name,blob){try{const a=el('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);return true;}catch(e){return false;}}
+
+/* --- модель бланка ---
+   P(runs,opt): runs=[{t,b,i,u,sz,color}], opt={al:'l'|'c'|'r'|'j',sz,after,before,rule:true,box:true,keep}
+   T(cols мм,rows,opt): rows=[[{blocks:[P…],box,shade,va}]] */
+const R=(t,o)=>Object.assign({t:String(t??'')},o||{});
+const P=(runs,opt)=>({k:'p',runs:(Array.isArray(runs)?runs:[runs]).map(r=>typeof r==='string'?R(r):r),...(opt||{})});
+const T=(cols,rows,opt)=>({k:'t',cols,rows,...(opt||{})});
+const C=(blocks,o)=>Object.assign({blocks:Array.isArray(blocks)?blocks:[blocks]},o||{});
+const BLUE='1F4E79',GREY='555555';
+function manualLines(doc,keepHead){let lines=String(doc.manual||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!keepHead){if(lines[0]===String(doc.head).trim())lines.shift();if(lines[0]&&/^На\s/.test(lines[0]))lines.shift();}
+  return lines.map(l=>P(/^Rö-ч:/.test(l)||/^Висновок/.test(l)?[R(l,{b:true})]:[R(l)],{al:'j'}));}
+function docModel(doc,blank,half){
+  const o=ORG(),dt=doc.docTitle||DOC_TITLE(),sign=`${dt} ______________ ${doc.doctor||'[ПІБ]'}`,w=half?190:170;
+  const urg=doc.urgent?[P([R('ТЕРМІНОВО · критична знахідка · лікаря повідомлено: ____________ о ____',{b:true,color:'B3261E'})],{box:true})]:[];
+  const body=()=>[P(doc.body.join(' '),{al:'j'})];
+  const B=[];
+  if(blank==='C'){
+    const sub=[o.sub,o.cab,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · ');
+    B.push(T([55,w-55],[[C([P([R('місце для штампу рентгенкабінету',{sz:9,color:GREY})],{al:'c'}),P([R('(№ і дата)',{sz:9,color:GREY})],{al:'c'})],{box:true,va:'c',h:20}),
+      C([P([R(o.name||'[Назва закладу]',{b:true})]),...(sub?[P([R(sub,{sz:10,color:GREY})])]:[]),P([R(doc.study==='fg'?'ФЛЮОРОГРАФІЯ':'РЕНТГЕНОГРАФІЯ',{b:true,sz:10,color:BLUE})])],{va:'c'})]]),P('',{sz:6}));
+    B.push(...urg);
+    if(doc.manual!=null)B.push(...manualLines(doc,true));
+    else{B.push(P([R(doc.head,{b:true})]),P(doc.refLine),...body(),P([R('Rö-ч: '+doc.concl,{b:true})],{before:4}));if(doc.rec)B.push(P('Рекомендовано: '+doc.rec));}
+    B.push(T([w/2,w/2],[[C(P(`ЕЕД ${doc.eed||'___'} мЗв.`)),C(P(sign,{al:'r'}))]],{before:8}));
+  }else if(blank==='B'){
+    B.push(T([w*0.58,w*0.42],[[C([P([R(o.name||'[Назва закладу]',{b:true,sz:13})]),P([R([o.cab,o.addr,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · '),{sz:9.5,color:GREY})])]),
+      C([P([R('ПРОТОКОЛ ДОСЛІДЖЕННЯ',{sz:8.5,color:GREY,b:true})],{al:'r'}),P([R(doc.what,{b:true})],{al:'r'}),P([R(`№ ${doc.num||'___'} · ${dLong(doc.date)}`,{sz:10})],{al:'r'})])]]),P('',{rule:true,sz:4}));
+    B.push(...urg);
+    const cell=(l,v)=>C([P([R(l,{sz:8,color:GREY,b:true})]),P([R(v,{b:l==='ПАЦІЄНТ'})])]);
+    const row=[cell('ПАЦІЄНТ',doc.name),cell('ВІК, СТАТЬ',[doc.age?ageStr(doc.age):'',sexW(doc.sex)].filter(Boolean).join(', ')||'—'),cell('ЕЕД',doc.eed?doc.eed+' мЗв':'___')];
+    B.push(T([w*0.5,w*0.3,w*0.2],[row].concat(doc.dept||doc.proj?[[cell('ВІДДІЛЕННЯ',doc.dept||'—'),cell('ПРОЄКЦІЇ',doc.proj||'—'),C(P(''))]]:[]),{shade:true}),P('',{sz:6}));
+    const sec=(l,blocks)=>[T([28,w-28],[[C(P([R(l,{b:true,sz:9,color:BLUE})])),C(blocks)]])];
+    if(doc.manual!=null)B.push(...sec('ОПИС',manualLines(doc)));
+    else{B.push(...sec('ОПИС',[P(doc.body.join(' '),{al:'j'})]),...sec('ВИСНОВОК',[P([R(doc.concl,{b:true})])]));if(doc.rec)B.push(...sec('РЕКОМЕНДАЦІЇ',[P(doc.rec)]));}
+    B.push(P(sign,{before:10}),P([R('Висновок не є діагнозом; оцінюється лікарем, що направив.',{sz:8.5,i:true,color:GREY})]));
+  }else if(blank==='A'){
+    B.push(P([R('Міністерство охорони здоров’я України',{sz:10})],{al:'c'}),P([R([o.name||'[Назва закладу]',o.sub].filter(Boolean).join(' '),{b:true,sz:13})],{al:'c'}),
+      P([R([o.cab,o.addr,o.tel?'тел. '+o.tel:'',o.edrpou?'код ЄДРПОУ '+o.edrpou:''].filter(Boolean).join(' · '),{sz:9.5})],{al:'c',rule:true}),
+      P([R('ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ',{b:true})],{al:'c',before:6}),P(`№ ${doc.num||'___'} від ${dLong(doc.date)}`,{al:'c',after:6}));
+    B.push(...urg);
+    const rows=[['Пацієнт:',[R(doc.name,{b:true}),R((doc.age?', '+ageStr(doc.age):'')+(doc.sex?', '+sexW(doc.sex):''))]]];
+    if(doc.dept||doc.ref)rows.push(['Направлення:',[R([doc.dept,doc.refDoc?'лікар '+doc.refDoc:'',doc.ref?'е-напр. '+doc.ref:''].filter(Boolean).join(' · '))]]);
+    rows.push(['Дослідження:',[R(doc.what+(doc.proj?` (${doc.proj})`:'')+(doc.eed?` · ЕЕД ${doc.eed} мЗв`:''))]]);
+    B.push(T([32,w-32],rows.map(r=>[C(P([R(r[0],{color:GREY})])),C(P(r[1]))])),P('',{sz:6}));
+    if(doc.manual!=null)B.push(...manualLines(doc));
+    else{B.push(P([R('Опис. ',{b:true}),R(doc.body.join(' '))],{al:'j'}));B.push(P([R('Висновок: '+doc.concl,{b:true})],{before:4}));if(doc.rec)B.push(P([R('Рекомендовано: ',{b:true}),R(doc.rec)]));}
+    B.push(T([w*0.75,w*0.25],[[C(P(sign)),C(P('М. П.',{al:'r'}))]],{before:10}));
+  }else{ /* D */
+    B.push(T([w*0.6,w*0.4],[[C([P([R('Найменування міністерства: ',{sz:9}),R('МОЗ України',{sz:9,u:true})]),P([R('Заклад: ',{sz:9}),R(o.name||'[Назва закладу]',{sz:9,b:true,u:true})]),P([R('Місцезнаходження: ',{sz:9}),R(o.addr||'[адреса]',{sz:9,u:true})]),P([R('Код за ЄДРПОУ: ',{sz:9}),R(o.edrpou||'[________]',{sz:9,u:true})])]),
+      C([P([R('МЕДИЧНА ДОКУМЕНТАЦІЯ',{sz:9,b:true})],{al:'r'}),P([R('Форма первинної облікової документації',{sz:9})],{al:'r'}),P([R(`№ ${o.form||'[___]'}${o.order?' · '+o.order:''}`,{sz:9})],{al:'r'})])]]));
+    B.push(P([R('ПРОТОКОЛ РЕНТГЕНОЛОГІЧНОГО ДОСЛІДЖЕННЯ № ',{b:true}),R(doc.num||'___',{b:true,u:true})],{al:'c',before:8,after:6}));
+    B.push(...urg);
+    const f=(l,v,b)=>[C(P(l)),C(P([R(v,{b:!!b,u:true})]))];
+    B.push(T([36,w*0.5-36,18,w*0.5-18],[[...f('1. ПІБ',doc.name,1),...f('Вік',[doc.age?ageStr(doc.age):'',sexW(doc.sex)].filter(Boolean).join(', '))],
+      [...f('2. Відділення',doc.dept||'—'),...f('Дата',dLong(doc.date))],[...f('3. Дослідження',doc.what+(doc.proj?` (${doc.proj})`:'')),...f('ЕЕД',doc.eed?doc.eed+' мЗв':'')]]),P('4. Опис:',{before:6}));
+    if(doc.manual!=null)B.push(...manualLines(doc));
+    else{B.push(...body(),P([R('5. Висновок: '),R(doc.concl,{b:true})],{before:4}));if(doc.rec)B.push(P('6. Рекомендації: '+doc.rec));}
+    B.push(T([w*0.75,w*0.25],[[C(P(sign)),C(P('М. П.',{al:'r'}))]],{before:10}));
+  }
+  return {page:half?{w:210,h:148.5,m:10}:{w:210,h:297,m:20},blocks:B};
+}
+
+/* --- DOCX --- */
+const xe=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const TW=mm=>Math.round(mm*56.6929);
+function docxRun(r,base){const sz=Math.round((r.sz||base)*2);
+  return `<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>${r.b?'<w:b/>':''}${r.i?'<w:i/>':''}${r.u?'<w:u w:val="single"/>':''}${r.color?`<w:color w:val="${r.color}"/>`:''}<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/></w:rPr><w:t xml:space="preserve">${xe(r.t)}</w:t></w:r>`;}
+function docxP(p,base){const al={c:'center',r:'right',j:'both'}[p.al]||'left';
+  const bd=p.rule?'<w:pBdr><w:bottom w:val="single" w:sz="8" w:space="2" w:color="1F4E79"/></w:pBdr>':p.box?'<w:pBdr><w:top w:val="single" w:sz="8" w:space="2" w:color="B3261E"/><w:left w:val="single" w:sz="8" w:space="4" w:color="B3261E"/><w:bottom w:val="single" w:sz="8" w:space="2" w:color="B3261E"/><w:right w:val="single" w:sz="8" w:space="4" w:color="B3261E"/></w:pBdr>':'';
+  const runs=p.runs.filter(r=>r.t!=='').map(r=>docxRun(r,p.sz||base)).join('');
+  return `<w:p><w:pPr>${bd}<w:spacing w:before="${Math.round((p.before||0)*20)}" w:after="${Math.round((p.after??2)*20)}" w:line="252" w:lineRule="auto"/><w:jc w:val="${al}"/>${p.runs.every(r=>r.t==='')?`<w:rPr><w:sz w:val="${Math.round((p.sz||base)*2)}"/></w:rPr>`:''}</w:pPr>${runs}</w:p>`;}
+function docxT(t,base){
+  const grid=t.cols.map(c=>`<w:gridCol w:w="${TW(c)}"/>`).join('');
+  const rows=t.rows.map(row=>`<w:tr>${row.some(c=>c.h)?`<w:trPr><w:trHeight w:val="${TW(Math.max(...row.map(c=>c.h||0)))}"/></w:trPr>`:''}${row.map((c,i)=>{
+    const bd=c.box?'<w:tcBorders><w:top w:val="single" w:sz="8" w:color="888888"/><w:left w:val="single" w:sz="8" w:color="888888"/><w:bottom w:val="single" w:sz="8" w:color="888888"/><w:right w:val="single" w:sz="8" w:color="888888"/></w:tcBorders>':'';
+    const sh=t.shade?'<w:shd w:val="clear" w:color="auto" w:fill="EEF2F6"/>':'';
+    return `<w:tc><w:tcPr><w:tcW w:w="${TW(t.cols[i])}" w:type="dxa"/>${bd}${sh}${c.va==='c'?'<w:vAlign w:val="center"/>':''}</w:tcPr>${(c.blocks.length?c.blocks:[P('')]).map(b=>docxP(b,base)).join('')}</w:tc>`;}).join('')}</w:tr>`).join('');
+  return `${t.before?docxP(P('',{sz:t.before}),base):''}<w:tbl><w:tblPr><w:tblW w:w="${TW(t.cols.reduce((a,b)=>a+b,0))}" w:type="dxa"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders><w:tblCellMar><w:left w:w="60" w:type="dxa"/><w:right w:w="60" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${grid}</w:tblGrid>${rows}</w:tbl>`;}
+function buildDocx(model,base){
+  const pg=model.page,orient=pg.w>pg.h?' w:orient="landscape"':'';const W=pg.h<200?297/2:pg.h;
+  const body=model.blocks.map(b=>b.k==='t'?docxT(b,base):docxP(b,base)).join('');
+  const sect=`<w:sectPr><w:pgSz w:w="${TW(pg.w)}" w:h="${TW(pg.h)}"/><w:pgMar w:top="${TW(pg.m)}" w:right="${TW(pg.m)}" w:bottom="${TW(pg.m)}" w:left="${TW(pg.m)}" w:header="0" w:footer="0" w:gutter="0"/></w:sectPr>`;
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}${sect}</w:body></w:document>`;
+  return zipStore([
+    {name:'[Content_Types].xml',data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'},
+    {name:'_rels/.rels',data:'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'},
+    {name:'word/document.xml',data:docXml}]);
+}
+
+/* --- ODT --- */
+function buildOdt(model,base){
+  const st=new Map();let n=0;const sty=(fam,key,xml)=>{const k=fam+'|'+key;if(!st.has(k))st.set(k,{name:fam[0].toUpperCase()+(++n),xml});return st.get(k).name;};
+  const tProps=r=>{const sz=r.sz||base;return `<style:text-properties style:font-name="Times New Roman" fo:font-size="${sz}pt" style:font-size-complex="${sz}pt"${r.b?' fo:font-weight="bold" style:font-weight-complex="bold"':''}${r.i?' fo:font-style="italic"':''}${r.u?' style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"':''}${r.color?` fo:color="#${r.color}"`:''}/>`;};
+  const pStyle=(p)=>{const al={c:'center',r:'end',j:'justify'}[p.al]||'start';
+    const bd=p.rule?' fo:border-bottom="0.5pt solid #1F4E79" fo:padding-bottom="0.6mm"':p.box?' fo:border="0.6pt solid #B3261E" fo:padding="1mm"':'';
+    const key=[al,p.before||0,p.after??2,p.rule?1:0,p.box?1:0,p.sz||base].join(',');
+    return sty('paragraph',key,n2=>`<style:style style:name="${n2}" style:family="paragraph"><style:paragraph-properties fo:text-align="${al}" fo:margin-top="${p.before||0}pt" fo:margin-bottom="${p.after??2}pt" fo:line-height="105%"${bd}/>${tProps({sz:p.sz||base})}</style:style>`);};
+  const tStyle=r=>sty('text',[r.b,r.i,r.u,r.color,r.sz].join(','),n2=>`<style:style style:name="${n2}" style:family="text">${tProps(r)}</style:style>`);
+  const para=p=>`<text:p text:style-name="${pStyle(p)}">${p.runs.filter(r=>r.t!=='').map(r=>`<text:span text:style-name="${tStyle(r)}">${xe(r.t).replace(/ {2,}/g,m=>' <text:s text:c="'+(m.length-1)+'"/>')}</text:span>`).join('')}</text:p>`;
+  let tn=0;
+  const table=t=>{const nm='Tbl'+(++tn);const total=t.cols.reduce((a,b)=>a+b,0);
+    const ts=sty('table',nm,n2=>`<style:style style:name="${n2}" style:family="table"><style:table-properties style:width="${total}mm" table:align="left"${t.before?` fo:margin-top="${t.before}pt"`:''}/></style:style>`);
+    const cols=t.cols.map((c,i)=>`<table:table-column table:style-name="${sty('table-column',nm+'.'+i,n2=>`<style:style style:name="${n2}" style:family="table-column"><style:table-column-properties style:column-width="${c}mm"/></style:style>`)}"/>`).join('');
+    const rows=t.rows.map(row=>{const h=Math.max(0,...row.map(c=>c.h||0));const rs=h?` table:style-name="${sty('table-row',String(h),n2=>`<style:style style:name="${n2}" style:family="table-row"><style:table-row-properties style:min-row-height="${h}mm"/></style:style>`)}"`:'';
+      return `<table:table-row${rs}>${row.map(c=>{const cs=sty('table-cell',[c.box?1:0,t.shade?1:0,c.va||''].join(','),n2=>`<style:style style:name="${n2}" style:family="table-cell"><style:table-cell-properties fo:padding="0.8mm"${c.box?' fo:border="0.6pt solid #888888"':' fo:border="none"'}${t.shade?' fo:background-color="#EEF2F6"':''}${c.va==='c'?' style:vertical-align="middle"':''}/></style:style>`);
+        return `<table:table-cell table:style-name="${cs}" office:value-type="string">${(c.blocks.length?c.blocks:[P('')]).map(para).join('')}</table:table-cell>`;}).join('')}</table:table-row>`;}).join('');
+    return `<table:table table:name="${nm}" table:style-name="${ts}">${cols}${rows}</table:table>`;};
+  const body=model.blocks.map(b=>b.k==='t'?table(b):para(b)).join('');
+  const auto=[...st.values()].map(s=>typeof s.xml==='function'?s.xml(s.name):s.xml).join('');
+  const NS='xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0" office:version="1.2"';
+  const fonts='<office:font-face-decls><style:font-face style:name="Times New Roman" svg:font-family="\'Times New Roman\'" style:font-family-generic="roman"/></office:font-face-decls>';
+  const content=`<?xml version="1.0" encoding="UTF-8"?><office:document-content ${NS}>${fonts}<office:automatic-styles>${auto}</office:automatic-styles><office:body><office:text>${body}</office:text></office:body></office:document-content>`;
+  const pg=model.page;
+  const styles=`<?xml version="1.0" encoding="UTF-8"?><office:document-styles ${NS}>${fonts}<office:automatic-styles><style:page-layout style:name="pm1"><style:page-layout-properties fo:page-width="${pg.w}mm" fo:page-height="${pg.h}mm" style:print-orientation="${pg.w>pg.h?'landscape':'portrait'}" fo:margin-top="${pg.m}mm" fo:margin-bottom="${pg.m}mm" fo:margin-left="${pg.m}mm" fo:margin-right="${pg.m}mm"/></style:page-layout></office:automatic-styles><office:master-styles><style:master-page style:name="Standard" style:page-layout-name="pm1"/></office:master-styles></office:document-styles>`;
+  const manifest='<?xml version="1.0" encoding="UTF-8"?><manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2"><manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/><manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/><manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/></manifest:manifest>';
+  return zipStore([{name:'mimetype',data:'application/vnd.oasis.opendocument.text'},{name:'META-INF/manifest.xml',data:manifest},{name:'content.xml',data:content},{name:'styles.xml',data:styles}]);
+}
+/* sty() приймає або рядок, або функцію від імені стилю */
+function exportModel(){const it=classify(currentItem());const doc=it.doc||docData();return {model:docModel(doc,it.blank||curBlank(),it.kind==='half'),half:it.kind==='half'};}
+function saveDocx(){const {model}=exportModel();if(!downloadBlob(fileBase()+'.docx',buildDocx(model,12)))toast('Не вдалося зберегти файл');else toast('Збережено для Word (.docx)');}
+function saveOdt(){const {model}=exportModel();if(!downloadBlob(fileBase()+'.odt',buildOdt(model,12)))toast('Не вдалося зберегти файл');else toast('Збережено для LibreOffice (.odt)');}
+
 /* --- 090-folder.js --- */
 /* ===== Папка даних на комп'ютері (Chrome / Edge) ===== */
 const FOLDER_SUPPORTED=typeof window.showDirectoryPicker==='function';
@@ -2635,6 +2805,8 @@ function openHelp(){
 <li>Текст протоколу правиться прямо в ньому. Alt+клік по реченню — відкрити його зону.</li>
 <li>Кілька досліджень одному пацієнту (напр. ОГК і коліно) — після «Готово» натисніть «+ Ще дослідження цьому пацієнту»: окремий протокол зі своїм № і ЕЕД, дані пацієнта лишаються.</li>
 <li>«Терміново» біля висновку — для критичних знахідок; в архіві такі протоколи підсвічені, доки не натиснете «Повідомлено».</li>
+<li><b>Ширина протоколу</b>: потягніть ручку між кнопками й протоколом; подвійний клік по ній — як було.</li>
+<li><b>Зберегти як</b> → Word або LibreOffice — бланк, який можна правити й друкувати з Word.</li>
 <li><b>Подвійне клацання</b> по реченню протоколу міняє бік: справа ↔ зліва (у зоні, у висновку, у назві дослідження кістки).</li>
 <li><b>Скорочення</b>: <code>.кт</code> + пробіл → «КТ ОГК для уточнення характеру змін». Свої — у «Налаштуваннях» → «Скорочення». <code>__</code> — пропуск, <b>Tab</b> — до наступного.</li>
 <li>Програма попереджає, якщо в описі справа, а у висновку зліва; якщо у висновку патологія, а її зона в нормі; якщо лишилися пропуски «__».</li>

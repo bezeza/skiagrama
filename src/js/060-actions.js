@@ -11,7 +11,11 @@ $('pRef').addEventListener('input',e=>{const f=fmtRef(e.target.value);if(f!==e.t
 $('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName').value);const hit=byName(name).slice().sort((a,b)=>b.ts-a.ts)[0];
   if(hit&&!$('pAge').value)$('pAge').value=hit.age||'';if(hit&&!$('pSex').value)$('pSex').value=hit.sex||'';
   S.prevId=findPrev();renderPrev();renderSide();});
-['pAge','pSex','pDept','pRefDoc','pNum','pDate','pCount','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
+$('pCount').addEventListener('input',()=>{S.countManual=true;syncCount();saveDraftSoon();});
+$('cntAuto').onclick=()=>{tick();S.countManual=false;syncCount();};
+$('samePtTop').onclick=()=>{if(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length){if(!editingId&&!confirm('Поточний протокол ще не збережено («Готово»). Почати нове дослідження цьому пацієнту?'))return;}sameStudyPatient();};
+$('pName').addEventListener('input',()=>{$('samePtTop').hidden=!$('pName').value.trim();});
+['pAge','pSex','pDept','pRefDoc','pNum','pDate','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
 ['conclFree','recFree'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();renderNav();}));
 /* вік із дати народження: «12.03.1954», «12031954» або рік «1954» */
 function ageFromBirth(v,ref){
@@ -94,23 +98,8 @@ window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);wi
 /* Word і LibreOffice */
 function groupsOf(units){const groups=[];units.forEach(u=>{const g=groups[groups.length-1];if(g&&g.p===u.p)g.t.push(u.t);else groups.push({p:u.p,c:u.c,t:[u.t]});});return groups;}
 const fileBase=()=>`Rö_${($('pName').value.trim()||'протокол').replace(/[^\p{L}\p{N}]+/gu,'_')}_${$('pDate').value||today()}`;
-$('wordBtn').onclick=()=>{
-  const body=groupsOf(currentUnits()).map(g=>`<p${g.c==='pt'||g.c==='concl'?' style="font-weight:bold"':''}>${esc(g.t.join(' '))}</p>`).join('');
-  const html=`<html><head><meta charset="utf-8"><style>body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.45}p{margin:0 0 4pt}</style></head><body><div style="height:2.2cm"></div>${body}</body></html>`;
-  if(!download(fileBase()+'.doc','﻿'+html,'application/msword'))toast('Не вдалося зберегти файл');
-};
-$('odtBtn').onclick=()=>{
-  const ps=groupsOf(currentUnits()).map(g=>`<text:p text:style-name="${g.c==='pt'||g.c==='concl'?'B':'N'}">${esc(g.t.join(' '))}</text:p>`).join('');
-  const xml=`<?xml version="1.0" encoding="UTF-8"?>
-<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" office:version="1.2" office:mimetype="application/vnd.oasis.opendocument.text">
-<office:automatic-styles>
-<style:style style:name="N" style:family="paragraph"><style:paragraph-properties fo:margin-bottom="0.12cm"/><style:text-properties style:font-name="Times New Roman" fo:font-family="'Times New Roman'" fo:font-size="12pt"/></style:style>
-<style:style style:name="B" style:family="paragraph" style:parent-style-name="N"><style:paragraph-properties fo:margin-bottom="0.12cm"/><style:text-properties fo:font-family="'Times New Roman'" fo:font-size="12pt" fo:font-weight="bold"/></style:style>
-<style:style style:name="S" style:family="paragraph"><style:paragraph-properties fo:margin-top="2.2cm"/></style:style>
-</office:automatic-styles>
-<office:body><office:text><text:p text:style-name="S"/>${ps}</office:text></office:body></office:document>`;
-  if(!download(fileBase()+'.fodt',xml,'application/vnd.oasis.opendocument.text-flat-xml'))toast('Не вдалося зберегти файл');
-};
+$('wordBtn').onclick=()=>saveDocx();
+$('odtBtn').onclick=()=>saveOdt();
 
 /* Готово → архів */
 function done(){const w=checks();if(w.length){renderChecks(true);openSheet();$('checkBox').scrollIntoView({block:'nearest'});return;}doSave();}
@@ -134,7 +123,7 @@ function doSave(){
     name:$('pName').value.trim(),age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),
     study:S.study,what:headerLine().replace(/^На\s*/,'').replace(/ від .*$/,''),eed:$('pEed').value.trim(),
     concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,doc:docData(),blank:curBlank(),
-    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
+    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),count:Math.max(1,+$('pCount').value||1),notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
   saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
@@ -161,6 +150,17 @@ document.addEventListener('keydown',e=>{
     const z=S.zones[d.id];if(z.st==='c'&&S.open===d.id){z.st='n';S.open=null;}else{z.st='c';S.open=d.id;}S.focus=d.id;renderAll();const n=$('zone-'+d.id);if(n){n.scrollIntoView({block:'nearest'});const f=z.st==='c'?n.querySelector('.group button.chip, .group input'):null;if(f)f.focus({preventScroll:true});}}
 });
 
+/* ширина панелі протоколу: тягнемо «ручку» між формою і протоколом */
+function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;if(SET.sideW&&window.innerWidth>760){w.style.setProperty('--sidew',SET.sideW+'px');w.classList.add('customw');}else{w.classList.remove('customw');w.style.removeProperty('--sidew');}}
+(()=>{const g=$('sideGrip');let drag=null;
+  const lim=x=>{const w=document.querySelector('main.wrap').getBoundingClientRect();return Math.round(Math.max(320,Math.min(w.width-420,x)));};
+  g.addEventListener('pointerdown',e=>{if(window.innerWidth<=760)return;e.preventDefault();g.setPointerCapture(e.pointerId);drag={x:e.clientX,w:$('side').getBoundingClientRect().width};document.body.classList.add('resizing');});
+  g.addEventListener('pointermove',e=>{if(!drag)return;SET.sideW=lim(drag.w+(drag.x-e.clientX));applySideW();});
+  const end=()=>{if(!drag)return;drag=null;document.body.classList.remove('resizing');saveSet();if(paperView)renderSide();};
+  g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
+  g.addEventListener('dblclick',()=>{delete SET.sideW;saveSet();applySideW();if(paperView)renderSide();toast('Ширина протоколу — як було');});
+  g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width)+(e.key==='ArrowLeft'?40:-40));applySideW();saveSet();});
+  window.addEventListener('resize',applySideW);applySideW();})();
 /* перегляди */
 function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}

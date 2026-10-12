@@ -40,11 +40,11 @@
     </div>
     <datalist id="nameList"></datalist>
     <div class="msg ageMsg" id="ageMsg" hidden></div>
+    <button class="btn sm samept" id="samePtTop" type="button" hidden title="Новий протокол тому самому пацієнту: ПІБ, вік, дата лишаються; свій № і ЕЕД">+ Ще дослідження цьому пацієнту</button>
     <details class="more">
       <summary>Додатково: стать, відділення, е-направлення</summary>
       <div class="fields">
         <label class="f">Стать<select id="pSex"><option value="">—</option><option value="ч">ч</option><option value="ж">ж</option></select></label>
-        <label class="f">Кількість знімків<input id="pCount" type="number" min="1" max="20" value="1"></label>
         <label class="f wide">Відділення<input id="pDept" type="text" list="deptList" autocomplete="off"></label>
         <label class="f wide">№ е-направлення<input id="pRef" type="text" autocomplete="off" placeholder="0000-0000-0000-0000"><span class="msg" id="refMsg"></span></label>
         <label class="f wide">Лікар, що направив<input id="pRefDoc" type="text" autocomplete="off"></label>
@@ -57,6 +57,7 @@
     <div class="studytabs" id="studyTabs" role="tablist" aria-label="Вид дослідження"></div>
     <div class="fields" id="studyExtra"></div>
     <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
+    <div class="cntrow"><label class="cntl" title="Рахується сам: кількість вибраних проєкцій (обидва суглоби — удвічі). Можна змінити вручну.">Знімків<input id="pCount" type="number" min="1" max="40" value="1"></label><span class="note" id="cntNote">рахується за проєкціями</span><button class="btn sm" id="cntAuto" type="button" hidden>рахувати автоматично</button></div>
     <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
     <div class="prev" id="prevBox" hidden></div>
   </div>
@@ -102,6 +103,7 @@
 </section>
 
 <aside class="side" id="side" aria-label="Протокол">
+  <div class="sgrip" id="sideGrip" role="separator" aria-orientation="vertical" aria-label="Ширина панелі протоколу" tabindex="0" title="Потягніть, щоб зробити протокол ширшим або вужчим. Подвійний клік — як було."></div>
   <div class="sh noprint">
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
     <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
@@ -115,7 +117,7 @@
     </div>
     <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
     <details class="menu"><summary class="btn" title="Зберегти протокол у файл: PDF, Word, LibreOffice" aria-label="Зберегти як"><i data-i="save"></i><span class="lbl">Зберегти як</span>&nbsp;▾</summary>
-      <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.doc)</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.fodt)</button></div></details>
+      <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.docx) — бланк, можна правити</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.odt) — бланк, можна правити</button></div></details>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
   <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>

@@ -56,7 +56,7 @@ function renderDaySum(){
   const by={};todays.forEach(r=>{by[r.study]=(by[r.study]||0)+1;});
   const row=el('div',{class:'daynums'});
   const tile=(n,t,cls)=>{const d=el('div',{class:'dt'+(cls?' '+cls:'')});d.append(el('b',null,String(n)),el('span',null,t));row.append(d);};
-  tile(todays.length,'протоколів сьогодні');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
+  tile(todays.length,'протоколів сьогодні');const imgs=todays.reduce((a,r)=>a+(+r.count||1),0);if(imgs!==todays.length)tile(imgs,'знімків');tile(unpr.length,'не надруковано',unpr.length?'w':'o');
   const ctl=todays.filter(r=>r.ctrlDue).length;if(ctl)tile(ctl,'на контроль');
   const urg=todays.filter(r=>r.urgent&&!r.notified).length;if(urg)tile(urg,'термінових не повідомлено','b');
   const pat=todays.filter(r=>r.status==='p').length,dd=todays.filter(r=>r.status==='d').length;
@@ -106,6 +106,6 @@ $('demoA').onclick=()=>{
 /* вивантаження в Excel (CSV з «;» — так відкриває український Excel) */
 $('aCsv').onclick=()=>{const rows=aFiltered().filter(r=>!r.example);if(!rows.length){toast('За цими фільтрами протоколів немає');return;}
   const q=v=>{v=String(v==null?'':v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Висновок','Результат','Терміново','Надруковано','Контроль до'];
-  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.concl,STATUS[r.status]||'',r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
+  const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Знімків','Висновок','Результат','Терміново','Надруковано','Контроль до'];
+  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.count||'',r.concl,STATUS[r.status]||'',r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
   const f=$('aFrom').value,t=$('aTo').value;const ok=download(`Skiagrama_архів_${f||'усі'}${t?'_'+t:''}.csv`,'\ufeff'+lines.join('\r\n'),'text/csv');toast(ok?`Вивантажено ${rows.length} протоколів`:'Не вдалося зберегти файл');};

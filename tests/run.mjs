@@ -404,6 +404,35 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
 }
+/* ---------- Word / LibreOffice, ширина протоколу, лічильник знімків ---------- */
+{
+  console.log('\nWord/LibreOffice, ширина протоколу, знімки');
+  const ctx=await b.newContext({viewport:{width:1366,height:768},acceptDownloads:true});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.click('text=Пропустити — заповню пізніше');
+  await p.fill('#pName','Пацієнт Експорт');await p.fill('#pAge','50');await p.click('#allNorm');
+  for(const bl of ['A','B','C','D'])for(const [btn,ext,needle] of [['#wordBtn','docx','word/document.xml'],['#odtBtn','odt','application/vnd.oasis.opendocument.text']]){
+    await p.evaluate(bl=>{window.__skg.S.blank=bl;window.__skg.renderAll();},bl);
+    await p.click('.actbar>details.menu>summary');const [d]=await Promise.all([p.waitForEvent('download'),p.click(btn)]);
+    const buf=require('fs').readFileSync(await d.path());const txt=buf.toString('utf8');
+    ok(buf.slice(0,2).toString()==='PK'&&txt.includes(needle)&&txt.includes('Пацієнт Експорт')&&(bl!=='C'||txt.includes('місце для штампу')),`бланк ${bl} → .${ext}: справжній файл з бланком`);}
+  // лічильник знімків
+  await p.evaluate(()=>window.__skg.study('bone'));await p.click('#projChips >> text=пряма');await p.click('#projChips >> text=бічна');
+  ok((await p.inputValue('#pCount'))==='2','знімків = кількість проєкцій');
+  await p.evaluate(()=>{const s=[...document.querySelectorAll('#studyExtra select')].find(x=>[...x.options].some(o=>o.value==='о'));s.value='о';s.dispatchEvent(new Event('change'));});
+  ok((await p.inputValue('#pCount'))==='4','обидва суглоби — удвічі');
+  await p.fill('#pCount','3');await p.click('#projChips >> text=коса');ok((await p.inputValue('#pCount'))==='3','ручне число не перезаписується');
+  await p.click('#cntAuto');ok((await p.inputValue('#pCount'))==='6','«рахувати автоматично» повертає авторахунок');
+  // кнопка «Ще дослідження» видна одразу
+  ok(await p.isVisible('#samePtTop'),'«+ Ще дослідження цьому пацієнту» видно в рядку пацієнта');
+  // ширина протоколу
+  const g=await p.locator('#sideGrip').boundingBox();const w0=(await p.locator('#side').boundingBox()).width;
+  await p.mouse.move(g.x+5,g.y+g.height/2);await p.mouse.down();await p.mouse.move(g.x-200,g.y+g.height/2,{steps:6});await p.mouse.up();
+  const w1=(await p.locator('#side').boundingBox()).width;ok(w1>w0+150,`протокол ширшає, якщо потягнути ручку (${Math.round(w0)} → ${Math.round(w1)} px)`);
+  const p2=await ctx.newPage();await p2.goto(FILE);await p2.waitForTimeout(400);ok(Math.abs((await p2.locator('#side').boundingBox()).width-w1)<3,'ширина запамʼятовується');
+  await p2.dblclick('#sideGrip');ok(Math.abs((await p2.locator('#side').boundingBox()).width-w0)<3,'подвійний клік — як було');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);
 process.exit(fail?1:0);
