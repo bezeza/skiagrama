@@ -31,6 +31,7 @@ function copyText(text,label){
 function download(name,content,type){
   try{const b=new Blob([content],{type});const a=el('a',{href:URL.createObjectURL(b),download:name});document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);return true;}catch(e){return false;}
 }
+const zf=()=>parseFloat(document.documentElement.style.getPropertyValue('--z'))||1;
 const typing=e=>{const t=e.target;return t&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable);};
 
 

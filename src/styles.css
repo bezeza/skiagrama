@@ -513,3 +513,109 @@ body.resizing{cursor:col-resize;user-select:none}
 .split.np>.btn{border-radius:10px 0 0 10px}
 .split.np summary.btn{border-radius:0 10px 10px 0;border-left:0;padding:7px 10px}
 .split.np .mpop button{display:block;width:100%}
+
+/* ===== 0.5: вигляд — масштаб, розташування А–Г, дві частини панелі, згортання, форматування ===== */
+@media (min-width:761px){
+  header.top,.banners,main.wrap,section.view,#mbar,.modal>.box{zoom:var(--z,1)}
+  .side{height:calc(var(--vh100,100vh) - 20px)}
+}
+@media print{header.top,.banners,main.wrap,section.view,.modal>.box{zoom:1 !important}}
+/* шапка в «ноутбуці» чи на вузькому ефективному екрані */
+:root.w-lt1280 header.top .brand small .hide-m{display:none}
+:root.w-lt1280 header.top .btn.search>span{font-size:0;gap:0}
+:root.w-lt1280 header.top .btn.search kbd{display:none}
+:root.w-lt1280 header.top .btn.search{padding-inline:12px;min-width:0}
+:root.w-lt1180 header.top .brand small{display:none}
+:root.w-lt1180 .wrap{gap:12px;padding-inline:12px}
+:root.scr-laptop header.top{padding-top:8px;padding-bottom:2px}
+:root.scr-laptop .card{padding:12px 14px;gap:10px}
+:root.scr-laptop .form{gap:10px}
+:root.scr-laptop .side{padding:10px 12px;gap:8px}
+:root.scr-monitor .wrap,:root.scr-monitor header.top,:root.scr-monitor .banners{max-width:1760px}
+
+/* права панель: протокол | висновок */
+.sbody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:0}
+.spart{min-height:0;display:flex;flex-direction:column}
+#partDoc{flex:1 1 auto}
+#partDoc>.pscroll{flex:1 1 auto}
+#partConcl{display:none;position:relative}
+.hgrip{display:none}
+main.lay-b .side #partDoc{flex:0 0 calc(var(--split,55%) - 6px)}
+main.lay-b .side #partConcl{display:flex;flex:1 1 0;overflow:auto;gap:10px;padding:2px 2px 4px;margin:0 -4px;padding-inline:4px;overscroll-behavior:contain}
+main.lay-b .side .hgrip{display:block;flex:0 0 12px;cursor:row-resize;position:relative;touch-action:none}
+.hgrip::after{content:'';position:absolute;left:50%;top:4px;width:56px;height:4px;margin-left:-28px;border-radius:3px;background:var(--line);transition:background .15s}
+.hgrip:hover::after,.hgrip:focus-visible::after,body.resizingv .hgrip::after{background:var(--blue)}
+body.resizingv{cursor:row-resize;user-select:none}
+#partConcl>.card{flex:none;border-radius:12px;scroll-margin-top:4px}
+#partConcl>details.check{flex:none}
+/* згорнуто: протокол — рядок, висновок займає все; і навпаки */
+main.lay-b .sbody.dfold #partDoc{flex:0 0 auto}
+main.lay-b .sbody.dfold .hgrip{display:none}
+main.lay-b .sbody.cfold #partDoc{flex:1 1 auto}
+main.lay-b .sbody.cfold #partConcl{flex:0 0 auto;overflow:visible}
+main.lay-b .sbody.cfold .hgrip{display:none}
+main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
+/* В — дзеркальне: протокол ліворуч */
+@media (min-width:761px){
+  main.mirror{grid-template-columns:minmax(330px,.88fr) minmax(0,1.12fr)}
+  main.mirror.customw{grid-template-columns:var(--sidew) minmax(380px,1fr)}
+  main.mirror>.form{order:2}
+  main.mirror>.side{order:1}
+  main.mirror .sgrip{left:auto;right:-13px}
+  /* Г — один стовпчик: форма, під нею протокол і висновок поруч */
+  main.onecol{grid-template-columns:minmax(0,1fr) !important;max-width:1100px}
+  main.onecol .sgrip{display:none}
+  main.onecol .side{position:relative;top:auto;height:auto}
+  main.onecol .sbody{flex-direction:row;gap:14px;align-items:flex-start}
+  main.onecol #partDoc,main.onecol #partConcl{flex:1 1 0 !important;min-width:0}
+  main.onecol #partConcl{overflow:visible}
+  main.onecol .pscroll{overflow:visible}
+  main.onecol .hgrip{display:none !important}
+}
+@media (min-width:761px) and (max-width:1023px){main.onecol .sbody{flex-direction:column}}
+
+/* згортання блоків */
+.foldh{display:none;align-items:center;gap:8px;min-width:0;cursor:pointer;margin:-2px 0}
+.folded>.foldh{display:flex}
+.folded>:not(.foldh):not(.secrow){display:none !important}
+.folded{gap:8px}
+.foldh .ft{font-family:var(--display);font-weight:500;font-size:16px;flex:none}
+.foldh .fsum{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:13.5px}
+.foldh .fdot{flex:none}
+.fbtn{border:0;background:none;width:28px;height:28px;min-height:28px;padding:0;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);flex:none}
+.fbtn:hover{background:var(--blue-soft);color:var(--blue)}
+.card h2>.fbtn,h2>.fclose{margin-left:-6px;margin-right:-2px}
+.fmtbar .pfs{margin-left:auto;min-height:30px;height:30px;padding:2px 9px;font-family:var(--body);font-size:13px}
+@container (max-width:640px){.viewbar label.bsel{font-size:0;gap:0}}
+.morerow>.fclose{margin:4px 0 0 -6px}
+.cntrow>.fclose{margin-left:auto}
+#partDoc.folded{flex:0 0 auto}
+#partDoc>.foldh{padding:8px 10px;border:1px dashed var(--line);border-radius:10px}
+.side.dfold .shh .fclose{transform:rotate(-90deg)}
+.foldall{min-height:30px;padding:3px 10px;font-size:12.5px;color:var(--muted);border-color:transparent;background:none;flex:none}
+.foldall:hover{color:var(--blue)}
+@media (max-width:760px){.foldall,.secrow{display:none !important}.morerow{flex-wrap:wrap}.morerow>details{flex:1 1 calc(100% - 40px)}}
+
+/* перемикач «Текст | Перегляд перед друком» */
+.vseg button{min-height:36px;padding:5px 11px;font-size:13px;font-weight:500}
+.viewbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+@container (max-width:520px){.vseg #paperBtn{font-size:0}.vseg #paperBtn::after{content:'Перед друком';font-size:13px}}
+
+/* панель форматування */
+.fmtbar{display:flex;align-items:center;gap:2px;flex-wrap:wrap;padding:3px 4px;margin-bottom:6px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.fmtbar button{border:0;background:none;min-width:32px;height:32px;min-height:32px;padding:0 6px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-family:var(--doc);font-size:15px;color:var(--ink)}
+.fmtbar button:hover{background:var(--blue-soft)}
+.fmtbar button[aria-pressed="true"]{background:var(--blue-soft);color:var(--blue)}
+.fmtbar .sep{width:1px;height:20px;background:var(--line);margin:0 4px}
+#ptext b{font-weight:700}
+
+/* меню «Вигляд» */
+.vpop{min-width:330px;padding:10px 12px;gap:10px}
+.vpop .vrow{display:flex;flex-direction:column;gap:5px}
+.vpop .vl{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.vpop .seg{display:flex;flex-wrap:wrap}
+.vpop .seg button{flex:1 1 auto;min-height:34px;text-align:center;padding:5px 9px;font-size:13px;border-radius:0}
+.vpop .seg button+button{border-left:1px solid var(--line)}
+.vpop .seg button.pic{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;font-size:11.5px;line-height:1.15;flex:1 1 0}
+.vpop .seg button[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
+.vpop .note{padding:0;font-size:12px}

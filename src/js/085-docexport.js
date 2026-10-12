@@ -30,7 +30,12 @@ const P=(runs,opt)=>({k:'p',runs:(Array.isArray(runs)?runs:[runs]).map(r=>typeof
 const T=(cols,rows,opt)=>({k:'t',cols,rows,...(opt||{})});
 const C=(blocks,o)=>Object.assign({blocks:Array.isArray(blocks)?blocks:[blocks]},o||{});
 const BLUE='1F4E79',GREY='555555';
-function manualLines(doc,keepHead){let lines=String(doc.manual||'').split('\n').map(s=>s.trim()).filter(Boolean);
+function manualLines(doc,keepHead){
+  if(doc.manualHtml){let bl=htmlBlocks(doc.manualHtml);
+    if(!keepHead){if(bl[0]&&bl[0].text===String(doc.head).trim())bl.shift();if(bl[0]&&/^На\s/.test(bl[0].text))bl.shift();}
+    return bl.map((b,i)=>{const strong=(keepHead&&i===0)||/^Rö-ч:/.test(b.text)||/^Висновок/.test(b.text);
+      return P(htmlRuns(b.html).map(r=>R(r.t,{b:r.b||strong,i:!!r.i,u:!!r.u})),{al:{center:'c',right:'r',left:'l'}[b.al]||'j'});});}
+  let lines=String(doc.manual||'').split('\n').map(s=>s.trim()).filter(Boolean);
   if(!keepHead){if(lines[0]===String(doc.head).trim())lines.shift();if(lines[0]&&/^На\s/.test(lines[0]))lines.shift();}
   return lines.map(l=>P(/^Rö-ч:/.test(l)||/^Висновок/.test(l)?[R(l,{b:true})]:[R(l)],{al:'j'}));}
 function docModel(doc,blank,half){

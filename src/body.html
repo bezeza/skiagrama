@@ -14,7 +14,7 @@
     <button class="btn primary" id="installBtn" type="button" hidden>Встановити</button>
     <button class="btn search" id="navSearch" type="button" title="Пошук зони, висновку, дії (Ctrl+K)"><span><i data-i="search"></i>Пошук…</span><kbd>Ctrl K</kbd></button>
     <div class="split np"><button class="btn" id="newPatient" type="button"><i data-i="userplus"></i>Новий<span class="hide-m"> пацієнт</span></button><details class="menu"><summary class="btn" title="Ще дослідження цьому пацієнту" aria-label="Інші дії з пацієнтом">▾</summary><div class="mpop right"><button id="samePtMenu" type="button"><b>Ще дослідження цьому пацієнту</b><span class="note" style="display:block;padding:0">ПІБ, вік, дата лишаються; новий № і ЕЕД</span></button><button id="newPtMenu" type="button">Новий пацієнт</button></div></details></div>
-    <button class="btn icon" id="themeBtn" type="button" title="Тема" aria-label="Тема"></button>
+    <details class="menu" id="viewMenu"><summary class="btn icon" id="themeBtn" title="Вигляд: тема, екран, розташування, масштаб" aria-label="Вигляд"></summary><div class="mpop right vpop" id="viewPop"></div></details>
     <button class="btn icon" id="navSettings" type="button" title="Налаштування" aria-label="Налаштування"><i data-i="gear"></i></button>
     <button class="btn icon" id="navFeedback" type="button" title="Помилка чи ідея — повідомити розробнику" aria-label="Помилка чи ідея"><i data-i="chat"></i></button>
     <button class="btn icon" id="navHelp" type="button" title="Довідка" aria-label="Довідка"><i data-i="help"></i></button>
@@ -53,7 +53,7 @@
     <button class="btn sm samept" id="samePtTop" type="button" title="Новий протокол тому самому пацієнту: ПІБ, вік, дата лишаються; свій № і ЕЕД">+ Ще дослідження цьому пацієнту</button>
     </div>
     <datalist id="deptList"></datalist>
-    <nav class="secnav secrow" id="secNav" aria-label="Розділи протоколу"></nav>
+    <div class="secrow"><nav class="secnav" id="secNav" aria-label="Розділи протоколу"></nav><button class="btn sm ghost foldall" id="foldAll" type="button" title="Згорнути чи розгорнути блоки ліворуч">Згорнути все</button></div>
   </div>
 
   <div class="card" id="sec-study">
@@ -107,6 +107,7 @@
 
 <aside class="side" id="side" aria-label="Протокол">
   <div class="sgrip" id="sideGrip" role="separator" aria-orientation="vertical" aria-label="Ширина панелі протоколу" tabindex="0" title="Потягніть, щоб зробити протокол ширшим або вужчим. Подвійний клік — як було."></div>
+  <div class="shead">
   <div class="sh noprint">
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
     <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
@@ -118,18 +119,27 @@
       <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
         <div class="mpop"><span class="note">Для h24 частинами:</span><button id="copyDesc" type="button">Опис</button><button id="copyConcl" type="button">Висновок</button><button id="copyRec" type="button">Рекомендації</button></div></details>
     </div>
-    <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
-    <details class="menu"><summary class="btn" title="Зберегти протокол у файл: PDF, Word, LibreOffice" aria-label="Зберегти як"><i data-i="save"></i><span class="lbl">Зберегти як</span>&nbsp;▾</summary>
+        <details class="menu"><summary class="btn" title="Зберегти протокол у файл: PDF, Word, LibreOffice" aria-label="Зберегти як"><i data-i="save"></i><span class="lbl">Зберегти як</span>&nbsp;▾</summary>
       <div class="mpop right"><button id="pdfBtn" type="button"><b>PDF</b> — як на папері, у вибраному бланку</button><button id="wordBtn" type="button"><b>Word</b> (.docx) — бланк, можна правити</button><button id="odtBtn" type="button"><b>LibreOffice</b> (.odt) — бланк, можна правити</button></div></details>
   </div>
-  <div class="advice noprint" id="blankAdvice" hidden></div>
-  <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
   <div class="viewbar noprint">
     <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
-    <button class="vbtn" id="paperBtn" type="button" aria-pressed="false" data-ic="sheet" title="Показати, як протокол ляже на папір у вибраному бланку">Як на папері</button>
+    <span class="seg vseg" role="group" aria-label="Вигляд протоколу"><button type="button" id="textBtn" aria-pressed="true" title="Текст протоколу — можна правити">Текст</button><button type="button" id="paperBtn" aria-pressed="false" title="Як протокол ляже на папір у вибраному бланку">Перегляд перед друком</button></span>
+    <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
     <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
   </div>
-  <div class="pscroll"><article class="paper" id="paper"></article></div>
+  <div class="advice noprint" id="blankAdvice" hidden></div>
+  <div id="checkHome"></div>
+  </div>
+  <div class="sbody" id="sbody">
+    <div class="spart" id="partDoc">
+      <div class="fmtbar noprint" id="fmtBar" role="toolbar" aria-label="Форматування тексту протоколу"></div>
+      <div class="pscroll"><article class="paper" id="paper"></article></div>
+    </div>
+    <div class="hgrip noprint" id="hGrip" role="separator" aria-orientation="horizontal" aria-label="Межа між протоколом і висновком" tabindex="0" title="Потягніть угору чи вниз. Подвійний клік — порівну."></div>
+    <div class="spart" id="partConcl"></div>
+  </div>
+  <details class="check noprint" id="checkBox"><summary id="checkSum">Перевірка перед підписом</summary><ul id="checkList"></ul><div id="checkAct"></div></details>
   <div class="meter noprint" id="meter"></div>
 </aside>
 </main>
@@ -190,7 +200,9 @@
       <label class="f wide">ПІБ лікаря (для підпису)<input id="sDoctor" type="text" placeholder="Прізвище І. Б."></label>
       <label class="f">Посада в підписі<input id="sDocTitle" type="text" placeholder="Лікар-рентгенолог"></label>
       <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="grey">кабінет — темно-сіра</option><option value="dark">темна</option></select></label>
-      <label class="f">Розмір шрифту<select id="sFont"><option value="s">менший</option><option value="m">звичайний</option><option value="l">більший</option><option value="xl">великий</option></select></label>
+      <label class="f">Масштаб програми<select id="sScale"><option value="90">90 %</option><option value="100">100 %</option><option value="110">110 %</option><option value="125">125 %</option><option value="150">150 %</option></select></label>
+      <label class="f">Екран<select id="sScreen"><option value="auto">визначати самому</option><option value="laptop">ноутбук — компактно</option><option value="monitor">монітор — просторо</option></select></label>
+      <label class="f">Розташування<select id="sLayout"><option value="A">А · Класичне</option><option value="B">Б · Робоче місце</option><option value="C">В · Дзеркальне</option><option value="D">Г · Один стовпчик</option></select></label>
       <label class="f wide">Відділення (через кому)<input id="sDepts" type="text"></label>
     </div>
   </div>

@@ -7,8 +7,8 @@ function unitsHTML(units){
   const out=[];let cur=null;
   units.forEach(u=>{const piece=u.h!=null?u.h:esc(u.t);
     if(cur&&!u.blk&&!cur.blk&&u.p!=null&&cur.p===u.p)cur.parts.push(piece);
-    else{cur={p:u.p,c:u.c,blk:u.blk,parts:[piece]};out.push(cur);}});
-  return out.map(g=>g.blk?g.parts.join(''):`<p${g.c?` class="${g.c}"`:''}>${g.parts.join(' ')}</p>`).join('');
+    else{cur={p:u.p,c:u.c,al:u.al,blk:u.blk,parts:[piece]};out.push(cur);}});
+  return out.map(g=>g.blk?g.parts.join(''):`<p${g.c?` class="${g.c}"`:''}${g.al?` style="text-align:${g.al}"`:''}>${g.parts.join(' ')}</p>`).join('');
 }
 const STAMP='<div class="pstamp"></div>';
 function measure(html,cls){const m=$('measure');m.className='pdoc '+(cls||'');m.innerHTML=html;return m.offsetHeight;}
@@ -18,6 +18,9 @@ const ORG=()=>Object.assign({name:'',sub:'',cab:'Рентгенологічни�
 const dLong=v=>{if(!v)return '__.__.____';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`;};
 const sexW=s=>s==='ч'?'чол.':s==='ж'?'жін.':'';
 function manualBody(doc,keepHead){
+  if(doc.manualHtml){let bl=htmlBlocks(doc.manualHtml);
+    if(!keepHead){if(bl[0]&&bl[0].text===String(doc.head).trim())bl.shift();if(bl[0]&&/^На\s/.test(bl[0].text))bl.shift();}
+    return bl.map((b,i)=>({h:b.html,p:'mh'+i,c:keepHead&&i===0?'pt':/^Rö-ч:/.test(b.text)?'concl':/^ЕЕД/.test(b.text)?'foot':'',al:['center','right','justify'].includes(b.al)?b.al:''}));}
   let lines=String(doc.manual||'').split('\n');
   if(!keepHead){if(lines[0]&&lines[0].trim()===String(doc.head).trim())lines.shift();if(lines[0]&&/^На\s/.test(lines[0].trim()))lines.shift();}
   return unitsFromText(lines.join('\n')).map(u=>Object.assign(u,{p:'m'+u.p,c:keepHead?u.c:(u.c==='pt'?'':u.c)}));

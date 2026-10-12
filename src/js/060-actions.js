@@ -48,7 +48,8 @@ $('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
 const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];
-function focusAfterPatient(){const pc=$('projChips');const c=!pc.hidden&&pc.querySelector('.chip');if(c){c.focus();c.scrollIntoView({block:'nearest'});return;}
+function focusAfterPatient(){if(!isPhone()&&screenNow()==='laptop'&&$('pName').value.trim()&&!isFolded('sec-patient')){setFold('sec-patient',true);toast('Дані пацієнта згорнуто в рядок — клік, щоб змінити');}
+  const pc=$('projChips');const c=!pc.hidden&&pc.querySelector('.chip');if(c){c.focus();c.scrollIntoView({block:'nearest'});return;}
   const z=document.querySelector('#zones .seg button');if(z){z.focus();z.scrollIntoView({block:'nearest'});}}
 ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
   if(e.key!=='Enter'||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||e.isComposing)return;e.preventDefault();
@@ -67,7 +68,7 @@ function newPatient(keep){
   S=blank(S.study);editingId=null;editZone=null;editList=null;
   ['pName','pAge','pRef','pRefDoc','conclFree','recFree','pDept'].forEach(i=>$(i).value='');$('pSex').value='';$('pCount').value='1';
   $('pDate').value=date;setEedDefault();if(keep&&eedKeep)$('pEed').value=eedKeep;$('pNum').value=nextNum();$('refMsg').textContent='';
-  clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;$('ageMsg').hidden=true;renderAll();
+  clicks=0;t0=null;tDone=null;store.del(DRAFT_KEY);firstPaint=true;$('ageMsg').hidden=true;if(isFolded('sec-patient'))setFold('sec-patient',false);renderAll();
   setTimeout(()=>{if(!$('view-desc').hidden&&window.innerWidth>760){$('pName').focus();}},0);
 }
 /* ще одне дослідження тому самому пацієнту (напр. ОГК + коліно): окремий протокол, № і ЕЕД, дані пацієнта лишаються */
@@ -90,11 +91,9 @@ $('copyAll').onclick=copyAll;
 $('copyDesc').onclick=()=>{if(S.manual!=null){copyText(S.manual,'Протокол');return;}const P=protocol();copyText([P.ref,P.body.map(x=>x.t).join(' ')].join('\n'),'Опис');};
 $('copyConcl').onclick=()=>{copyText(conclText().t.replace(/^Rö-ч:\s*/,''),'Висновок');};
 $('copyRec').onclick=()=>{const t=recText();if(!t){toast('Рекомендацій немає');return;}copyText(t.replace(/^Рекомендовано:\s*/,''),'Рекомендації');};
-$('paperBtn').onclick=()=>{paperView=!paperView;$('paperBtn').setAttribute('aria-pressed',String(paperView));renderSide();};
 $('pfsBtn').onclick=()=>{const o=['s','m','l','xl'];SET.pfs=o[(o.indexOf(SET.pfs)+1)%o.length];saveSet();applyLook();toast({s:'Текст протоколу: менший',m:'Текст протоколу: звичайний',l:'Текст протоколу: більший',xl:'Текст протоколу: великий'}[SET.pfs]);if(paperView)renderSide();};
-$('themeBtn').onclick=()=>{const order=['system','light','grey','dark'];SET.theme=order[(order.indexOf(SET.theme)+1)%order.length];saveSet();applyLook();toast(THEME_LABEL[SET.theme]);if(!$('view-settings').hidden)$('sTheme').value=SET.theme;};
 /* меню «▾» і «⋯»: закриваються після вибору або кліку поза ними */
-document.addEventListener('click',e=>{document.querySelectorAll('details.menu[open]').forEach(d=>{if(!d.contains(e.target)||e.target.closest('.mpop button'))d.open=false;});});
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-keep]'))return;document.querySelectorAll('details.menu[open]').forEach(d=>{if(!d.contains(e.target)||(e.target.closest('.mpop button')&&!e.target.closest('[data-keep]')))d.open=false;});});
 window.addEventListener('resize',()=>{if(paperView){clearTimeout(window.__rz);window.__rz=setTimeout(renderSide,200);}});
 
 /* Word і LibreOffice */
@@ -155,20 +154,20 @@ document.addEventListener('keydown',e=>{
 /* ширина панелі протоколу: тягнемо «ручку» між формою і протоколом */
 function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;if(SET.sideW&&window.innerWidth>760){w.style.setProperty('--sidew',SET.sideW+'px');w.classList.add('customw');}else{w.classList.remove('customw');w.style.removeProperty('--sidew');}}
 (()=>{const g=$('sideGrip');let drag=null;
-  const lim=x=>{const w=document.querySelector('main.wrap').getBoundingClientRect();return Math.round(Math.max(320,Math.min(w.width-420,x)));};
-  g.addEventListener('pointerdown',e=>{if(window.innerWidth<=760)return;e.preventDefault();g.setPointerCapture(e.pointerId);drag={x:e.clientX,w:$('side').getBoundingClientRect().width};document.body.classList.add('resizing');});
-  g.addEventListener('pointermove',e=>{if(!drag)return;SET.sideW=lim(drag.w+(drag.x-e.clientX));applySideW();});
+  const lim=x=>{const w=document.querySelector('main.wrap').getBoundingClientRect().width/zf();return Math.round(Math.max(320,Math.min(w-420,x)));};
+  g.addEventListener('pointerdown',e=>{if(window.innerWidth<=760)return;e.preventDefault();g.setPointerCapture(e.pointerId);drag={x:e.clientX,w:$('side').getBoundingClientRect().width/zf()};document.body.classList.add('resizing');});
+  g.addEventListener('pointermove',e=>{if(!drag)return;SET.sideW=lim(drag.w+(drag.x-e.clientX)/zf());applySideW();});
   const end=()=>{if(!drag)return;drag=null;document.body.classList.remove('resizing');saveSet();if(paperView)renderSide();};
   g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
   g.addEventListener('dblclick',()=>{delete SET.sideW;saveSet();applySideW();if(paperView)renderSide();toast('Ширина протоколу — як було');});
-  g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width)+(e.key==='ArrowLeft'?40:-40));applySideW();saveSet();});
+  g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width/zf())+(e.key==='ArrowLeft'?40:-40));applySideW();saveSet();});
   window.addEventListener('resize',applySideW);applySideW();})();
 /* липка панель пацієнта: її висота — відступ, щоб обраний розділ чи зона не ховались під нею */
-(()=>{const pb=$('sec-patient');const set=()=>{const h=window.innerWidth>760?Math.ceil(pb.getBoundingClientRect().height):0;document.documentElement.style.setProperty('--pbarh',h+'px');};
+(()=>{const pb=$('sec-patient');const set=()=>{const h=window.innerWidth>760?Math.ceil(pb.getBoundingClientRect().height/zf()):0;document.documentElement.style.setProperty('--pbarh',h+'px');};
   if(window.ResizeObserver)new ResizeObserver(set).observe(pb);window.addEventListener('resize',set);set();
   const ids=['sec-study','sec-zones','measPanel','sec-concl','sec-rec'];
-  const upd=()=>{const top=(parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pbarh'))||0)+40;let cur='sec-patient';
-    ids.forEach(id=>{const e=$(id);if(e&&!e.hidden&&e.offsetParent&&e.getBoundingClientRect().top<=top)cur=id;});
+  const upd=()=>{const top=((parseInt(getComputedStyle(document.documentElement).getPropertyValue('--pbarh'))||0)+40)*zf();let cur='sec-patient';
+    ids.forEach(id=>{const e=$(id);if(e&&!e.hidden&&e.offsetParent&&e.closest('.form')&&!e.classList.contains('folded')&&e.getBoundingClientRect().top<=top)cur=id;});
     if(cur!==secCur){secCur=cur;document.querySelectorAll('#secNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===cur));}};
   window.addEventListener('scroll',()=>{if(!upd.t)upd.t=requestAnimationFrame(()=>{upd.t=0;upd();});},{passive:true});})();
 /* перегляди */

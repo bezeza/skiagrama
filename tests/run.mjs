@@ -144,6 +144,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok((await p.inputValue('#pAge'))===exp&&await p.evaluate(()=>document.activeElement.id==='pNum'),`дата народження ${born} → вік ${exp}, Enter → №`);
   await p.keyboard.type('77');await p.keyboard.press('Enter');await p.keyboard.press('Enter');await p.keyboard.press('Enter');
   ok(await p.evaluate(()=>!!document.activeElement.closest('#projChips')),'Enter після ЕЕД → проєкції');
+  if(await p.evaluate(()=>innerWidth>760)){ok(await p.evaluate(()=>document.getElementById('sec-patient').classList.contains('folded'))&&(await p.textContent('#sec-patient .fsum')).includes('Петренко'),'ноутбук: після ЕЕД блок пацієнта згорнуто в рядок');await p.click('#sec-patient .foldh .ft');}
   await p.fill('#pAge','1960');await p.click('#pNum');ok((await p.inputValue('#pAge'))===String(new Date().getFullYear()-1960),'рік народження 1960 → вік');
   // свої висновки й рекомендації
   await p.click('#studyTabs >> text=ОГК');await p.click('#allNorm');
@@ -286,7 +287,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok((await p.textContent('#dlg')).includes('Записано'),'«Помилка чи ідея»: відгук записано');
   await ctx.grantPermissions(['clipboard-read','clipboard-write']);await p.click('#fbCopyOne');
   const clip=await p.evaluate(()=>navigator.clipboard.readText());
-  ok(clip.includes('Ідея')&&clip.includes('плевральні спайки')&&clip.includes('Skiagrama 0.4')&&!clip.includes('Пацієнт Тест'),'відгук копіюється для розробника без даних пацієнта');
+  ok(clip.includes('Ідея')&&clip.includes('плевральні спайки')&&clip.includes('Skiagrama 0.5')&&!clip.includes('Пацієнт Тест'),'відгук копіюється для розробника без даних пацієнта');
   ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('skiagrama.feedback.v1')).length===1&&JSON.parse(localStorage.getItem('skiagrama.feedback.v1'))[0].sent),'відгук збережено й позначено «передано»');
   await p.click('#navFeedback');await p.fill('#fbText','Петренко І. В. — не друкується');
   ok(await p.isVisible('#dlg .warnt'),'попередження, якщо в тексті ПІБ');await p.click('#dlg >> text=Закрити');
@@ -443,13 +444,84 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
     const r=await p.evaluate(z=>{const pb=document.getElementById('sec-patient').getBoundingClientRect().bottom;const e=[...document.querySelectorAll('.zone h3')].find(h=>h.textContent.includes(z)).closest('.zone').getBoundingClientRect();return e.top>=pb-1&&e.top<innerHeight-60;},z);
     ok(r,`обрана зона «${z}» видна, не під панеллю пацієнта`);}
   await p.click('#secNav >> text=Висновок');await p.waitForTimeout(800);
-  ok(await p.evaluate(()=>{const pb=document.getElementById('sec-patient').getBoundingClientRect().bottom;const t=document.getElementById('sec-concl').getBoundingClientRect().top;return t>=pb-1&&t<pb+60;})&&(await p.textContent('#secNav button.on')).includes('Висновок'),'рядок розділів: «Висновок» — перехід і підсвічування');
+  ok(await p.evaluate(()=>{const c=document.getElementById('sec-concl');const t=c.getBoundingClientRect(),s=document.getElementById('partConcl').getBoundingClientRect();return !!c.closest('#partConcl')&&t.top>=s.top-1&&t.top<s.top+60;})&&(await p.textContent('#secNav button.on')).includes('Висновок'),'розташування Б: «Висновок» — у панелі під протоколом, перехід і підсвічування');
+  await p.click('#themeBtn');await p.click('#viewPop button[title="А · Класичне"]');await p.mouse.click(5,700);
+  await p.click('#secNav >> text=Висновок');await p.waitForTimeout(800);
+  ok(await p.evaluate(()=>{const pb=document.getElementById('sec-patient').getBoundingClientRect().bottom;const t=document.getElementById('sec-concl').getBoundingClientRect().top;return t>=pb-1&&t<pb+60;})&&(await p.textContent('#secNav button.on')).includes('Висновок'),'розташування А: рядок розділів «Висновок» — перехід і підсвічування');
   await p.click('#secNav >> text=Пацієнт');await p.waitForTimeout(800);ok(await p.evaluate(()=>scrollY)<5,'рядок розділів: «Пацієнт» — вгору');
   await p.click('.split.np summary');await p.click('#samePtMenu');ok((await p.textContent('#toast')).includes('ПІБ'),'без ПІБ — підказка ввести ПІБ');
   await p.fill('#pName','Пацієнт Меню');await p.fill('#pAge','33');await p.click('.split.np summary');await p.click('#samePtMenu');
   ok((await p.inputValue('#pName'))==='Пацієнт Меню'&&(await p.inputValue('#pAge'))==='33','«Новий пацієнт ▾» → «Ще дослідження цьому пацієнту»: ПІБ і вік лишились');
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
+}
+
+// ===== 0.5: вигляд =====
+console.log('\n0.5: розташування, згортання, масштаб, форматування');
+{
+  const ctx=await b.newContext({viewport:{width:1366,height:768}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  {const c0=await b.newContext({viewport:{width:1366,height:768}});const p0=await c0.newPage();
+   await p0.addInitScript(()=>{localStorage.setItem('skiagrama.settings.v1',JSON.stringify({font:'l'}));});await p0.goto(FILE);await p0.waitForTimeout(450);
+   ok(await p0.evaluate(()=>__skg.SET.scale===110&&getComputedStyle(document.documentElement).getPropertyValue('--z').trim()==='1.1'),'старий «Розмір шрифту: більший» → масштаб 110 %');await c0.close();}
+  await p.goto(FILE);await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  await p.evaluate(()=>{__skg.SET.scale=110;});
+  await p.keyboard.press('Alt+0');ok(await p.evaluate(()=>__skg.SET.scale===100),'Alt+0 — масштаб 100 %');
+  await p.click('#allNorm');
+  const where=()=>p.evaluate(()=>({concl:document.getElementById('sec-concl').closest('#partConcl')?'side':'form',
+    side:document.getElementById('side').getBoundingClientRect(),form:document.querySelector('section.form').getBoundingClientRect()}));
+  let w=await where();ok(w.concl==='side'&&w.side.left>w.form.left,'типово Б «Робоче місце»: висновок під протоколом праворуч');
+  const lay=async L=>{await p.click('#navSettings');await p.selectOption('#sLayout',L);await p.click('#view-settings [data-back]');await p.waitForTimeout(100);return where();};
+  w=await lay('A');ok(w.concl==='form','А «Класичне»: висновок ліворуч у формі');
+  w=await lay('C');ok(w.concl==='side'&&w.side.left<w.form.left,'В «Дзеркальне»: протокол ліворуч');
+  w=await lay('D');ok(w.side.top>w.form.bottom-2&&w.form.bottom>0,'Г «Один стовпчик»: протокол під формою');
+  await lay('B');
+  // межа протокол | висновок
+  const g=await p.locator('#hGrip').boundingBox();await p.mouse.move(g.x+g.width/2,g.y+6);await p.mouse.down();await p.mouse.move(g.x+g.width/2,g.y+86,{steps:4});await p.mouse.up();
+  const sp=await p.evaluate(()=>__skg.SET.splitH);ok(sp>0.55,'межу протокол | висновок можна посунути ('+sp+')');
+  await p.dblclick('#hGrip');ok(await p.evaluate(()=>__skg.SET.splitH==null),'подвійний клік по межі — як було');
+  // згортання
+  await p.click('#sec-study .fclose');
+  ok(await p.evaluate(()=>document.getElementById('sec-study').classList.contains('folded'))&&(await p.textContent('#sec-study .fsum')).includes('ОГК'),'блок «Дослідження» згорнуто в рядок з підсумком');
+  ok((await p.textContent('#foldAll')).includes('Розгорнути'),'коли щось згорнуто — кнопка «Розгорнути все»');
+  await p.click('#foldAll');ok(await p.evaluate(()=>!document.querySelector('.form .folded,#partConcl .folded')),'«Розгорнути все»');
+  await p.click('#foldAll');ok(await p.evaluate(()=>['sec-patient','sec-study','sec-concl','sec-rec'].every(id=>document.getElementById(id).classList.contains('folded'))),'«Згорнути все»');
+  ok(await p.isVisible('#secNav'),'рядок розділів лишається, коли пацієнт згорнутий');
+  await p.waitForTimeout(200);await p.reload();await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  ok(await p.waitForFunction(()=>document.getElementById('sec-rec').classList.contains('folded'),null,{timeout:2000}).then(()=>true,()=>false),'згорнуте пам’ятається після перезапуску');
+  await p.click('#secNav >> text=Висновок');ok(await p.evaluate(()=>!document.getElementById('sec-concl').classList.contains('folded')),'перехід до розділу розгортає його');
+  await p.click('#foldAll');
+  await p.click('#sec-patient .fclose');await p.click('#newPatient');ok(await p.evaluate(()=>!document.getElementById('sec-patient').classList.contains('folded')),'«Новий пацієнт» розгортає блок пацієнта');
+  // меню «Вигляд»
+  await p.click('#themeBtn');await p.click('#viewPop button[title^="Збільшити"]');
+  ok(await p.evaluate(()=>document.getElementById('viewMenu').open&&getComputedStyle(document.querySelector('main.wrap')).zoom==='1.1'),'меню «Вигляд»: A+ збільшує всю програму, меню не закривається');
+  ok(await p.evaluate(()=>getComputedStyle(document.getElementById('printArea')).zoom==='1'),'масштаб не чіпає друк');
+  await p.click('#viewPop button[title="темна"]');ok(await p.evaluate(()=>document.documentElement.dataset.theme==='dark'),'меню «Вигляд»: тема');
+  await p.click('#viewPop button[title="авто"]');await p.click('#viewPop button[title^="Повернути"]');await p.keyboard.press('Escape');await p.mouse.click(5,700);
+  // текст | перегляд
+  await p.click('#paperBtn');ok(await p.getAttribute('#textBtn','aria-pressed')==='false'&&(await paper(p)).includes('пів аркуша'),'«Перегляд перед друком»');
+  await p.click('#textBtn');ok(await p.isVisible('#ptext')&&await p.isVisible('#fmtBar'),'«Текст» — правка і панель форматування');
+  // форматування
+  await p.fill('#pName','Демо Формат');await p.fill('#pAge','40');await p.fill('#pNum','501');await p.click('#allNorm');
+  await p.click('#ptext .concl');await p.keyboard.press('Home');await p.keyboard.press('Shift+End');
+  await p.click('#fmtBar button[data-cmd="bold"]');await p.click('#fmtBar button[data-cmd="justifyCenter"]');
+  const fm=await p.evaluate(()=>{const d=__skg.docData();const u=__skg.BLANKS.C.build(d);const html=__skg.unitsHTML(u);
+    const m=__skg.docModel(d,'C',true).blocks.find(x=>x.k==='p'&&x.runs.some(r=>/Rö-ч/.test(r.t)));return {html,al:m&&m.al,b:m&&m.runs.every(r=>r.b),txt:__skg.S.manual};});
+  ok(/<p class="concl" style="text-align:center"><b>Rö-ч:/.test(fm.html),'жирний і по центру — на друк');
+  ok(fm.al==='c'&&fm.b,'жирний і по центру — у Word / LibreOffice');
+  ok(!/<|>/.test(fm.txt),'копія для h24 — простий текст');
+  const x=await p.evaluate(()=>__skg.cleanHtml('<div onclick="x()"><script>1</script><b>ok</b><img src=x onerror=alert(1)></div>'));
+  ok(!/script|onclick|img|onerror/.test(x)&&x.includes('<b>ok</b>'),'форматування: небезпечний HTML відкидається');
+  await p.click('#doneBtn');
+  ok(await p.waitForFunction(()=>{const r=__skg.A.find(r=>r.name==='Демо Формат');return !!(r&&r.doc&&/<b>Rö-ч/.test(r.doc.manualHtml||''));},null,{timeout:3000}).then(()=>true,async()=>{console.log('    checks:',await p.textContent('#checkBox'));return false;}),'форматування зберігається в архіві');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+  // телефон: без масштабу, як раніше
+  const c2=await b.newContext({viewport:{width:390,height:844}});const q=await c2.newPage();const e2=[];q.on('pageerror',e=>e2.push(e.message));
+  await q.addInitScript(()=>{localStorage.setItem('skiagrama.settings.v1',JSON.stringify({scale:150,layout:'C'}));});
+  await q.goto(FILE);await q.waitForTimeout(450);if(await q.isVisible('text=Пропустити — заповню пізніше'))await q.click('text=Пропустити — заповню пізніше');
+  ok(await q.evaluate(()=>getComputedStyle(document.querySelector('main.wrap')).zoom==='1'&&__skg.layoutNow()==='A'&&document.documentElement.scrollWidth<=innerWidth),'телефон: без масштабу й розташувань, без прокрутки вбік');
+  ok(e2.length===0,'телефон: без помилок JavaScript'+(e2.length?': '+e2.join(' | '):''));
+  await c2.close();
 }
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);

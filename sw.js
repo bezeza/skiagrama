@@ -1,5 +1,5 @@
 /* Skiagrama offline cache. Change VERSION on every release. */
-const VERSION='skiagrama-0.4-50c312c1';
+const VERSION='skiagrama-0.5-73856695';
 const SHELL=['./','./index.html','./skiagrama.html','./manifest.webmanifest','./icon-96.png','./icon-180.png','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./pamyatka.html'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});

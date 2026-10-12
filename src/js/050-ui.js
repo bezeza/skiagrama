@@ -38,7 +38,7 @@ function renderNav(){
     b.onclick=()=>gotoZone(d.id);nz.append(b);});
   $('navMeas').hidden=!activeMeas().length;
   const dc=$('navConcl');dc.textContent='Висновок';const ct=conclText();dc.append(el('span',{class:'dot '+(ct.t.includes('…')?'e':ct.auto?'n':'c'),'aria-hidden':'true'}));
-  renderStepper();renderSecNav();
+  renderStepper();renderSecNav();renderFolds();
 }
 /* рядок розділів у липкій панелі пацієнта: Пацієнт · Дослідження · Опис · Вимірювання · Висновок · Рекомендації */
 function renderSecNav(){const n=$('secNav');if(!n)return;n.textContent='';
@@ -47,14 +47,15 @@ function renderSecNav(){const n=$('secNav');if(!n)return;n.textContent='';
   items.push(['sec-concl','Висновок',ct.t.includes('…')?'e':ct.auto?'n':'c'],['sec-rec','Рекомендації',S.recs.length||$('recFree').value.trim()?'c':null]);
   items.forEach(([id,t,d])=>{const b=el('button',{type:'button','data-sec':id,class:secCur===id?'on':null});b.append(document.createTextNode(t));if(d)b.append(el('span',{class:'dot '+d,'aria-hidden':'true'}));b.onclick=()=>goSec(id);n.append(b);});}
 let secCur='sec-patient';
-function goSec(id){const t=$(id);if(!t)return;if(id==='sec-patient'){window.scrollTo({top:0,behavior:'smooth'});return;}t.scrollIntoView({block:'start',behavior:'smooth'});flashEl(t);}
+function goSec(id){const t=$(id);if(!t)return;if(isFolded(id))setFold(id,false);if(id==='sec-patient'){window.scrollTo({top:0,behavior:'smooth'});return;}const pc=t.closest('#partConcl');if(pc)pc.scrollTo({top:Math.max(0,t.offsetTop-6),behavior:'smooth'});else t.scrollIntoView({block:'start',behavior:'smooth'});flashEl(t);
+  if(!t.closest('.form')){secCur=id;document.querySelectorAll('#secNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===id));}}
 function flashEl(e){e.classList.remove('hl');void e.offsetWidth;e.classList.add('hl');setTimeout(()=>e.classList.remove('hl'),1300);}
-function gotoZone(id){S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}
+function gotoZone(id){if(isFolded('sec-zones'))setFold('sec-zones',false);S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}
 function renderStepper(){const vz=visibleZones();let i=vz.findIndex(d=>d.id===S.focus);if(i<0)i=0;const d=vz[i];if(!d)return;
   $('stName').textContent=`${d.name} · ${i+1}/${vz.length}`;$('stName').onclick=()=>openNavSheet();
   $('stPrev').disabled=i===0;$('stNext').disabled=i===vz.length-1;
   $('stPrev').onclick=()=>gotoZone(vz[Math.max(0,i-1)].id);$('stNext').onclick=()=>gotoZone(vz[Math.min(vz.length-1,i+1)].id);}
-function openZone(id,scroll){S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}}
+function openZone(id,scroll){if(isFolded('sec-zones'))setFold('sec-zones',false);S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}}
 
 /* Кнопки зони: звичайний режим і редагування (олівець ✎).
    Завдання для тебе: знайди в 020-data.js зону «Інфільтрація» (id:'infil') і подивись,
@@ -278,11 +279,12 @@ function renderPaper(){
   if(paperView){renderSheetView(p);return;}
   const man=el('div',{class:'pman',id:'pman',hidden:S.manual==null?'':null});
   man.append(el('span',{class:'badge'},'відредаговано вручну'));
-  const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;renderAll();toast('Повернуто автоматичний текст');};
+  const rs=el('button',{type:'button',class:'btn sm'},'Скинути правку');rs.onclick=()=>{tick();S.manual=null;S.manualHtml=null;renderAll();toast('Повернуто автоматичний текст');};
   man.append(rs,el('span',{class:'note'},'Кнопки зон тепер не змінюють текст — скиньте правку, щоб повернути автотекст.'));p.append(man);
   if(S.urgent)p.append(el('div',{class:'urgline'},'ТЕРМІНОВО · критична знахідка'));
   const tx=el('div',{id:'ptext',contenteditable:'true',spellcheck:'true',role:'textbox','aria-multiline':'true','aria-label':'Текст протоколу — можна правити прямо тут',title:'Клацніть і пишіть. Alt+клік по реченню — відкрити його зону.'});
-  if(S.manual!=null){
+  if(S.manual!=null&&S.manualHtml){tx.innerHTML=cleanHtml(S.manualHtml);}
+  else if(S.manual!=null){
     String(S.manual).split('\n').forEach((ln,i)=>{const d=el('div',{class:i===0?'pt':/^Rö-ч:/.test(ln)?'concl':''});if(ln)d.textContent=ln;else d.append(el('br'));tx.append(d);});
   }else{
     const P=protocol();
@@ -296,7 +298,7 @@ function renderPaper(){
     if(P.rec)tx.append(el('div',{class:'recs'},P.rec));
     tx.append(el('div',{class:'foot'},P.eed+'   '+P.doc));
   }
-  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
+  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();S.manualHtml=ptextHtml();updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
   tx.addEventListener('blur',()=>{if(S.manual!=null){renderBlankAdviceSoon();}});
   p.append(tx);
   p.append(el('p',{class:'note phint'},'Текст можна правити прямо тут. Alt+клік по реченню — відкрити його зону.'));
