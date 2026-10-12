@@ -2257,11 +2257,11 @@ function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;i
 (()=>{const g=$('sideGrip');let drag=null;
   const lim=x=>{const w=document.querySelector('main.wrap').getBoundingClientRect().width/zf();return Math.round(Math.max(320,Math.min(w-420,x)));};
   g.addEventListener('pointerdown',e=>{if(window.innerWidth<=760)return;e.preventDefault();g.setPointerCapture(e.pointerId);drag={x:e.clientX,w:$('side').getBoundingClientRect().width/zf()};document.body.classList.add('resizing');});
-  g.addEventListener('pointermove',e=>{if(!drag)return;SET.sideW=lim(drag.w+(drag.x-e.clientX)/zf());applySideW();});
+  g.addEventListener('pointermove',e=>{if(!drag)return;SET.sideW=lim(drag.w+(layoutNow()==='C'?e.clientX-drag.x:drag.x-e.clientX)/zf());applySideW();});
   const end=()=>{if(!drag)return;drag=null;document.body.classList.remove('resizing');saveSet();if(paperView)renderSide();};
   g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
   g.addEventListener('dblclick',()=>{delete SET.sideW;saveSet();applySideW();if(paperView)renderSide();toast('Ширина протоколу — як було');});
-  g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width/zf())+(e.key==='ArrowLeft'?40:-40));applySideW();saveSet();});
+  g.addEventListener('keydown',e=>{if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;e.preventDefault();SET.sideW=lim(($('side').getBoundingClientRect().width/zf())+((e.key==='ArrowLeft')!==(layoutNow()==='C')?40:-40));applySideW();saveSet();});
   window.addEventListener('resize',applySideW);applySideW();})();
 /* липка панель пацієнта: її висота — відступ, щоб обраний розділ чи зона не ховались під нею */
 (()=>{const pb=$('sec-patient');const set=()=>{const h=window.innerWidth>760?Math.ceil(pb.getBoundingClientRect().height/zf()):0;document.documentElement.style.setProperty('--pbarh',h+'px');};

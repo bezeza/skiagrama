@@ -473,6 +473,8 @@ console.log('\n0.5: розташування, згортання, масштаб
   const lay=async L=>{await p.click('#navSettings');await p.selectOption('#sLayout',L);await p.click('#view-settings [data-back]');await p.waitForTimeout(100);return where();};
   w=await lay('A');ok(w.concl==='form','А «Класичне»: висновок ліворуч у формі');
   w=await lay('C');ok(w.concl==='side'&&w.side.left<w.form.left,'В «Дзеркальне»: протокол ліворуч');
+  {const g=await p.locator('#sideGrip').boundingBox();const w0=w.side.width;await p.mouse.move(g.x+g.width/2,g.y+200);await p.mouse.down();await p.mouse.move(g.x+g.width/2+120,g.y+200,{steps:5});await p.mouse.up();
+   const w1=await p.evaluate(()=>document.getElementById('side').getBoundingClientRect().width);ok(w1>w0+60,`В «Дзеркальне»: ручку тягнемо праворуч — протокол ширшає (${Math.round(w0)} → ${Math.round(w1)})`);await p.dblclick('#sideGrip');}
   w=await lay('D');ok(w.side.top>w.form.bottom-2&&w.form.bottom>0,'Г «Один стовпчик»: протокол під формою');
   await lay('B');
   // межа протокол | висновок
