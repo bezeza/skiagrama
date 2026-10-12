@@ -20,7 +20,7 @@ function fbLine(f){const c=f.ctx||{};const dt=new Date(f.ts);
 const fbText=list=>'Skiagrama — відгуки для розробника\n\n'+list.map(fbLine).join('\n\n')+'\n';
 async function fbToFolder(){if(!folderOK())return;try{const fh=await dirH.getFileHandle('відгуки.txt',{create:true});const w=await fh.createWritable();await w.write(fbText(FB));await w.close();}catch(e){console.warn('feedback',e);}}
 async function fbCopy(list){const t=fbText(list);try{await navigator.clipboard.writeText(t);return true;}catch(e){const ta=el('textarea');ta.value=t;document.body.append(ta);ta.select();const ok=document.execCommand('copy');ta.remove();return ok;}}
-const PII_RE=/(?<!\p{L})[А-ЯІЇЄҐ][а-яіїєґʼ']+\s+[А-ЯІЇЄҐ]\.\s?[А-ЯІЇЄҐ]\./u;
+const PII_RE=/(?<!\p{L})[А-ЯІЇЄҐ][а-яіїєґ’']+\s+[А-ЯІЇЄҐ]\.\s?[А-ЯІЇЄҐ]\./u;
 function openFeedback(){
   openDlg(box=>{dlgHead(box,'Помилка чи ідея');
     box.append(el('p',{class:'note'},'Опишіть, що сталося або що змінити. Відгук запишеться в програму і в папку даних (файл «відгуки.txt»). Потім скопіюйте його і надішліть розробнику в месенджер — або збережіть файлом.'));
@@ -29,7 +29,7 @@ function openFeedback(){
       b.onclick=()=>{kind=k;seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.k===k)));};seg.append(b);});
     box.append(seg);
     const ta=el('textarea',{id:'fbText',rows:'5',placeholder:'Напр.: «На бланку C довгий висновок заходить на підпис» або «Додати кнопку “плевральні спайки”»','aria-label':'Текст відгуку'});
-    const who=el('input',{id:'fbWho',type:'text',placeholder:'Хто пише (необовʼязково)','aria-label':'Хто пише'});who.value=SET.doctor||'';
+    const who=el('input',{id:'fbWho',type:'text',placeholder:'Хто пише (необов’язково)','aria-label':'Хто пише'});who.value=SET.doctor||'';
     const warn=el('p',{class:'note warnt',hidden:''},'Схоже, у тексті є ПІБ. Не пишіть дані пацієнтів — лише № знімка, якщо треба.');
     ta.addEventListener('input',()=>{warn.hidden=!PII_RE.test(ta.value);});
     box.append(ta,warn,who);

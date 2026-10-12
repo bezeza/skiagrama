@@ -15,7 +15,7 @@ let A=store.get(A_KEY,null);
 if(!A){const old=store.get('skiagrama.journal.v1',[]);A=Array.isArray(old)?old:[];}
 /* Архів — у IndexedDB браузера (сотні МБ). Раніше був у localStorage: там ~5 млн символів ≈ 1800 протоколів,
    після чого нові протоколи тихо не зберігалися б. Старий архів переноситься сам при першому запуску.
-   Дві вкладки: перед записом підтягуємо чужі зміни; видалені записи памʼятаємо (DEL_KEY), щоб вони не «воскресали». */
+   Дві вкладки: перед записом підтягуємо чужі зміни; видалені записи пам’ятаємо (DEL_KEY), щоб вони не «воскресали». */
 const DEL_KEY='skiagrama.archive.deleted';
 let aKnown=new Set(A.map(r=>r.id)),aDeleted=new Set(store.get(DEL_KEY,[])),aChain=Promise.resolve(),aFailNote=false;
 const bc=typeof BroadcastChannel==='function'?new BroadcastChannel('skiagrama'):null;
@@ -31,7 +31,7 @@ async function archivePersist(){
   if(Array.isArray(db)&&mergeInto(db)){aKnown=new Set(A.map(r=>r.id));refreshArchiveViews();}
   if(await idbPut('archive',A)){store.del(A_KEY);if(bc)bc.postMessage('archive');return true;}
   try{localStorage.setItem(A_KEY,JSON.stringify(A));return true;}
-  catch(e){if(!aFailNote){aFailNote=true;$('storeBanner').textContent='Памʼять браузера заповнена — нові протоколи не зберігаються на цьому пристрої. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';$('storeBanner').hidden=false;}return false;}
+  catch(e){if(!aFailNote){aFailNote=true;$('storeBanner').textContent='Пам’ять браузера заповнена — нові протоколи не зберігаються на цьому пристрої. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';$('storeBanner').hidden=false;}return false;}
 }
 function saveA(){aVer++;
   const now=new Set(A.map(r=>r.id));aKnown.forEach(id=>{if(!now.has(id))aDeleted.add(id);});aKnown=now;
@@ -245,7 +245,7 @@ function lateralityIssue(){
   return '';
 }
 /* «справа ↔ зліва»: міняє бік у фразі, зберігаючи велику літеру */
-const SIDE_RE=/(?<![\p{L}ʼ'])(справа|зліва|вправо|вліво|(прав|лів)(ий|ого|ому|им|ій|ої|ою|а|е|у|і|их|ими|оруч|обічн\p{L}*|осторонн\p{L}*))(?![\p{L}ʼ'])/giu;
+const SIDE_RE=/(?<![\p{L}’ʼ'])(справа|зліва|вправо|вліво|(прав|лів)(ий|ого|ому|им|ій|ої|ою|а|е|у|і|их|ими|оруч|обічн\p{L}*|осторонн\p{L}*))(?![\p{L}’ʼ'])/giu;
 const SIDE_PAIR={справа:'зліва',зліва:'справа',вправо:'вліво',вліво:'вправо'};
 function swapSide(t){return String(t).replace(SIDE_RE,(w,all,stem)=>{const lw=w.toLowerCase();let r=SIDE_PAIR[lw];
   if(!r)r=(stem.toLowerCase()==='прав'?'лів':'прав')+lw.slice(stem.length);

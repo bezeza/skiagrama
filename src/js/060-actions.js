@@ -37,7 +37,7 @@ function applyBirth(){const i=$('pAge');const r=ageFromBirth(i.value,$('pDate').
 $('pAge').addEventListener('blur',applyBirth);
 /* ЕЕД: «0.35» → «0,35», без «мЗв»; ПІБ з малої → з великої */
 $('pEed').addEventListener('blur',e=>{const v=e.target.value.trim().replace(/\s*м?зв\.?$/i,'').replace('.',',');if(v!==e.target.value){e.target.value=v;renderSide();}});
-function capName(v){return v.replace(/[\p{L}ʼ'’-]+\.?/gu,w=>{if(w!==w.toLowerCase())return w;if(/^\p{L}\.$/u.test(w))return w.toUpperCase();return w.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):x).join('-');});}
+function capName(v){return v.replace(/[\p{L}’'’-]+\.?/gu,w=>{if(w!==w.toLowerCase())return w;if(/^\p{L}\.$/u.test(w))return w.toUpperCase();return w.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):x).join('-');});}
 $('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.target.value){e.target.value=v;renderSide();}});
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
@@ -49,8 +49,8 @@ ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
   if(id==='pAge')applyBirth();
   const nx=ENTER_NEXT[i+1];if(nx){const n=$(nx);n.focus();if(n.select&&n.type!=='date')n.select();}else focusAfterPatient();}));
 $('urgBtn').onclick=()=>{tick();S.urgent=!S.urgent;renderAll();toast(S.urgent?'Позначено: терміново':'Мітку «Терміново» знято');};
-$('conclKeep').onclick=()=>{const v=$('conclFree').value;if(!v.trim()){$('conclFree').focus();toast('Спершу введіть текст висновку');return;}tick();addToList('concl',v);$('conclFree').value='';renderAll();toast('Висновок запамʼятовано як кнопку');};
-$('recKeep').onclick=()=>{const v=$('recFree').value;if(!v.trim()){$('recFree').focus();toast('Спершу введіть текст рекомендації');return;}tick();addToList('rec',v);$('recFree').value='';renderAll();toast('Рекомендацію запамʼятовано як кнопку');};
+$('conclKeep').onclick=()=>{const v=$('conclFree').value;if(!v.trim()){$('conclFree').focus();toast('Спершу введіть текст висновку');return;}tick();addToList('concl',v);$('conclFree').value='';renderAll();toast('Висновок запам’ятовано як кнопку');};
+$('recKeep').onclick=()=>{const v=$('recFree').value;if(!v.trim()){$('recFree').focus();toast('Спершу введіть текст рекомендації');return;}tick();addToList('rec',v);$('recFree').value='';renderAll();toast('Рекомендацію запам’ятовано як кнопку');};
 $('flowChk').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const t=$(b.dataset.go);if(t)t.scrollIntoView({block:'start',behavior:'smooth'});}));
 

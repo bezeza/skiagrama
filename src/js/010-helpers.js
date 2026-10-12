@@ -19,9 +19,9 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
   del(k){try{localStorage.removeItem(k);}catch(e){delete mem[k];}}};
 try{localStorage.setItem('skg.t','1');localStorage.removeItem('skg.t');}catch(e){storeOK=false;}
 if(!storeOK)$('storeBanner').hidden=false;
-/* збереження не вдалося — кажемо одразу, а не мовчки тримаємо в памʼяті до перезапуску */
+/* збереження не вдалося — кажемо одразу, а не мовчки тримаємо в пам’яті до перезапуску */
 function storeFail(e){const b=$('storeBanner');if(!b||!b.hidden)return;
-  b.textContent=(e&&/quota/i.test(e.name+e.message)?'Памʼять браузера заповнена: ':'Браузер не дав зберегти дані: ')+'налаштування й чернетка не збережуться після закриття. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';b.hidden=false;
+  b.textContent=(e&&/quota/i.test(e.name+e.message)?'Пам’ять браузера заповнена: ':'Браузер не дав зберегти дані: ')+'налаштування й чернетка не збережуться після закриття. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';b.hidden=false;
   try{toast('Не вдалося зберегти — див. попередження вгорі');}catch(x){}}
 function toast(t){const b=$('toast');b.textContent=t;b.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{b.hidden=true;},2400);}
 function copyText(text,label){

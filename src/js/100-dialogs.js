@@ -17,7 +17,7 @@ function searchItems(){
   act('Копіювати протокол',copyAll,'Ctrl+Enter');act('Готово — зберегти в архів',done,'Ctrl+S');act('Друк',()=>$('printBtn').click(),'Ctrl+P');
   act('Норма всюди',allNorm,'Alt+N');act('Прийняти підказки висновку',acceptSugs,'Alt+Enter');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');act('Повторити дію',redo,'Ctrl+Y');
   act('Як на папері',()=>$('paperBtn').click());act('Правити текст протоколу',()=>{if(document.body.classList.contains('sheet')===false&&window.innerWidth<=760)openSheet();if(paperView)$('paperBtn').click();const t=$('ptext');if(t){t.focus();}});
-  BLANK_ORDER.forEach(b=>act(`Бланк ${b} · ${BLANKS[b].n}`,()=>{tick();S.blank=b;renderSide();}));act('Пакет фраз',()=>showView('settings'));act('Скорочення',()=>{showView('settings');setTimeout(()=>$('abbrCard').scrollIntoView({block:'start'}),50);});act('Список на дообстеження',()=>{showView('archive');$('aStatus').value='d';renderArchive();});act('Ще дослідження цьому пацієнту',sameStudyPatient);act('Терміново — критична знахідка',()=>$('urgBtn').click());act('Вивантажити архів в Excel',()=>{showView('archive');$('aCsv').click();});act('Зберегти як PDF',()=>$('pdfBtn').click());act('Памʼятка (1 сторінка)',openMemo);
+  BLANK_ORDER.forEach(b=>act(`Бланк ${b} · ${BLANKS[b].n}`,()=>{tick();S.blank=b;renderSide();}));act('Пакет фраз',()=>showView('settings'));act('Скорочення',()=>{showView('settings');setTimeout(()=>$('abbrCard').scrollIntoView({block:'start'}),50);});act('Список на дообстеження',()=>{showView('archive');$('aStatus').value='d';renderArchive();});act('Ще дослідження цьому пацієнту',sameStudyPatient);act('Терміново — критична знахідка',()=>$('urgBtn').click());act('Вивантажити архів в Excel',()=>{showView('archive');$('aCsv').click();});act('Зберегти як PDF',()=>$('pdfBtn').click());act('Пам’ятка (1 сторінка)',openMemo);
   act('Архів',()=>showView('archive'));act('На контроль',()=>showView('archive'));act('Налаштування',()=>showView('settings'));act('Довідка',openHelp);act('Помилка чи ідея — повідомити розробнику',openFeedback);
   act('Папка даних',()=>showView('settings'));act('Пробний аркуш друку',testSheet);act('Знайомство: дані лікаря',openWelcome);
   return L;
@@ -27,7 +27,7 @@ function openSearch(){
   const items=searchItems();let sel=0,shown=[];
   openDlg(box=>{
     const q=el('input',{type:'search',placeholder:'Що знайти? Зону, висновок, дію…','aria-label':'Пошук'});const list=el('div',{class:'cmdlist',role:'listbox'});
-    const nz=t=>String(t).toLowerCase().replace(/[’ʼ']/g,'');
+    const nz=t=>String(t).toLowerCase().replace(/[’’']/g,'');
     const draw=()=>{const words=nz(q.value.trim()).split(/\s+/).filter(Boolean);
       shown=words.length?items.filter(it=>{const x=nz(it.t+' '+it.k+' '+(it.s||''));return words.every(w=>x.includes(w));}).slice(0,40):items.filter(it=>it.k==='Дія'||it.k==='Зона');
       sel=Math.min(sel,Math.max(0,shown.length-1));list.textContent='';
@@ -78,7 +78,7 @@ function openHelp(){
 <li>Папка даних («Налаштування»): архів, копія кожного протоколу як аркуша й налаштування зберігаються на диск самі.</li></ul>
 <h3>Гарячі клавіші</h3>
 <div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Y</kbd> або <kbd class="k">Ctrl</kbd>+<kbd class="k">Shift</kbd>+<kbd class="k">Z</kbd></span><span>повторити</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">Alt</kbd>+<kbd class="k">Enter</kbd></span><span>прийняти підказки висновку</span><span><kbd class="k">←</kbd><kbd class="k">→</kbd><kbd class="k">↑</kbd><kbd class="k">↓</kbd></span><span>по кнопках зони: ←→ у групі, ↑↓ між групами; пробіл — вибрати</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
-    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};const fbb=el('button',{type:'button',class:'btn'},'Помилка чи ідея');fbb.onclick=()=>{closeDlg();openFeedback();};const m=el('button',{type:'button',class:'btn'},'Памʼятка на 1 сторінку');m.onclick=()=>{closeDlg();openMemo();};r.append(w,m,fbb);box.append(r);});
+    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};const fbb=el('button',{type:'button',class:'btn'},'Помилка чи ідея');fbb.onclick=()=>{closeDlg();openFeedback();};const m=el('button',{type:'button',class:'btn'},'Пам’ятка на 1 сторінку');m.onclick=()=>{closeDlg();openMemo();};r.append(w,m,fbb);box.append(r);});
 }
 $('navHelp').onclick=openHelp;
 
@@ -111,10 +111,10 @@ function openWelcome(){
   });
 }
 
-/* памʼятка на 1 сторінку: окремий файл поруч (сайт) або вбудована (офлайн-файл) */
+/* пам’ятка на 1 сторінку: окремий файл поруч (сайт) або вбудована (офлайн-файл) */
 function openMemo(){
   const html=$('memoTpl').innerHTML;
-  openDlg(box=>{dlgHead(box,'Памʼятка');const r=el('div',{class:'trow'});const pr=el('button',{type:'button',class:'btn primary'},'Друкувати (1 аркуш A4)');
+  openDlg(box=>{dlgHead(box,'Пам’ятка');const r=el('div',{class:'trow'});const pr=el('button',{type:'button',class:'btn primary'},'Друкувати (1 аркуш A4)');
     pr.onclick=()=>{closeDlg();runPrint(`<div class="ppage full">${html}</div>`);};r.append(pr,el('span',{class:'note'},'Повісьте біля робочого місця рентгенолога й лаборанта.'));box.append(r);
     const v=el('div',{class:'memo-view'});v.innerHTML=html;box.append(v);});
 }

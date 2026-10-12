@@ -198,7 +198,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok((await p.evaluate(()=>getComputedStyle(document.body).backgroundColor))==='rgb(42, 43, 45)','тема «Кабінет»: темно-сірий фон');
   await p.selectOption('#sTheme','system');await p.click('#view-settings [data-back]');
   // памʼятка
-  await p.click('#navHelp');await p.click('#dlg >> text=Памʼятка на 1 сторінку');ok((await p.textContent('#dlg')).includes('Протокол за 5 кроків'),'памʼятка відкривається з довідки');await p.click('#dlg >> text=Закрити');
+  await p.click('#navHelp');await p.click('#dlg >> text=Пам’ятка на 1 сторінку');ok((await p.textContent('#dlg')).includes('Протокол за 5 кроків'),'памʼятка відкривається з довідки');await p.click('#dlg >> text=Закрити');
   // збереження з бланком
   await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
   ok(await p.evaluate(()=>{const r=window.__skg.A.slice(-1)[0];return !!(r.doc&&r.blank);}),'архів зберігає дані для бланка');

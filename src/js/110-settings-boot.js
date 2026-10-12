@@ -56,7 +56,7 @@ function openPackPreview(d){
     if(m.note)box.append(el('p',{class:'note'},m.note));
     Object.keys(sm.by).forEach(st=>{box.append(el('h3',{style:'margin:6px 0 2px;font-size:15px'},`Типові описи — ${STUDIES[st]?STUDIES[st].n:st}`));const ul=el('ul',{class:'steps'});sm.by[st].forEach(n=>ul.append(el('li',null,n)));box.append(ul);});
     if(sm.extra.length)box.append(el('p',{class:'note'},'Також: '+sm.extra.join(', ')+'.'));
-    box.append(el('p',{class:'note'},'Після встановлення типові описи зʼявляться в рядку «Шаблони» над зонами. Ваші фрази й кнопки доповнюються, а не стираються; повернути як було можна однією кнопкою.'));
+    box.append(el('p',{class:'note'},'Після встановлення типові описи з’являться в рядку «Шаблони» над зонами. Ваші фрази й кнопки доповнюються, а не стираються; повернути як було можна однією кнопкою.'));
     const r=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Встановити');ok.onclick=()=>{const nt=applyPhrasePack(d);closeDlg();renderSettings();renderAll();toast(`Пакет «${m.title}» встановлено${nt?`: типових описів ${nt}`:''}`);};
     const no=el('button',{type:'button',class:'btn'},'Скасувати');no.onclick=closeDlg;r.append(ok,no);box.append(r);});
 }

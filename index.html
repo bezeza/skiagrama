@@ -620,14 +620,14 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
     <div class="chosen" id="chosen"></div>
     <div class="chips" id="conclChips"></div>
     <div class="ltools" id="conclTools"></div>
-    <div class="freerow"><label class="f">Свій висновок — пишіть, і він одразу йде в протокол<input id="conclFree" type="text" autocomplete="off" placeholder="напр. Плевральні спайки справа"></label><button class="btn sm" id="conclKeep" type="button" title="Додати цей текст як кнопку висновку для цього виду дослідження"><i data-i="star"></i>Запамʼятати як кнопку</button></div>
+    <div class="freerow"><label class="f">Свій висновок — пишіть, і він одразу йде в протокол<input id="conclFree" type="text" autocomplete="off" placeholder="напр. Плевральні спайки справа"></label><button class="btn sm" id="conclKeep" type="button" title="Додати цей текст як кнопку висновку для цього виду дослідження"><i data-i="star"></i>Запам’ятати як кнопку</button></div>
   </div>
 
   <div class="card" id="sec-rec">
     <h2 data-ic="rec">Рекомендації</h2>
     <div class="chips" id="recChips"></div>
     <div class="ltools" id="recTools"></div>
-    <div class="freerow"><label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label><button class="btn sm" id="recKeep" type="button" title="Додати цей текст як кнопку рекомендації"><i data-i="star"></i>Запамʼятати як кнопку</button></div>
+    <div class="freerow"><label class="f">Свій текст (напр. «Rö-контроль через 3 тижні» — термін потрапить у список «На контроль»)<input id="recFree" type="text" autocomplete="off"></label><button class="btn sm" id="recKeep" type="button" title="Додати цей текст як кнопку рекомендації"><i data-i="star"></i>Запам’ятати як кнопку</button></div>
   </div>
 </section>
 
@@ -829,7 +829,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 <div id="measure" class="pdoc" aria-hidden="true" style="position:absolute;left:-10000px;top:0;visibility:hidden;pointer-events:none"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <template id="memoTpl"><div class="memo">
-  <div class="mh"><b>Skiagrama</b><span>памʼятка рентгенолога й лаборанта · бета</span></div>
+  <div class="mh"><b>Skiagrama</b><span>пам’ятка рентгенолога й лаборанта · бета</span></div>
 
   <h3>1. Встановлення (один раз)</h3>
   <ul>
@@ -913,9 +913,9 @@ const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v)
   del(k){try{localStorage.removeItem(k);}catch(e){delete mem[k];}}};
 try{localStorage.setItem('skg.t','1');localStorage.removeItem('skg.t');}catch(e){storeOK=false;}
 if(!storeOK)$('storeBanner').hidden=false;
-/* збереження не вдалося — кажемо одразу, а не мовчки тримаємо в памʼяті до перезапуску */
+/* збереження не вдалося — кажемо одразу, а не мовчки тримаємо в пам’яті до перезапуску */
 function storeFail(e){const b=$('storeBanner');if(!b||!b.hidden)return;
-  b.textContent=(e&&/quota/i.test(e.name+e.message)?'Памʼять браузера заповнена: ':'Браузер не дав зберегти дані: ')+'налаштування й чернетка не збережуться після закриття. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';b.hidden=false;
+  b.textContent=(e&&/quota/i.test(e.name+e.message)?'Пам’ять браузера заповнена: ':'Браузер не дав зберегти дані: ')+'налаштування й чернетка не збережуться після закриття. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';b.hidden=false;
   try{toast('Не вдалося зберегти — див. попередження вгорі');}catch(x){}}
 function toast(t){const b=$('toast');b.textContent=t;b.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{b.hidden=true;},2400);}
 function copyText(text,label){
@@ -935,13 +935,13 @@ document.querySelectorAll('[data-ic]').forEach(e=>e.insertAdjacentHTML('afterbeg
 document.querySelectorAll('i[data-i]').forEach(e=>{e.outerHTML=ic(e.dataset.i);});
 
 /* --- 020-data.js --- */
-/* ===== Довідкові дані: зони, обʼєкти, вимірювання ===== */
+/* ===== Довідкові дані: зони, об’єкти, вимірювання ===== */
 /* Як читати зону (для навчання):
    {id:'infil', name:'Інфільтрація', norm:'фраза, коли зона в нормі', groups:[…], tpl:'шаблон речення'}
-   група: {id:'side', l:'Бік' (підпис рядка), req:1 (обовʼязкова), many:1 (можна кілька), o:[[ключ,'фраза в протокол','напис на кнопці'], …]}
+   група: {id:'side', l:'Бік' (підпис рядка), req:1 (обов’язкова), many:1 (можна кілька), o:[[ключ,'фраза в протокол','напис на кнопці'], …]}
    шаблон: {side} — значення групи (порожньо → «…»), {, |extra} — «, » + значення, лише якщо щось вибрано.
    Завдання для тебе 1: у зоні «Інфільтрація» додай у групу «Ще» кнопку ['порожн','з порожниною розпаду','порожнина'],
-     збери (node build.mjs) і перевір, що фраза зʼявилася в протоколі.
+     збери (node build.mjs) і перевір, що фраза з’явилася в протоколі.
    Завдання для тебе 2: те саме зроби без коду — олівцем ✎ біля зони в програмі. Порівняй: олівець пише в
      налаштування (SET.btnAdd), а код — для всіх користувачів одразу.
    Завдання для тебе 3: запусти тести (node tests/run.mjs) — тест «шаблони зон» перевірить твою кнопку сам. */
@@ -962,7 +962,7 @@ const OGK_ZONES=[
    {id:'side',l:'Бік',req:1,o:[['права','правої легені','права'],['ліва','лівої легені','ліва'],['обидві','обох легень','обидві']]},
    {id:'count',l:'Кількість',req:1,o:[['множ','множинні','множинні'],['поод','поодинокі','поодинокі']]},
    {id:'size',l:'Розмір',o:[['дрібні','дрібні','дрібні'],['середні','середні','середні']]},
-   {id:'dens',l:'Щільність',o:[['щільні','щільні','щільні'],['мякі','мʼякі','мʼякі'],['кальц','кальциновані','кальциновані']]},
+   {id:'dens',l:'Щільність',o:[['щільні','щільні','щільні'],['мякі','м’які','м’які'],['кальц','кальциновані','кальциновані']]},
    {id:'extra',l:'Ще',many:1,o:[['фіброз','вогнищевий фіброз','вогнищевий фіброз'],['плевр','плевро-апікальні нашарування','плевро-апікальні нашарування']]}],
   tpl:'В {lobe} {side} {count}{ |size}{ |dens} вогнища{, |extra}.'},
  {id:'pattern',name:'Легеневий малюнок',norm:'Легеневий малюнок не змінений.',tbd:1,groups:[
@@ -1011,8 +1011,8 @@ const BONE_ZONES=[
  {id:'surf',name:'Суглобові поверхні',norm:'Суглобові поверхні рівні, чіткі.',groups:[
    {id:'ch',l:'Поверхні',many:1,req:1,o:[['скл','субхондральний склероз','субхондральний склероз'],['ост','крайові кісткові розростання (остеофіти)','остеофіти'],['кіст','кістоподібні просвітлення в субхондральних відділах','субхондральні кісти'],['горб','загострення міжвиросткових горбиків','загострені горбики']]}],
   tpl:'Визначаються {ch}.'},
- {id:'soft',name:'Мʼякі тканини',norm:'Мʼякі тканини без особливостей.',groups:[
-   {id:'ch',l:'Тканини',req:1,o:[['набряк','Мʼякі тканини потовщені, ущільнені','набряк'],['кальц','У мʼяких тканинах тіні кальцинатів','кальцинати'],['стор','У мʼяких тканинах тінь металевого стороннього тіла','стороннє тіло']]}],
+ {id:'soft',name:'М’які тканини',norm:'М’які тканини без особливостей.',groups:[
+   {id:'ch',l:'Тканини',req:1,o:[['набряк','М’які тканини потовщені, ущільнені','набряк'],['кальц','У м’яких тканинах тіні кальцинатів','кальцинати'],['стор','У м’яких тканинах тінь металевого стороннього тіла','стороннє тіло']]}],
   tpl:'{ch}.'}
 ];
 const SPINE_ZONES=[
@@ -1059,7 +1059,7 @@ const ABD_ZONES=[
 ];
 const SKULL_ZONES=[
  {id:'vault',name:'Кістки склепіння',mode:'cherep',norm:'Кістки склепіння черепа без травматичних і деструктивних змін.',groups:[
-   {id:'where',l:'Перелом',type:'text',req:1,ph:'напр. правої тімʼяної кістки'}],
+   {id:'where',l:'Перелом',type:'text',req:1,ph:'напр. правої тім’яної кістки'}],
   tpl:'Визначається лінія перелому {where}.'},
  {id:'sella',name:'Турецьке сідло',mode:'cherep',norm:'Турецьке сідло звичайної форми і розмірів.',tbd:1,groups:[
    {id:'ch',l:'Зміни',req:1,o:[['розш','Турецьке сідло розширене','розширене'],['декальц','Спинка турецького сідла декальцинована','декальцинована спинка']]}],
@@ -1083,7 +1083,7 @@ const BONE_OBJ=[
  ['plechk','Плечова кістка','{s} плечової кістки','f','обох плечових кісток'],
  ['likt','Ліктьовий суглоб','{s} ліктьового суглоба','m','обох ліктьових суглобів'],
  ['pered','Кістки передпліччя','кісток {s} передпліччя','m','кісток обох передпліч'],
- ['zap','Променезапʼястковий суглоб','{s} променезапʼясткового суглоба','m','обох променезапʼясткових суглобів'],
+ ['zap','Променезап’ястковий суглоб','{s} променезап’ясткового суглоба','m','обох променезап’ясткових суглобів'],
  ['kyst','Кисть','{s} кисті','f','обох кистей'],
  ['kulsh','Кульшовий суглоб','{s} кульшового суглоба','m','обох кульшових суглобів'],
  ['steg','Стегнова кістка','{s} стегнової кістки','f','обох стегнових кісток'],
@@ -1091,7 +1091,7 @@ const BONE_OBJ=[
  ['gom','Кістки гомілки','кісток {s} гомілки','f','кісток обох гомілок'],
  ['gst','Гомілковостопний суглоб','{s} гомілковостопного суглоба','m','обох гомілковостопних суглобів'],
  ['stopa','Стопа','{s} стопи','f','обох стоп'],
- ['pyat','Пʼяткова кістка','{s} пʼяткової кістки','f','обох пʼяткових кісток'],
+ ['pyat','П’яткова кістка','{s} п’яткової кістки','f','обох п’яткових кісток'],
  ['klyuch','Ключиця','{s} ключиці','f','обох ключиць'],
  ['rebra','Ребра','ребер {s}','adv','ребер з обох боків'],
  ['taz','Кістки таза','кісток таза','none','кісток таза']
@@ -1109,7 +1109,7 @@ const STUDIES={
  spine:{n:'Хребет',zones:SPINE_ZONES,normConcl:'Без патологічних змін',normTbd:1,meas:['cobb','kyph','lord','genant'],
    chips:['Остеохондроз {dept} відділу хребта','Спондильоз','Спондилоартроз','Сколіоз']},
  abd:{n:'ОЧП',zones:ABD_ZONES,normConcl:'Без патологічних змін',normTbd:1,meas:[],
-   chips:['Ознаки гострої кишкової непрохідності','Ознаки перфорації порожнистого органу','Сечокамʼяна хвороба']},
+   chips:['Ознаки гострої кишкової непрохідності','Ознаки перфорації порожнистого органу','Сечокам’яна хвороба']},
  skull:{n:'Череп і ППН',zones:SKULL_ZONES,normConcl:'Без патологічних змін',normTbd:1,meas:[],
    chips:['Правобічний гайморит','Лівобічний гайморит','Двобічний гайморит','Фронтит','Етмоїдит','Викривлення носової перегородки']}
 };
@@ -1129,7 +1129,7 @@ const MEAS={
  hva:{lim:[0,90],n:'Кут вальгусу I пальця (HVA)',u:'°',tbd:1,grade:v=>v<=15?{ok:1,ph:`Кут вальгусного відхилення I пальця ${fx(v,0)}°.`}:{ph:`Кут вальгусного відхилення I пальця ${fx(v,0)}°.`,c:`Hallux valgus ${v<=20?'I':v<=40?'II':'III'} ступеня`},norm:'≤ 15°'},
  ima:{lim:[0,45],n:'Міжплесневий кут (IMA)',u:'°',grade:v=>v<=9?{ok:1,ph:`Міжплесневий кут ${fx(v,0)}°.`}:{ph:`Міжплесневий кут ${fx(v,0)}° — збільшений.`},norm:'≤ 9°'},
  bogd:{lim:[90,200],n:'Кут склепіння (Богданов)',u:'°',grade:v=>{if(v<=130)return {ok:1,ph:`Кут поздовжнього склепіння ${fx(v,0)}°.`};const st=v<=140?'I':v<=155?'II':'III';return {ph:`Кут поздовжнього склепіння ${fx(v,0)}° — поздовжня плоскостопість ${st} ступеня.`,c:`Поздовжня плоскостопість ${st} ступеня`};},norm:'125–130°'},
- boehler:{lim:[0,60],n:'Кут Белера',u:'°',grade:v=>v>=20?{ok:1,ph:`Кут Белера ${fx(v,0)}°.`}:{ph:`Кут Белера ${fx(v,0)}° — зменшений, ознака компресії пʼяткової кістки.`,c:'Компресійний перелом пʼяткової кістки'},norm:'20–40°'},
+ boehler:{lim:[0,60],n:'Кут Белера',u:'°',grade:v=>v>=20?{ok:1,ph:`Кут Белера ${fx(v,0)}°.`}:{ph:`Кут Белера ${fx(v,0)}° — зменшений, ознака компресії п’яткової кістки.`,c:'Компресійний перелом п’яткової кістки'},norm:'20–40°'},
  ccd:{lim:[90,170],n:'Шийково-діафізарний кут',u:'°',grade:v=>v<120?{ph:`Шийково-діафізарний кут ${fx(v,0)}° — coxa vara.`,c:'Coxa vara'}:v>140?{ph:`Шийково-діафізарний кут ${fx(v,0)}° — coxa valga.`,c:'Coxa valga'}:{ok:v>=125&&v<=135?1:0,ph:`Шийково-діафізарний кут ${fx(v,0)}°.`},norm:'125–135°'},
  ce:{lim:[-30,60],n:'Кут Віберга (CE)',u:'°',grade:v=>v>25?{ok:1,ph:`Кут Віберга ${fx(v,0)}°.`}:v>=20?{ph:`Кут Віберга ${fx(v,0)}° — межове значення.`}:{ph:`Кут Віберга ${fx(v,0)}° — ознака дисплазії кульшового суглоба.`,c:'Дисплазія кульшового суглоба'},norm:'> 25° (дорослі)'}
 };
@@ -1174,7 +1174,7 @@ const CHANGELOG=[
    'Дві вкладки з програмою не затирають архів одна одній; видалений протокол не повертається; попередження «відкрита в іншій вкладці».',
    'Без миші: «1…9» ставить фокус на кнопки зони, ←→ ↑↓ — по кнопках, пробіл — вибрати, фокус не губиться; Alt+Enter — прийняти підказки висновку; пошук Ctrl+K не губить першу літеру.',
    'Шрифти вбудовані у файл: без інтернету програма виглядає так само і не звертається до Google.',
-   'Якщо браузер не дав зберегти дані (памʼять заповнена) — попередження одразу. Без папки даних — раз на день нагадування зберегти копію архіву.',
+   'Якщо браузер не дав зберегти дані (пам’ять заповнена) — попередження одразу. Без папки даних — раз на день нагадування зберегти копію архіву.',
    'Ноутбук 1366×768 з масштабом 125 %: шапка й кнопки над протоколом — в один рядок, меню не виходять за край екрана.','Подвійне клацання по реченню протоколу міняє бік: справа ↔ зліва — у зоні, у висновку, у назві дослідження кістки.',
    'Скорочення: «.кт» + пробіл → «КТ ОГК для уточнення характеру змін». Свої скорочення — «Налаштування» → «Скорочення»; переносяться пакетом фраз.',
    'Пропуски «__» у фразах: курсор стає туди сам, Tab — до наступного; перед «Готово» — нагадування, якщо пропуск лишився.',
@@ -1185,15 +1185,15 @@ const CHANGELOG=[
    'Над протоколом один ряд: Готово · Копіювати ▾ (частинами для h24) · Друк · Зберегти як ▾ (PDF, Word, LibreOffice).',
    'PDF у вибраному бланку: половинка — A5, довгий — A4; назва файлу з прізвища й дати.',
    'Папка даних: архів ще й по місяцях, копія кожного протоколу як аркуша в «протоколи», пакет фраз.',
-   'Порожні обовʼязкові поля підсвічуються, на «Готово» — кількість зауважень.',
-   'Одне поле для свого висновку (одразу в протокол) і «Запамʼятати як кнопку»; без рамки штампу на екрані.',
+   'Порожні обов’язкові поля підсвічуються, на «Готово» — кількість зауважень.',
+   'Одне поле для свого висновку (одразу в протокол) і «Запам’ятати як кнопку»; без рамки штампу на екрані.',
    'Нові іконки: Phosphor для кнопок, медичні Healthicons і Hugeicons для видів досліджень.',
    'Перевірка «право / ліво»: попередження, якщо в описі справа, а у висновку зліва.',
    '«Терміново» для критичних знахідок; в архіві — підсвітка і «Повідомлено».',
    '«+ Ще дослідження цьому пацієнту» після «Готово» (напр. ОГК і коліно — два протоколи).',
    'Вивантаження архіву в Excel (CSV) за вибраними фільтрами; у знайомстві — кроки «встановити» і «папка даних».',
    'Пакети фраз і типові описи: каталог у «Налаштуваннях», чернетка «Типові описи ОГК і кісток» (11 описів) для перевірки рентгенологом; підпис пакета автором зі стажем і датою; «Повернути як було до пакета».']],
- ['0.3.1',['Свої висновки: «+ свій висновок» під кнопками або «Запамʼятати як кнопку» біля поля «Свій текст висновку».',
+ ['0.3.1',['Свої висновки: «+ свій висновок» під кнопками або «Запам’ятати як кнопку» біля поля «Свій текст висновку».',
    '«✎ Редагувати кнопки» у висновку й рекомендаціях: змінити текст, сховати, переставити, «Повернути як було».',
    'Висновок норми («Без патологічних змін» тощо) можна змінити для кожного виду дослідження.',
    'Підказки висновку беруть ваші назви кнопок; часті висновки й рекомендації — першими.',
@@ -1208,11 +1208,11 @@ const CHANGELOG=[
    'Пакет фраз: фрази норми, кнопки й шаблони одним файлом — на інший ПК або колезі.',
    'Нова іконка: усі фаланги на місці, обручка на основній фаланзі безіменного.',
    'Перевірка вимірювань: неможливі значення (напр. Кобб 300°) підсвічуються і не йдуть у протокол.',
-   'Ctrl+Y / Ctrl+Shift+Z — повторити дію. Памʼятка на 1 сторінку в «Довідці».']],
+   'Ctrl+Y / Ctrl+Shift+Z — повторити дію. Пам’ятка на 1 сторінку в «Довідці».']],
  ['0.2',['Протокол збоку на ПК і на вужчих екранах (ноутбук, масштаб Windows 125–150 %).','Зони в нормі — компактними плитками, змінені — на всю ширину.','Сегменти S1–S10 в інфільтрації; нові зони ОГК: діафрагма, середостіння, кістки грудної клітки (у нормі не описуються).',
    'Компонування як у «Первинному огляді»: протокол праворуч на всю висоту, розділи з кольоровими крапками стану.',
    '«Як на папері» — видно, чи протокол вміститься в пів аркуша A4 або піде на зворот.',
-   'Папка даних на компʼютері: архів, шаблони й налаштування зберігаються самі.',
+   'Папка даних на комп’ютері: архів, шаблони й налаштування зберігаються самі.',
    'Знайомство при першому запуску, пошук Ctrl+K, довідка.',
    '«Як минулого разу» — перенесення попереднього опису для контрольного знімка.',
    'Мої кнопки: власні фрази прямо в зоні.',
@@ -1239,7 +1239,7 @@ let A=store.get(A_KEY,null);
 if(!A){const old=store.get('skiagrama.journal.v1',[]);A=Array.isArray(old)?old:[];}
 /* Архів — у IndexedDB браузера (сотні МБ). Раніше був у localStorage: там ~5 млн символів ≈ 1800 протоколів,
    після чого нові протоколи тихо не зберігалися б. Старий архів переноситься сам при першому запуску.
-   Дві вкладки: перед записом підтягуємо чужі зміни; видалені записи памʼятаємо (DEL_KEY), щоб вони не «воскресали». */
+   Дві вкладки: перед записом підтягуємо чужі зміни; видалені записи пам’ятаємо (DEL_KEY), щоб вони не «воскресали». */
 const DEL_KEY='skiagrama.archive.deleted';
 let aKnown=new Set(A.map(r=>r.id)),aDeleted=new Set(store.get(DEL_KEY,[])),aChain=Promise.resolve(),aFailNote=false;
 const bc=typeof BroadcastChannel==='function'?new BroadcastChannel('skiagrama'):null;
@@ -1255,7 +1255,7 @@ async function archivePersist(){
   if(Array.isArray(db)&&mergeInto(db)){aKnown=new Set(A.map(r=>r.id));refreshArchiveViews();}
   if(await idbPut('archive',A)){store.del(A_KEY);if(bc)bc.postMessage('archive');return true;}
   try{localStorage.setItem(A_KEY,JSON.stringify(A));return true;}
-  catch(e){if(!aFailNote){aFailNote=true;$('storeBanner').textContent='Памʼять браузера заповнена — нові протоколи не зберігаються на цьому пристрої. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';$('storeBanner').hidden=false;}return false;}
+  catch(e){if(!aFailNote){aFailNote=true;$('storeBanner').textContent='Пам’ять браузера заповнена — нові протоколи не зберігаються на цьому пристрої. Підключіть папку даних у «Налаштуваннях» і збережіть копію архіву.';$('storeBanner').hidden=false;}return false;}
 }
 function saveA(){aVer++;
   const now=new Set(A.map(r=>r.id));aKnown.forEach(id=>{if(!now.has(id))aDeleted.add(id);});aKnown=now;
@@ -1469,7 +1469,7 @@ function lateralityIssue(){
   return '';
 }
 /* «справа ↔ зліва»: міняє бік у фразі, зберігаючи велику літеру */
-const SIDE_RE=/(?<![\p{L}ʼ'])(справа|зліва|вправо|вліво|(прав|лів)(ий|ого|ому|им|ій|ої|ою|а|е|у|і|их|ими|оруч|обічн\p{L}*|осторонн\p{L}*))(?![\p{L}ʼ'])/giu;
+const SIDE_RE=/(?<![\p{L}’ʼ'])(справа|зліва|вправо|вліво|(прав|лів)(ий|ого|ому|им|ій|ої|ою|а|е|у|і|их|ими|оруч|обічн\p{L}*|осторонн\p{L}*))(?![\p{L}’ʼ'])/giu;
 const SIDE_PAIR={справа:'зліва',зліва:'справа',вправо:'вліво',вліво:'вправо'};
 function swapSide(t){return String(t).replace(SIDE_RE,(w,all,stem)=>{const lw=w.toLowerCase();let r=SIDE_PAIR[lw];
   if(!r)r=(stem.toLowerCase()==='прав'?'лів':'прав')+lw.slice(stem.length);
@@ -1947,7 +1947,7 @@ function applyBirth(){const i=$('pAge');const r=ageFromBirth(i.value,$('pDate').
 $('pAge').addEventListener('blur',applyBirth);
 /* ЕЕД: «0.35» → «0,35», без «мЗв»; ПІБ з малої → з великої */
 $('pEed').addEventListener('blur',e=>{const v=e.target.value.trim().replace(/\s*м?зв\.?$/i,'').replace('.',',');if(v!==e.target.value){e.target.value=v;renderSide();}});
-function capName(v){return v.replace(/[\p{L}ʼ'’-]+\.?/gu,w=>{if(w!==w.toLowerCase())return w;if(/^\p{L}\.$/u.test(w))return w.toUpperCase();return w.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):x).join('-');});}
+function capName(v){return v.replace(/[\p{L}’'’-]+\.?/gu,w=>{if(w!==w.toLowerCase())return w;if(/^\p{L}\.$/u.test(w))return w.toUpperCase();return w.split('-').map(x=>x?x[0].toUpperCase()+x.slice(1):x).join('-');});}
 $('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.target.value){e.target.value=v;renderSide();}});
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
@@ -1959,8 +1959,8 @@ ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
   if(id==='pAge')applyBirth();
   const nx=ENTER_NEXT[i+1];if(nx){const n=$(nx);n.focus();if(n.select&&n.type!=='date')n.select();}else focusAfterPatient();}));
 $('urgBtn').onclick=()=>{tick();S.urgent=!S.urgent;renderAll();toast(S.urgent?'Позначено: терміново':'Мітку «Терміново» знято');};
-$('conclKeep').onclick=()=>{const v=$('conclFree').value;if(!v.trim()){$('conclFree').focus();toast('Спершу введіть текст висновку');return;}tick();addToList('concl',v);$('conclFree').value='';renderAll();toast('Висновок запамʼятовано як кнопку');};
-$('recKeep').onclick=()=>{const v=$('recFree').value;if(!v.trim()){$('recFree').focus();toast('Спершу введіть текст рекомендації');return;}tick();addToList('rec',v);$('recFree').value='';renderAll();toast('Рекомендацію запамʼятовано як кнопку');};
+$('conclKeep').onclick=()=>{const v=$('conclFree').value;if(!v.trim()){$('conclFree').focus();toast('Спершу введіть текст висновку');return;}tick();addToList('concl',v);$('conclFree').value='';renderAll();toast('Висновок запам’ятовано як кнопку');};
+$('recKeep').onclick=()=>{const v=$('recFree').value;if(!v.trim()){$('recFree').focus();toast('Спершу введіть текст рекомендації');return;}tick();addToList('rec',v);$('recFree').value='';renderAll();toast('Рекомендацію запам’ятовано як кнопку');};
 $('flowChk').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const t=$(b.dataset.go);if(t)t.scrollIntoView({block:'start',behavior:'smooth'});}));
 
@@ -2522,7 +2522,7 @@ async function folderWrite(){
 function folderSoon(){if(!folderOK())return;clearTimeout(folderT);folderT=setTimeout(folderWrite,800);}
 function showFolderBanner(t){$('folderBannerText').textContent=t;$('folderBanner').hidden=false;}
 async function folderPick(){
-  if(!FOLDER_SUPPORTED){toast('Папка даних працює в Chrome або Edge на компʼютері');return;}
+  if(!FOLDER_SUPPORTED){toast('Папка даних працює в Chrome або Edge на комп’ютері');return;}
   try{const parent=await window.showDirectoryPicker({id:'skiagrama',mode:'readwrite'});
     dirH=await parent.getDirectoryHandle(DATA_DIR,{create:true});dirOK=true;await kvSet('dir',dirH);
     $('folderBanner').hidden=true;await folderSync();toast(`Папку даних «${DATA_DIR}» підключено`);renderFolderInfo();}
@@ -2533,13 +2533,13 @@ async function folderGrant(){
   try{const p=await dirH.requestPermission({mode:'readwrite'});if(p==='granted'){dirOK=true;$('folderBanner').hidden=true;await folderSync();renderFolderInfo();toast('Папку даних підключено');}}
   catch(e){toast('Браузер не дав доступу до папки');}
 }
-async function folderForget(){dirH=null;dirOK=false;await kvDel('dir');renderFolderInfo();toast('Папку даних відʼєднано. Дані в ній лишилися.');}
+async function folderForget(){dirH=null;dirOK=false;await kvDel('dir');renderFolderInfo();toast('Папку даних від’єднано. Дані в ній лишилися.');}
 function renderFolderInfo(){
   const i=$('folderInfo');if(!i)return;
-  if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На компʼютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
+  if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На комп’ютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
   $('folderPick').hidden=false;$('folderForget').hidden=!dirH;
-  i.textContent=folderOK()?`Підключено: «${folderName()}». Туди самі зберігаються: налаштування, пакет фраз, архів (і по місяцях у «архів»), копія кожного протоколу як аркуша — у «протоколи», щоденна копія — у «копії». Після перевстановлення браузера або на іншому компʼютері просто оберіть цю папку знову.`
-    :dirH?`Папка «${folderName()}» запамʼятована, але браузер просить дозвіл. Натисніть «Підключити папку» вгорі.`
+  i.textContent=folderOK()?`Підключено: «${folderName()}». Туди самі зберігаються: налаштування, пакет фраз, архів (і по місяцях у «архів»), копія кожного протоколу як аркуша — у «протоколи», щоденна копія — у «копії». Після перевстановлення браузера або на іншому комп’ютері просто оберіть цю папку знову.`
+    :dirH?`Папка «${folderName()}» запам’ятована, але браузер просить дозвіл. Натисніть «Підключити папку» вгорі.`
     :`Програма створить папку «${DATA_DIR}» у вибраному місці (напр. «Документи») і сама зберігатиме туди архів, шаблони й налаштування.`;
 }
 $('folderPick').onclick=folderPick;$('folderForget').onclick=folderForget;$('folderGrant').onclick=folderGrant;
@@ -2585,7 +2585,7 @@ function searchItems(){
   act('Копіювати протокол',copyAll,'Ctrl+Enter');act('Готово — зберегти в архів',done,'Ctrl+S');act('Друк',()=>$('printBtn').click(),'Ctrl+P');
   act('Норма всюди',allNorm,'Alt+N');act('Прийняти підказки висновку',acceptSugs,'Alt+Enter');act('Новий пацієнт',()=>$('newPatient').click());act('Скасувати останню дію',undo,'Ctrl+Z');act('Повторити дію',redo,'Ctrl+Y');
   act('Як на папері',()=>$('paperBtn').click());act('Правити текст протоколу',()=>{if(document.body.classList.contains('sheet')===false&&window.innerWidth<=760)openSheet();if(paperView)$('paperBtn').click();const t=$('ptext');if(t){t.focus();}});
-  BLANK_ORDER.forEach(b=>act(`Бланк ${b} · ${BLANKS[b].n}`,()=>{tick();S.blank=b;renderSide();}));act('Пакет фраз',()=>showView('settings'));act('Скорочення',()=>{showView('settings');setTimeout(()=>$('abbrCard').scrollIntoView({block:'start'}),50);});act('Список на дообстеження',()=>{showView('archive');$('aStatus').value='d';renderArchive();});act('Ще дослідження цьому пацієнту',sameStudyPatient);act('Терміново — критична знахідка',()=>$('urgBtn').click());act('Вивантажити архів в Excel',()=>{showView('archive');$('aCsv').click();});act('Зберегти як PDF',()=>$('pdfBtn').click());act('Памʼятка (1 сторінка)',openMemo);
+  BLANK_ORDER.forEach(b=>act(`Бланк ${b} · ${BLANKS[b].n}`,()=>{tick();S.blank=b;renderSide();}));act('Пакет фраз',()=>showView('settings'));act('Скорочення',()=>{showView('settings');setTimeout(()=>$('abbrCard').scrollIntoView({block:'start'}),50);});act('Список на дообстеження',()=>{showView('archive');$('aStatus').value='d';renderArchive();});act('Ще дослідження цьому пацієнту',sameStudyPatient);act('Терміново — критична знахідка',()=>$('urgBtn').click());act('Вивантажити архів в Excel',()=>{showView('archive');$('aCsv').click();});act('Зберегти як PDF',()=>$('pdfBtn').click());act('Пам’ятка (1 сторінка)',openMemo);
   act('Архів',()=>showView('archive'));act('На контроль',()=>showView('archive'));act('Налаштування',()=>showView('settings'));act('Довідка',openHelp);act('Помилка чи ідея — повідомити розробнику',openFeedback);
   act('Папка даних',()=>showView('settings'));act('Пробний аркуш друку',testSheet);act('Знайомство: дані лікаря',openWelcome);
   return L;
@@ -2595,7 +2595,7 @@ function openSearch(){
   const items=searchItems();let sel=0,shown=[];
   openDlg(box=>{
     const q=el('input',{type:'search',placeholder:'Що знайти? Зону, висновок, дію…','aria-label':'Пошук'});const list=el('div',{class:'cmdlist',role:'listbox'});
-    const nz=t=>String(t).toLowerCase().replace(/[’ʼ']/g,'');
+    const nz=t=>String(t).toLowerCase().replace(/[’’']/g,'');
     const draw=()=>{const words=nz(q.value.trim()).split(/\s+/).filter(Boolean);
       shown=words.length?items.filter(it=>{const x=nz(it.t+' '+it.k+' '+(it.s||''));return words.every(w=>x.includes(w));}).slice(0,40):items.filter(it=>it.k==='Дія'||it.k==='Зона');
       sel=Math.min(sel,Math.max(0,shown.length-1));list.textContent='';
@@ -2646,7 +2646,7 @@ function openHelp(){
 <li>Папка даних («Налаштування»): архів, копія кожного протоколу як аркуша й налаштування зберігаються на диск самі.</li></ul>
 <h3>Гарячі клавіші</h3>
 <div class="keys"><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Enter</kbd></span><span>копіювати протокол</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">S</kbd></span><span>готово — зберегти в архів</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">P</kbd></span><span>друк</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">K</kbd></span><span>пошук</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Z</kbd></span><span>скасувати</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">Y</kbd> або <kbd class="k">Ctrl</kbd>+<kbd class="k">Shift</kbd>+<kbd class="k">Z</kbd></span><span>повторити</span><span><kbd class="k">Alt</kbd>+<kbd class="k">N</kbd></span><span>норма всюди</span><span><kbd class="k">Alt</kbd>+<kbd class="k">Enter</kbd></span><span>прийняти підказки висновку</span><span><kbd class="k">←</kbd><kbd class="k">→</kbd><kbd class="k">↑</kbd><kbd class="k">↓</kbd></span><span>по кнопках зони: ←→ у групі, ↑↓ між групами; пробіл — вибрати</span><span><kbd class="k">1</kbd>…<kbd class="k">9</kbd></span><span>зона: норма ↔ зміни</span><span><kbd class="k">Ctrl</kbd>+<kbd class="k">+</kbd> / <kbd class="k">−</kbd></span><span>масштаб</span></div>`;
-    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};const fbb=el('button',{type:'button',class:'btn'},'Помилка чи ідея');fbb.onclick=()=>{closeDlg();openFeedback();};const m=el('button',{type:'button',class:'btn'},'Памʼятка на 1 сторінку');m.onclick=()=>{closeDlg();openMemo();};r.append(w,m,fbb);box.append(r);});
+    box.append(h);const r=el('div',{class:'trow'});const w=el('button',{type:'button',class:'btn'},'Що нового');w.onclick=()=>{closeDlg();openWhatsNew();};const fbb=el('button',{type:'button',class:'btn'},'Помилка чи ідея');fbb.onclick=()=>{closeDlg();openFeedback();};const m=el('button',{type:'button',class:'btn'},'Пам’ятка на 1 сторінку');m.onclick=()=>{closeDlg();openMemo();};r.append(w,m,fbb);box.append(r);});
 }
 $('navHelp').onclick=openHelp;
 
@@ -2679,10 +2679,10 @@ function openWelcome(){
   });
 }
 
-/* памʼятка на 1 сторінку: окремий файл поруч (сайт) або вбудована (офлайн-файл) */
+/* пам’ятка на 1 сторінку: окремий файл поруч (сайт) або вбудована (офлайн-файл) */
 function openMemo(){
   const html=$('memoTpl').innerHTML;
-  openDlg(box=>{dlgHead(box,'Памʼятка');const r=el('div',{class:'trow'});const pr=el('button',{type:'button',class:'btn primary'},'Друкувати (1 аркуш A4)');
+  openDlg(box=>{dlgHead(box,'Пам’ятка');const r=el('div',{class:'trow'});const pr=el('button',{type:'button',class:'btn primary'},'Друкувати (1 аркуш A4)');
     pr.onclick=()=>{closeDlg();runPrint(`<div class="ppage full">${html}</div>`);};r.append(pr,el('span',{class:'note'},'Повісьте біля робочого місця рентгенолога й лаборанта.'));box.append(r);
     const v=el('div',{class:'memo-view'});v.innerHTML=html;box.append(v);});
 }
@@ -2710,7 +2710,7 @@ function fbLine(f){const c=f.ctx||{};const dt=new Date(f.ts);
 const fbText=list=>'Skiagrama — відгуки для розробника\n\n'+list.map(fbLine).join('\n\n')+'\n';
 async function fbToFolder(){if(!folderOK())return;try{const fh=await dirH.getFileHandle('відгуки.txt',{create:true});const w=await fh.createWritable();await w.write(fbText(FB));await w.close();}catch(e){console.warn('feedback',e);}}
 async function fbCopy(list){const t=fbText(list);try{await navigator.clipboard.writeText(t);return true;}catch(e){const ta=el('textarea');ta.value=t;document.body.append(ta);ta.select();const ok=document.execCommand('copy');ta.remove();return ok;}}
-const PII_RE=/(?<!\p{L})[А-ЯІЇЄҐ][а-яіїєґʼ']+\s+[А-ЯІЇЄҐ]\.\s?[А-ЯІЇЄҐ]\./u;
+const PII_RE=/(?<!\p{L})[А-ЯІЇЄҐ][а-яіїєґ’']+\s+[А-ЯІЇЄҐ]\.\s?[А-ЯІЇЄҐ]\./u;
 function openFeedback(){
   openDlg(box=>{dlgHead(box,'Помилка чи ідея');
     box.append(el('p',{class:'note'},'Опишіть, що сталося або що змінити. Відгук запишеться в програму і в папку даних (файл «відгуки.txt»). Потім скопіюйте його і надішліть розробнику в месенджер — або збережіть файлом.'));
@@ -2719,7 +2719,7 @@ function openFeedback(){
       b.onclick=()=>{kind=k;seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.k===k)));};seg.append(b);});
     box.append(seg);
     const ta=el('textarea',{id:'fbText',rows:'5',placeholder:'Напр.: «На бланку C довгий висновок заходить на підпис» або «Додати кнопку “плевральні спайки”»','aria-label':'Текст відгуку'});
-    const who=el('input',{id:'fbWho',type:'text',placeholder:'Хто пише (необовʼязково)','aria-label':'Хто пише'});who.value=SET.doctor||'';
+    const who=el('input',{id:'fbWho',type:'text',placeholder:'Хто пише (необов’язково)','aria-label':'Хто пише'});who.value=SET.doctor||'';
     const warn=el('p',{class:'note warnt',hidden:''},'Схоже, у тексті є ПІБ. Не пишіть дані пацієнтів — лише № знімка, якщо треба.');
     ta.addEventListener('input',()=>{warn.hidden=!PII_RE.test(ta.value);});
     box.append(ta,warn,who);
@@ -2816,7 +2816,7 @@ function openPackPreview(d){
     if(m.note)box.append(el('p',{class:'note'},m.note));
     Object.keys(sm.by).forEach(st=>{box.append(el('h3',{style:'margin:6px 0 2px;font-size:15px'},`Типові описи — ${STUDIES[st]?STUDIES[st].n:st}`));const ul=el('ul',{class:'steps'});sm.by[st].forEach(n=>ul.append(el('li',null,n)));box.append(ul);});
     if(sm.extra.length)box.append(el('p',{class:'note'},'Також: '+sm.extra.join(', ')+'.'));
-    box.append(el('p',{class:'note'},'Після встановлення типові описи зʼявляться в рядку «Шаблони» над зонами. Ваші фрази й кнопки доповнюються, а не стираються; повернути як було можна однією кнопкою.'));
+    box.append(el('p',{class:'note'},'Після встановлення типові описи з’являться в рядку «Шаблони» над зонами. Ваші фрази й кнопки доповнюються, а не стираються; повернути як було можна однією кнопкою.'));
     const r=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Встановити');ok.onclick=()=>{const nt=applyPhrasePack(d);closeDlg();renderSettings();renderAll();toast(`Пакет «${m.title}» встановлено${nt?`: типових описів ${nt}`:''}`);};
     const no=el('button',{type:'button',class:'btn'},'Скасувати');no.onclick=closeDlg;r.append(ok,no);box.append(r);});
 }

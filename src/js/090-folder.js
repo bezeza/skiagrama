@@ -47,7 +47,7 @@ async function folderWrite(){
 function folderSoon(){if(!folderOK())return;clearTimeout(folderT);folderT=setTimeout(folderWrite,800);}
 function showFolderBanner(t){$('folderBannerText').textContent=t;$('folderBanner').hidden=false;}
 async function folderPick(){
-  if(!FOLDER_SUPPORTED){toast('Папка даних працює в Chrome або Edge на компʼютері');return;}
+  if(!FOLDER_SUPPORTED){toast('Папка даних працює в Chrome або Edge на комп’ютері');return;}
   try{const parent=await window.showDirectoryPicker({id:'skiagrama',mode:'readwrite'});
     dirH=await parent.getDirectoryHandle(DATA_DIR,{create:true});dirOK=true;await kvSet('dir',dirH);
     $('folderBanner').hidden=true;await folderSync();toast(`Папку даних «${DATA_DIR}» підключено`);renderFolderInfo();}
@@ -58,13 +58,13 @@ async function folderGrant(){
   try{const p=await dirH.requestPermission({mode:'readwrite'});if(p==='granted'){dirOK=true;$('folderBanner').hidden=true;await folderSync();renderFolderInfo();toast('Папку даних підключено');}}
   catch(e){toast('Браузер не дав доступу до папки');}
 }
-async function folderForget(){dirH=null;dirOK=false;await kvDel('dir');renderFolderInfo();toast('Папку даних відʼєднано. Дані в ній лишилися.');}
+async function folderForget(){dirH=null;dirOK=false;await kvDel('dir');renderFolderInfo();toast('Папку даних від’єднано. Дані в ній лишилися.');}
 function renderFolderInfo(){
   const i=$('folderInfo');if(!i)return;
-  if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На компʼютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
+  if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На комп’ютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
   $('folderPick').hidden=false;$('folderForget').hidden=!dirH;
-  i.textContent=folderOK()?`Підключено: «${folderName()}». Туди самі зберігаються: налаштування, пакет фраз, архів (і по місяцях у «архів»), копія кожного протоколу як аркуша — у «протоколи», щоденна копія — у «копії». Після перевстановлення браузера або на іншому компʼютері просто оберіть цю папку знову.`
-    :dirH?`Папка «${folderName()}» запамʼятована, але браузер просить дозвіл. Натисніть «Підключити папку» вгорі.`
+  i.textContent=folderOK()?`Підключено: «${folderName()}». Туди самі зберігаються: налаштування, пакет фраз, архів (і по місяцях у «архів»), копія кожного протоколу як аркуша — у «протоколи», щоденна копія — у «копії». Після перевстановлення браузера або на іншому комп’ютері просто оберіть цю папку знову.`
+    :dirH?`Папка «${folderName()}» запам’ятована, але браузер просить дозвіл. Натисніть «Підключити папку» вгорі.`
     :`Програма створить папку «${DATA_DIR}» у вибраному місці (напр. «Документи») і сама зберігатиме туди архів, шаблони й налаштування.`;
 }
 $('folderPick').onclick=folderPick;$('folderForget').onclick=folderForget;$('folderGrant').onclick=folderGrant;
