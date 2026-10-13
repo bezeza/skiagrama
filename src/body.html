@@ -61,7 +61,7 @@
     <div class="fields" id="studyExtra"></div>
     <div class="group" id="projChips"><span class="gl">Проєкції</span></div>
     <div class="cntrow"><label class="cntl" title="Рахується сам: кількість вибраних проєкцій (обидва суглоби — удвічі). Можна змінити вручну.">Знімків<input id="pCount" type="number" min="1" max="40" value="1"></label><span class="note" id="cntNote">рахується за проєкціями</span><button class="btn sm" id="cntAuto" type="button" hidden>рахувати автоматично</button></div>
-    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Готово» — одразу наступний пацієнт</label>
+    <label class="chk" id="flowWrap" hidden><input type="checkbox" id="flowChk"> потоковий режим: після «Зберегти протокол» — одразу наступний пацієнт</label>
     <div class="prev" id="prevBox" hidden></div>
   </div>
 
@@ -113,7 +113,7 @@
     <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
   </div>
   <div class="actbar noprint">
-    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Готово</span><span class="cnt" id="doneCnt" hidden></span></button>
+    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Зберегти протокол</span><span class="cnt" id="doneCnt" hidden></span></button>
     <div class="split">
       <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><i data-i="copy"></i><span class="lbl2">Копіювати</span></button>
       <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
@@ -209,9 +209,15 @@
   <div class="card">
     <h2 data-ic="work">Робота</h2>
     <label class="chk"><input type="checkbox" id="sAutoFold"> На ноутбуці згортати дані пацієнта в рядок після Enter у полі ЕЕД</label>
-    <label class="chk"><input type="checkbox" id="sFlow"> Потоковий режим для флюорографії: після «Готово» одразу наступний пацієнт</label>
+    <label class="chk"><input type="checkbox" id="sFlow"> Потоковий режим для флюорографії: після «Зберегти протокол» одразу наступний пацієнт</label>
     <label class="chk"><input type="checkbox" id="sFreq"> Часті фрази першими (порядок кнопок оновлюється раз на день)</label>
     <div class="trow"><button class="btn" id="sFreqReset" type="button">Скинути статистику фраз</button></div>
+  </div>
+  <div class="card" id="auditCard">
+    <h2 data-ic="chart">Журнал дій</h2>
+    <p class="note">Зберігається лише в цьому браузері: час, дія та ПІБ із налаштувань (не підтверджує особу). ПІБ пацієнтів і текст протоколів не записуються. Зберігаються останні 5000 подій; до резервної копії архіву журнал не входить.</p>
+    <div class="trow"><button class="btn" id="auditExport" type="button" data-ic="down">Завантажити журнал CSV</button><button class="btn danger" id="auditClear" type="button">Очистити журнал</button><span class="note" id="auditCount"></span></div>
+    <div class="tscroll audit-scroll"><table class="j" id="auditTable"></table></div>
   </div>
   <div class="card">
     <h2 data-ic="hosp">Бланк і реквізити закладу</h2>

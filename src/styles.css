@@ -277,6 +277,7 @@ details.check ul{margin:6px 0 2px;padding-left:18px;color:var(--warn)}
 .view .vh{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .view .vh h2{font-family:var(--display);font-weight:500;font-size:21px;margin:0}
 .tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.audit-scroll{max-height:340px}
 table.j{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
 table.j th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:500;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap}
 table.j td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -517,7 +518,7 @@ body.resizing{cursor:col-resize;user-select:none}
 /* ===== 0.5: вигляд — масштаб, розташування А–Г, дві частини панелі, згортання, форматування ===== */
 @media (min-width:761px){
   header.top,.banners,main.wrap,section.view,#mbar,.modal>.box{zoom:var(--z,1)}
-  .side{height:calc(var(--vh100,100vh) - 20px)}
+  .side{height:var(--sideh,calc(var(--vh100,100vh) - 20px))}
 }
 @media print{header.top,.banners,main.wrap,section.view,.modal>.box{zoom:1 !important}}
 /* шапка в «ноутбуці» чи на вузькому ефективному екрані */
@@ -532,6 +533,17 @@ body.resizing{cursor:col-resize;user-select:none}
 :root.scr-laptop .form{gap:10px}
 :root.scr-laptop .side{padding:10px 12px;gap:8px}
 :root.scr-monitor .wrap,:root.scr-monitor header.top,:root.scr-monitor .banners{max-width:1760px}
+:root.scr-laptop .card{padding:8px 10px;gap:7px}
+:root.scr-laptop .form{gap:7px}
+:root.scr-laptop #zones{grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:6px}
+:root.scr-laptop .zone{padding:7px 8px;gap:5px}
+:root.scr-laptop .studytabs button .simg{width:28px;height:28px}
+:root.scr-laptop .zhead .navrow{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:thin;overscroll-behavior-inline:contain;padding-bottom:2px}
+:root.scr-laptop .zhead .navrow .nk{width:auto}
+:root.scr-laptop #sec-patient.folded{padding:7px 10px}
+:root.scr-laptop #sec-patient.folded .secrow{margin:2px -4px -2px;padding-top:2px}
+:root.scr-laptop #sec-patient.folded .morerow{display:flex!important}
+:root.scr-laptop #sec-patient.folded .morerow>.more{display:none!important}
 
 /* права панель: протокол | висновок */
 .sbody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:0}

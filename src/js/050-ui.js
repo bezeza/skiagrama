@@ -1,7 +1,7 @@
 /* ===== Відображення: вкладки, розділи, зони, висновок, протокол ===== */
 const STUDY_IC={ogk:'lungs',fg:'fg',bone:'bone',spine:'spine',abd:'abd',skull:'skull'};
 const STUDY_SHORT={ogk:'ОГК',fg:'ФГ',bone:'Кістки',spine:'Хребет',abd:'ОЧП',skull:'Череп, ППН'};
-function switchStudy(k){if(S.study===k)return;tick();editZone=null;const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull,blank:S.blank};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
+function switchStudy(k){if(S.study===k)return;tick();audit('study_selected');editZone=null;const keep={obj:S.obj,side:S.side,dept:S.dept,skull:S.skull,blank:S.blank};S=Object.assign(blank(k),keep);S.prevId=findPrev();setEedDefault();renderAll();}
 function renderStudy(){
   const st=$('studyTabs');st.textContent='';
   Object.keys(STUDIES).forEach(k=>{const b=el('button',{type:'button',role:'tab','aria-selected':String(S.study===k),title:STUDIES[k].n});b.append(STUDY_IMG[k]?el('img',{class:'simg',src:STUDY_IMG[k],alt:'',width:'36',height:'36'}):icEl(STUDY_IC[k]),document.createTextNode(STUDY_SHORT[k]||STUDIES[k].n));b.onclick=()=>switchStudy(k);st.append(b);});
@@ -47,15 +47,15 @@ function renderSecNav(){const n=$('secNav');if(!n)return;n.textContent='';
   items.push(['sec-concl','Висновок',ct.t.includes('…')?'e':ct.auto?'n':'c'],['sec-rec','Рекомендації',S.recs.length||$('recFree').value.trim()?'c':null]);
   items.forEach(([id,t,d])=>{const b=el('button',{type:'button','data-sec':id,class:secCur===id?'on':null});b.append(document.createTextNode(t));if(d)b.append(el('span',{class:'dot '+d,'aria-hidden':'true'}));b.onclick=()=>goSec(id);n.append(b);});}
 let secCur='sec-patient';
-function goSec(id){const t=$(id);if(!t)return;if(isFolded(id))setFold(id,false);if(id==='sec-patient'){window.scrollTo({top:0,behavior:'smooth'});return;}const pc=t.closest('#partConcl');if(pc)pc.scrollTo({top:Math.max(0,t.offsetTop-6),behavior:'smooth'});else t.scrollIntoView({block:'start',behavior:'smooth'});flashEl(t);
+function goSec(id){const t=$(id);if(!t)return;if(id!=='sec-patient')foldLaptopSetup();if(isFolded(id))setFold(id,false);if(id==='sec-patient'){window.scrollTo({top:0,behavior:'smooth'});return;}const pc=t.closest('#partConcl');if(pc)pc.scrollTo({top:Math.max(0,t.offsetTop-6),behavior:'smooth'});else t.scrollIntoView({block:'start',behavior:'smooth'});flashEl(t);
   if(!t.closest('.form')){secCur=id;document.querySelectorAll('#secNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===id));}}
 function flashEl(e){e.classList.remove('hl');void e.offsetWidth;e.classList.add('hl');setTimeout(()=>e.classList.remove('hl'),1300);}
-function gotoZone(id){if(isFolded('sec-zones'))setFold('sec-zones',false);S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}
+function gotoZone(id){foldLaptopSetup();if(isFolded('sec-zones'))setFold('sec-zones',false);S.open=(S.zones[id]&&S.zones[id].st==='c')?id:S.open;S.focus=id;renderZones();renderNav();const z=$('zone-'+id);if(z){z.scrollIntoView({block:'nearest',behavior:'smooth'});flashEl(z);}}
 function renderStepper(){const vz=visibleZones();let i=vz.findIndex(d=>d.id===S.focus);if(i<0)i=0;const d=vz[i];if(!d)return;
   $('stName').textContent=`${d.name} · ${i+1}/${vz.length}`;$('stName').onclick=()=>openNavSheet();
   $('stPrev').disabled=i===0;$('stNext').disabled=i===vz.length-1;
   $('stPrev').onclick=()=>gotoZone(vz[Math.max(0,i-1)].id);$('stNext').onclick=()=>gotoZone(vz[Math.min(vz.length-1,i+1)].id);}
-function openZone(id,scroll){if(isFolded('sec-zones'))setFold('sec-zones',false);S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z){z.scrollIntoView({block:'start',behavior:'smooth'});flashEl(z);}}}
+function openZone(id,scroll){foldLaptopSetup();if(isFolded('sec-zones'))setFold('sec-zones',false);S.open=id;S.focus=id;renderZones();renderNav();if(scroll){const z=$('zone-'+id);if(z){z.scrollIntoView({block:'nearest',behavior:'smooth'});flashEl(z);}}}
 
 /* Кнопки зони: звичайний режим і редагування (олівець ✎).
    Завдання для тебе: знайди в 020-data.js зону «Інфільтрація» (id:'infil') і подивись,
@@ -74,7 +74,7 @@ function renderZonesInner(){
     h.append(pen);head.append(h);
     const seg=el('div',{class:'seg',role:'group','aria-label':d.name});
     [['n','Норма'],['c','Зміни'],['x','—']].forEach(([st,l])=>{const b=el('button',{type:'button','aria-pressed':String(z.st===st),class:st==='n'?'n':'',title:st==='x'?'Не згадувати в протоколі':st==='n'?(normOf(d)||'У нормі не описується'):null},l);
-      b.onclick=()=>{tick();z.st=st;S.focus=d.id;S.open=st==='c'?d.id:(S.open===d.id?null:S.open);renderAll();};seg.append(b);});
+      b.onclick=()=>{tick();audit('zone_status_changed');z.st=st;S.focus=d.id;S.open=st==='c'?d.id:(S.open===d.id?null:S.open);foldLaptopSetup();renderAll();};seg.append(b);});
     head.append(seg);
     const t=zoneText(d);const isOpen=z.st==='c'&&S.open===d.id;
     const ph=el('button',{type:'button',class:'phrase'+(z.st==='c'?' ch':''),'aria-expanded':z.st==='c'?String(isOpen):null},
@@ -88,13 +88,13 @@ function renderZonesInner(){
           inp.addEventListener('input',()=>{tick('text');z.sel[g.id]=inp.value;ph.textContent=zoneText(d);renderSide();renderConcl();renderNav();});row.append(inp);}
         else effOpts(d,g).forEach(o=>{const k=o.k;const on=g.many?(z.sel[g.id]||[]).includes(k):z.sel[g.id]===k;
           const b=el('button',{type:'button',class:'chip','aria-pressed':String(on),title:'У протокол: «'+o.ph+'»'},o.lb);
-          b.onclick=()=>{tick();if(!on)countUse(d,g,k);if(g.many){const a=z.sel[g.id]||(z.sel[g.id]=[]);const i=a.indexOf(k);i>=0?a.splice(i,1):a.push(k);}else z.sel[g.id]=on?null:k;renderAll();};row.append(b);});
+          b.onclick=()=>{tick();audit('zone_button_changed');if(!on)countUse(d,g,k);if(g.many){const a=z.sel[g.id]||(z.sel[g.id]=[]);const i=a.indexOf(k);i>=0?a.splice(i,1):a.push(k);}else z.sel[g.id]=on?null:k;renderAll();};row.append(b);});
         box.append(row);});
       /* мої кнопки */
       const row=el('div',{class:'group'});row.append(el('span',{class:'gl'},'Мої'));
       const mine=z.sel.__my||(z.sel.__my=[]);
       myList(d).forEach(p=>{const on=mine.includes(p);const w=el('span',{class:'tpl'});
-        const a=el('button',{type:'button','aria-pressed':String(on),title:'У протокол: «'+sentence(p)+'»'},p);a.onclick=()=>{tick();on?mine.splice(mine.indexOf(p),1):mine.push(p);renderAll();};
+        const a=el('button',{type:'button','aria-pressed':String(on),title:'У протокол: «'+sentence(p)+'»'},p);a.onclick=()=>{tick();audit('zone_button_changed');on?mine.splice(mine.indexOf(p),1):mine.push(p);renderAll();};
         const x=el('button',{type:'button','aria-label':'Видалити кнопку «'+p+'»'},'×');
         x.onclick=()=>{if(x.dataset.c){SET.my[myKey(d)]=myList(d).filter(q=>q!==p);saveSet();const i=mine.indexOf(p);if(i>=0)mine.splice(i,1);renderAll();}else{x.dataset.c='1';x.textContent='видалити?';setTimeout(()=>{x.dataset.c='';x.textContent='×';},3000);}};
         w.append(a,x);row.append(w);});
@@ -196,18 +196,45 @@ const conclChipList=()=>[normConclOf(),...effList('concl').map(x=>x.t)];
 function renderRecs(){renderChipList('rec');}
 /* кнопки висновку / рекомендацій: звичайний режим, «+ свій», олівець ✎ */
 let editList=null;
+function manualConclusionExtra(){
+  if(S.manual==null)return '';
+  const line=String(S.manual).split('\n').find(x=>/^Rö-ч:/.test(x.trim()));
+  if(!line)return '';
+  let extra=line.trim().replace(/^Rö-ч:\s*/,'');
+  const known=S.concl.length?S.concl:(allNormal()?[normConclOf()]:[]);
+  known.forEach(t=>{const phrase=String(t).trim().replace(/[.!?]+$/,'');if(phrase)extra=extra.replace(phrase,'');});
+  return extra.replace(/^[\s.;]+|[\s.;]+$/g,'').trim();
+}
+function syncManualConclusion(extra){
+  if(S.manual==null)return;
+  const tail=extra?( /[.!?]$/.test(extra)?extra:extra+'.'):'';
+  const line=[conclText().t,tail].filter(Boolean).join(' ');
+  if(S.manualHtml){
+    const root=document.createElement('div');root.innerHTML=cleanHtml(S.manualHtml);
+    const nodes=[...root.childNodes],existing=nodes.find(n=>n.nodeType===1&&n.textContent.trim().startsWith('Rö-ч:'));
+    if(existing){existing.textContent=line;existing.classList.add('concl');}
+    else{const block=el('div',{class:'concl'},line),before=nodes.find(n=>n.nodeType===1&&/^(ЕЕД|Лікар)/.test(n.textContent.trim()));root.insertBefore(block,before||null);}
+    S.manualHtml=cleanHtml(root.innerHTML);
+    S.manual=[...root.childNodes].map(n=>n.nodeType===1?(n.innerText||n.textContent):n.textContent).filter(Boolean).join('\n').replace(/\s+$/,'');
+    return;
+  }
+  const lines=String(S.manual).split('\n'),at=lines.findIndex(x=>/^Rö-ч:/.test(x.trim()));
+  if(at>=0)lines[at]=line;
+  else{const before=lines.findIndex(x=>/^(ЕЕД|Лікар)/.test(x.trim()));lines.splice(before<0?lines.length:before,0,line);}
+  S.manual=lines.join('\n');
+}
 function addToList(kind,text){
   text=String(text||'').trim().replace(/\.$/,'');if(!text)return false;
   const key=listKeyOf(kind);const L=SET.lists[key]||(SET.lists[key]={});const a=L.add||(L.add=[]);
   if(!effList(kind,true).some(x=>x.t===text))a.push({k:'u'+Date.now().toString(36)+Math.random().toString(36).slice(2,4),t:text});
-  saveSet();const arr=kind==='concl'?S.concl:S.recs;if(!arr.includes(text))arr.push(text);return true;
+  saveSet();const arr=kind==='concl'?S.concl:S.recs;if(!arr.includes(text))arr.push(text);if(kind==='concl')audit('conclusion_button_added');return true;
 }
 function renderChipList(kind){
   const isC=kind==='concl';const root=$(isC?'conclChips':'recChips'),tools=$(isC?'conclTools':'recTools');root.textContent='';tools.textContent='';
   const arr=isC?S.concl:S.recs;
   if(editList===kind){root.hidden=true;renderListEditor(kind,tools);return;}root.hidden=false;
   const chip=(t,k)=>{const on=arr.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
-    b.onclick=()=>{tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}renderAll();};root.append(b);};
+    b.onclick=()=>{const extra=isC?manualConclusionExtra():'';tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}if(isC){audit(on?'conclusion_removed':'conclusion_selected');syncManualConclusion(extra);}renderAll();};root.append(b);};
   if(isC)chip(normConclOf(),null);
   effList(kind).forEach(x=>chip(x.t,x.k));
   const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'});pen.append(icEl('pen'),document.createTextNode('Редагувати кнопки'));pen.onclick=()=>{editList=kind;renderChipList(kind);};
@@ -240,7 +267,7 @@ function renderListEditor(kind,box){
       x.onclick=()=>{if(x.dataset.c){const LL=L();LL.add=(LL.add||[]).filter(y=>y.k!==o.k);saveSet();renderChipList(kind);}else{x.dataset.c='1';x.textContent='видалити?';setTimeout(()=>{x.dataset.c='';x.textContent='×';},3000);}};r.append(x);}
     wrap.append(r);});
   const ar=el('div',{class:'erow add'});const ai=el('input',{type:'text',class:'eph',placeholder:isC?'Новий висновок':'Нова рекомендація','aria-label':isC?'Новий висновок':'Нова рекомендація'});
-  const ab=el('button',{type:'button',class:'btn sm'},'+ Додати');ab.onclick=()=>{const v=ai.value.trim().replace(/\.$/,'');if(!v){ai.focus();return;}const LL=L();(LL.add||(LL.add=[])).push({k:'u'+Date.now().toString(36),t:v});saveSet();renderChipList(kind);};
+  const ab=el('button',{type:'button',class:'btn sm'},'+ Додати');ab.onclick=()=>{const v=ai.value.trim().replace(/\.$/,'');if(!v){ai.focus();return;}const LL=L();(LL.add||(LL.add=[])).push({k:'u'+Date.now().toString(36),t:v});saveSet();if(isC)audit('conclusion_button_added');renderChipList(kind);};
   ai.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ab.click();}});ar.append(ai,ab);wrap.append(ar);box.append(wrap);
   const has=!!SET.lists[key]&&Object.keys(SET.lists[key]).some(k=>{const v=SET.lists[key][k];return Array.isArray(v)?v.length:Object.keys(v||{}).length;})||(isC&&!!SET.conclNorm[S.study]);
   const r=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn sm primary'},'Готово');ok.onclick=()=>{editList=null;renderAll();};
@@ -298,7 +325,7 @@ function renderPaper(){
     if(P.rec)tx.append(el('div',{class:'recs'},P.rec));
     tx.append(el('div',{class:'foot'},P.eed+'   '+P.doc));
   }
-  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();S.manualHtml=ptextHtml();updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
+  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();S.manualHtml=ptextHtml();if(first)audit('manual_edit_started');updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
   tx.addEventListener('blur',()=>{if(S.manual!=null){renderBlankAdviceSoon();}});
   p.append(tx);
   p.append(el('p',{class:'note phint'},'Текст можна правити прямо тут. Alt+клік по реченню — відкрити його зону.'));

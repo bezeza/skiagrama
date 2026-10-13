@@ -29,7 +29,7 @@ function renderArchive(){
   bb.hidden=fOk||!(A.length&&SET.lastBackup!==today());bb.textContent=SET.lastBackup?`Останню копію архіву збережено ${fmtD(SET.lastBackup)}. Збережіть сьогоднішню копію внизу сторінки або підключіть папку даних у «Налаштуваннях».`:'Копію архіву ще не зберігали. Збережіть її внизу сторінки або підключіть папку даних у «Налаштуваннях».';
   $('backupMsg').textContent=fOk?`Архів автоматично зберігається в папку даних «${folderName()}».`:'Архів зберігається лише в браузері цього пристрою. Раз на день зберігайте копію у файл або підключіть папку даних.';
   const rows=aFiltered();const tb=$('aTable');tb.textContent='';
-  if(!A.length){const tr=el('tr');tr.append(el('td',{class:'empty',colspan:'8'},'Архів порожній. Протокол потрапляє сюди після кнопки «Готово». Можна додати приклади внизу.'));tb.append(tr);updPrintBtn();return;}
+  if(!A.length){const tr=el('tr');tr.append(el('td',{class:'empty',colspan:'8'},'Архів порожній. Протокол потрапляє сюди після кнопки «Зберегти протокол». Можна додати приклади внизу.'));tb.append(tr);updPrintBtn();return;}
   const hr=el('tr');const all=el('input',{type:'checkbox','aria-label':'Вибрати всі'});all.checked=rows.length&&rows.every(r=>selected.has(r.id));all.onchange=()=>{rows.forEach(r=>all.checked?selected.add(r.id):selected.delete(r.id));renderArchive();};
   const th0=el('th');th0.append(all);hr.append(th0);['Дата','№','ПІБ','Дослідження','Висновок','Друк',''].forEach(h=>hr.append(el('th',null,h)));tb.append(hr);
   if(!rows.length){const tr=el('tr');tr.append(el('td',{class:'empty',colspan:'8'},'За цими фільтрами протоколів немає.'));tb.append(tr);}

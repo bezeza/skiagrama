@@ -14,7 +14,7 @@ $('pName').addEventListener('input',()=>{tick('text');const name=norm($('pName')
 $('pCount').addEventListener('input',()=>{S.countManual=true;syncCount();saveDraftSoon();});
 $('cntAuto').onclick=()=>{tick();S.countManual=false;syncCount();};
 function samePtAsk(){if(!$('pName').value.trim()){toast('Спершу введіть ПІБ пацієнта');$('pName').focus();return;}
-  if(!editingId&&(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length)&&!confirm('Поточний протокол ще не збережено («Готово»). Почати нове дослідження цьому пацієнту?'))return;sameStudyPatient();}
+  if(!editingId&&(S.manual!=null||Object.values(S.zones).some(z=>z.st==='c')||S.concl.length)&&!confirm('Поточний протокол ще не збережено («Зберегти протокол»). Почати нове дослідження цьому пацієнту?'))return;sameStudyPatient();}
 $('samePtMenu').onclick=samePtAsk;$('newPtMenu').onclick=()=>$('newPatient').click();
 $('samePtTop').onclick=samePtAsk;
 ['pAge','pSex','pDept','pRefDoc','pNum','pDate','pEed'].forEach(id=>$(id).addEventListener('input',()=>{tick('text');renderSide();}));
@@ -48,7 +48,8 @@ $('pName').addEventListener('blur',e=>{const v=capName(e.target.value);if(v!==e.
 $('pAge').addEventListener('input',()=>{$('ageMsg').hidden=true;});
 /* Enter переводить далі: ПІБ → вік → № → дата → ЕЕД → проєкції / перша зона */
 const ENTER_NEXT=['pName','pAge','pNum','pDate','pEed'];
-function focusAfterPatient(){if(SET.autoFold!==false&&!isPhone()&&screenNow()==='laptop'&&$('pName').value.trim()&&!isFolded('sec-patient')){setFold('sec-patient',true);toast('Дані пацієнта згорнуто в рядок — клік, щоб змінити');}
+function focusAfterPatient(){if(!isPhone()&&screenNow()==='laptop'&&isFolded('sec-study'))setFold('sec-study',false);
+  if(SET.autoFold!==false&&!isPhone()&&screenNow()==='laptop'&&$('pName').value.trim()&&!isFolded('sec-patient')){setFold('sec-patient',true);toast('Дані пацієнта згорнуто в рядок — клік, щоб змінити');}
   const pc=$('projChips');const c=!pc.hidden&&pc.querySelector('.chip');if(c){c.focus();c.scrollIntoView({block:'nearest'});return;}
   const z=document.querySelector('#zones .seg button');if(z){z.focus();z.scrollIntoView({block:'nearest'});}}
 ENTER_NEXT.forEach((id,i)=>$(id).addEventListener('keydown',e=>{
@@ -61,7 +62,7 @@ $('recKeep').onclick=()=>{const v=$('recFree').value;if(!v.trim()){$('recFree').
 $('flowChk').addEventListener('change',e=>{SET.flow=e.target.checked;saveSet();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{const t=$(b.dataset.go);if(t)t.scrollIntoView({block:'start',behavior:'smooth'});}));
 
-function allNorm(){tick();visibleZones().forEach(d=>S.zones[d.id]={st:'n',sel:{}});S.concl=[];S.dismissed=[];S.open=null;S.manual=null;$('conclFree').value='';renderAll();toast('Норму виставлено в усіх зонах');}
+function allNorm(){tick();visibleZones().forEach(d=>S.zones[d.id]={st:'n',sel:{}});S.concl=[];S.dismissed=[];S.open=null;S.manual=null;$('conclFree').value='';foldLaptopSetup();renderAll();toast('Норму виставлено в усіх зонах');}
 $('allNorm').onclick=allNorm;
 function newPatient(keep){
   const date=keep?$('pDate').value:today();const eedKeep=$('pEed').value;
@@ -127,7 +128,7 @@ function doSave(){
     ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),count:Math.max(1,+$('pCount').value||1),notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
-  saveA();store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
+  saveA();audit(prev?'protocol_updated':'protocol_saved');store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
   if(S.study==='fg'&&SET.flow){const nx=nextNum();closeSheet();newPatient(true);renderAll();$('pName').focus();toast(`Збережено. Наступний пацієнт${nx?' — № '+nx:''}`);return;}
   editingId=rec.id;tDone=Date.now();renderChecks();renderMeter();toast(i>=0?'Протокол оновлено в архіві':'Збережено в архів');backupNudge();
 }
