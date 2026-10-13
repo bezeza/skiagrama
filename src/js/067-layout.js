@@ -2,20 +2,29 @@
 const LAYOUTS={A:'Класичне',B:'Робоче місце',C:'Дзеркальне',D:'Один стовпчик'};
 const SCALES=[90,100,110,125,150];
 const isPhone=()=>window.innerWidth<=760;
-const zoomNow=()=>isPhone()?1:(SET.scale||100)/100;
+const scaleNow=()=>SET.scale||((SET.screen==='laptop'||((SET.screen||'auto')==='auto'&&window.innerWidth<1500))?90:100);
+const zoomNow=()=>isPhone()?1:scaleNow()/100;
 const screenNow=()=>{const m=SET.screen||'auto';return m==='auto'?(window.innerWidth<1500?'laptop':'monitor'):m;};
 const layoutNow=()=>isPhone()?'A':(LAYOUTS[SET.layout]?SET.layout:'B');
 
 /* масштаб усієї програми (друк і файли не змінюються) */
+function applySideHeight(){
+  if(isPhone())return;
+  const side=$('side');if(!side)return;
+  const h=Math.max(360,(window.innerHeight-side.getBoundingClientRect().top-12)/zoomNow());
+  document.documentElement.style.setProperty('--sideh',h.toFixed(1)+'px');
+}
 function applyScale(){const z=zoomNow(),r=document.documentElement;r.style.setProperty('--z',z);r.style.setProperty('--vh100',(window.innerHeight/z).toFixed(1)+'px');
   const ew=window.innerWidth/z;r.classList.toggle('w-lt1280',!isPhone()&&ew<1280);r.classList.toggle('w-lt1180',!isPhone()&&ew<1180);
-  r.classList.toggle('scr-laptop',screenNow()==='laptop');r.classList.toggle('scr-monitor',screenNow()==='monitor');}
+  r.classList.toggle('scr-laptop',screenNow()==='laptop');r.classList.toggle('scr-monitor',screenNow()==='monitor');
+  if(screenNow()!=='laptop'&&laptopStudyAutoFold){laptopStudyAutoFold=false;applyFolds();}
+  applySideHeight();}
 function setScale(v,quiet){SET.scale=Math.max(SCALES[0],Math.min(SCALES[SCALES.length-1],v));saveSet();applyScale();applySideW();if(!quiet)toast(`Масштаб ${SET.scale} %`);renderViewMenu();if(paperView)renderSide();}
-function stepScale(d){const cur=SET.scale||100;let i=SCALES.findIndex(s=>s>=cur);if(i<0)i=SCALES.length-1;if(SCALES[i]!==cur&&d<0)i=i;else i=Math.max(0,Math.min(SCALES.length-1,i+d));setScale(SCALES[i]);}
+function stepScale(d){const cur=scaleNow();let i=SCALES.findIndex(s=>s>=cur);if(i<0)i=SCALES.length-1;if(SCALES[i]!==cur&&d<0)i=i;else i=Math.max(0,Math.min(SCALES.length-1,i+d));setScale(SCALES[i]);}
 
-/* режим екрана: ноутбук — компактно (100 %), монітор — просторо (110 %, більший текст протоколу) */
-function setScreen(k){SET.screen=k;if(k!=='auto'){SET.scale=k==='laptop'?100:110;SET.pfs=k==='laptop'?'m':'l';}saveSet();applyLook();applyScale();applySideW();applySplit();renderViewMenu();renderSide();
-  if(!$('view-settings').hidden){$('sScale').value=String(SET.scale||100);$('sScreen').value=k;}
+/* режим екрана: ноутбук — компактно (90 %), монітор — просторо (110 %, більший текст протоколу) */
+function setScreen(k){SET.screen=k;if(k!=='auto'){SET.scale=k==='laptop'?90:110;SET.pfs=k==='laptop'?'m':'l';}saveSet();applyLook();applyScale();applySideW();applySplit();renderViewMenu();renderSide();
+  if(!$('view-settings').hidden){$('sScale').value=String(scaleNow());$('sScreen').value=k;}
   toast(k==='auto'?'Екран: визначається сам':k==='laptop'?'Екран: ноутбук — компактно':'Екран: монітор — просторо');}
 /* розташування */
 function applyLayout(){
@@ -23,7 +32,7 @@ function applyLayout(){
   w.classList.toggle('lay-a',L==='A');w.classList.toggle('lay-b',L!=='A');w.classList.toggle('mirror',L==='C');w.classList.toggle('onecol',L==='D');
   if(L==='A'){const form=w.querySelector('section.form');if(c.parentNode!==form){form.append(c,r);}$('checkHome').append(ck);}
   else if(c.parentNode!==pc){pc.append(c,r,ck);}
-  applySplit();applyFolds();
+  applySplit();applyFolds();applySideHeight();
 }
 /* межа між протоколом і висновком */
 const splitDef=()=>screenNow()==='monitor'?0.6:0.55;
@@ -51,8 +60,16 @@ const FOLDS=[
   {id:'partDoc',t:'Текст протоколу',at:null,how:null}];
 const CHEV_D='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const CHEV_R='<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const isFolded=id=>!!(SET.fold||{})[id];
-function setFold(id,v){SET.fold=SET.fold||{};if(v)SET.fold[id]=true;else delete SET.fold[id];saveSet();applyFolds();}
+let laptopStudyAutoFold=false;
+const isFolded=id=>(id==='sec-study'&&laptopStudyAutoFold)||!!(SET.fold||{})[id];
+function setFold(id,v){if(id==='sec-study')laptopStudyAutoFold=false;SET.fold=SET.fold||{};if(v)SET.fold[id]=true;else delete SET.fold[id];saveSet();applyFolds();}
+function foldLaptopSetup(){
+  if(screenNow()!=='laptop')return;
+  let changed=false;SET.fold=SET.fold||{};
+  if(SET.autoFold!==false&&$('pName').value.trim()&&!isFolded('sec-patient')){SET.fold['sec-patient']=true;changed=true;}
+  if(!isFolded('sec-study')){laptopStudyAutoFold=true;changed=true;}
+  if(changed){saveSet();applyFolds();}
+}
 function initFolds(){
   FOLDS.forEach(f=>{const card=$(f.id);if(!card)return;
     const h=el('div',{class:'foldh'});const b=el('button',{type:'button',class:'fbtn','aria-label':`Розгорнути «${f.t}»`,title:'Розгорнути'});b.innerHTML=CHEV_R;b.onclick=()=>setFold(f.id,false);
@@ -97,7 +114,7 @@ function renderViewMenu(){const box=$('viewPop');if(!box)return;box.textContent=
   if(!isPhone())row('Пацієнт після заповнення',[['on','згортати в рядок'],['off','не згортати']],SET.autoFold===false?'off':'on',k=>{SET.autoFold=k==='on';saveSet();renderViewMenu();if(!$('view-settings').hidden)$('sAutoFold').checked=SET.autoFold;toast(SET.autoFold?'Дані пацієнта згортатимуться після Enter у полі ЕЕД (ноутбук)':'Дані пацієнта не згортаються самі');});
   const r=el('div',{class:'vrow'});r.append(el('span',{class:'vl'},'Масштаб'));const s=el('div',{class:'seg'});
   const m=el('button',{type:'button','data-keep':'1',title:'Зменшити (Alt+−)','aria-label':'Зменшити масштаб'},'A−');m.onclick=()=>stepScale(-1);
-  const cur=el('button',{type:'button','data-keep':'1',title:'Повернути 100 % (Alt+0)'},`${SET.scale||100} %`);cur.onclick=()=>setScale(100);
+  const cur=el('button',{type:'button','data-keep':'1',title:'Повернути 100 % (Alt+0)'},`${scaleNow()} %`);cur.onclick=()=>setScale(100);
   const pl=el('button',{type:'button','data-keep':'1',title:'Збільшити (Alt++)','aria-label':'Збільшити масштаб'},'A+');pl.onclick=()=>stepScale(1);
   s.append(m,cur,pl);r.append(s);box.append(r);
   box.append(el('p',{class:'note'},'Масштаб і шрифт стосуються лише екрана. Друк, PDF і Word — за бланком.'));
@@ -152,7 +169,7 @@ $('paperBtn').onclick=()=>setView(!paperView);
 function initView(){initFolds();initFmt();
   const vm=$('viewMenu');if(vm)vm.addEventListener('toggle',()=>{if(vm.open)renderViewMenu();});
   $('foldAll').onclick=toggleFoldAll;
-  if(window.ResizeObserver){const ro=new ResizeObserver(applySplitSoon);ro.observe($('paper'));ro.observe($('sbody'));}
+  if(window.ResizeObserver){const ro=new ResizeObserver(()=>{applySplitSoon();applySideHeight();});ro.observe($('paper'));ro.observe($('sbody'));ro.observe(document.querySelector('header.top'));ro.observe(document.querySelector('.banners'));}
   document.addEventListener('keydown',e=>{if(!e.altKey||e.ctrlKey||e.metaKey)return;if(e.key==='='||e.key==='+'||e.code==='NumpadAdd'){e.preventDefault();stepScale(1);}else if(e.key==='-'||e.code==='NumpadSubtract'){e.preventDefault();stepScale(-1);}else if(e.key==='0'&&!typing(e)){e.preventDefault();setScale(100);}});
   let lastPhone=isPhone();window.addEventListener('resize',()=>{applyScale();if(isPhone()!==lastPhone){lastPhone=isPhone();applyLayout();}});
   /* одноразово: старий «Розмір шрифту» → масштаб */

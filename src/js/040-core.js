@@ -1,5 +1,5 @@
 /* ===== Сховища, налаштування, стан, генерація тексту ===== */
-const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1';
+const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1',AUDIT_KEY='skiagrama.audit.v1';
 let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Терапевтичне №2, Хірургічне, Неврологічне, Інфекційне, Педіатричне, Амбулаторно',
   eed:{...DEF_EED},docTitle:'Лікар-рентгенолог',norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},lists:{},conclNorm:{},
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
@@ -18,6 +18,13 @@ if(!A){const old=store.get('skiagrama.journal.v1',[]);A=Array.isArray(old)?old:[
    Дві вкладки: перед записом підтягуємо чужі зміни; видалені записи пам’ятаємо (DEL_KEY), щоб вони не «воскресали». */
 const DEL_KEY='skiagrama.archive.deleted';
 let aKnown=new Set(A.map(r=>r.id)),aDeleted=new Set(store.get(DEL_KEY,[])),aChain=Promise.resolve(),aFailNote=false;
+let AUDIT=store.get(AUDIT_KEY,[]);
+if(!Array.isArray(AUDIT))AUDIT=[];
+function audit(action){
+  AUDIT.push({time:new Date().toISOString(),actor:String(SET.doctor||'Не вказано'),action});
+  if(AUDIT.length>5000)AUDIT.splice(0,AUDIT.length-5000);
+  store.set(AUDIT_KEY,AUDIT);
+}
 const bc=typeof BroadcastChannel==='function'?new BroadcastChannel('skiagrama'):null;
 function idbPut(k,v){return idb().then(db=>new Promise(res=>{try{const t=db.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=()=>res(true);t.onerror=t.onabort=()=>res(false);}catch(e){res(false);}})).catch(()=>false);}
 function mergeInto(list){let n=0;const byId=new Map(A.map(r=>[r.id,r]));
@@ -219,7 +226,7 @@ function protocol(){
   measResults().filter(x=>!x.bad).forEach(x=>body.push({t:x.r.ph,zone:'meas'}));
   const dy=dynText();if(dy)body.push({t:dy,zone:'prev'});
   const eed=$('pEed').value.trim();
-  return {head:`${name}${age?', '+ageStr(age):''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()}: ${SET.doctor||'____________'}`};
+  return {head:`${name}${age?', '+ageStr(age):''}`,ref:headerLine(),body,concl:conclText(),rec:recText(),eed:eed?`ЕЕД ${eed} мЗв.`:'ЕЕД ___ мЗв.',doc:`${DOC_TITLE()} ______________ ${SET.doctor||'[ПІБ]'}`};
 }
 const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографія ОГК',bone:`Rö-графія ${objPhrase()}`,spine:`Rö-графія ${deptGen()} відділу хребта`,abd:'Оглядова Rö-графія ОЧП',skull:`Rö-графія ${S.skull==='ppn'?'ППН':'черепа'}`}[S.study]);
 function docData(){

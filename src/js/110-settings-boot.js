@@ -1,13 +1,33 @@
 /* ===== Налаштування і запуск ===== */
 function renderSettings(){
-  $('sDoctor').value=SET.doctor;$('sDocTitle').value=SET.docTitle||'';$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sScale').value=String(SET.scale||100);$('sScreen').value=SET.screen||'auto';$('sLayout').value=layoutNow();
+  $('sDoctor').value=SET.doctor;$('sDocTitle').value=SET.docTitle||'';$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sScale').value=String(scaleNow());$('sScreen').value=SET.screen||'auto';$('sLayout').value=layoutNow();
   $('sFlow').checked=!!SET.flow;$('sAutoFold').checked=SET.autoFold!==false;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
   const e=$('sEed');e.textContent='';Object.keys(STUDIES).forEach(k=>{const l=el('label',{class:'f'},STUDIES[k].n);const i=el('input',{type:'text',inputmode:'decimal'});i.value=SET.eed[k]||'';i.addEventListener('input',()=>{SET.eed[k]=i.value.trim();saveSet();});l.append(i);e.append(l);});
   const ns=$('sNormStudy');if(!ns.options.length)Object.keys(STUDIES).forEach(k=>ns.append(el('option',{value:k},STUDIES[k].n)));
   const sb=$('sBlank');if(!sb.options.length)BLANK_ORDER.forEach(b=>sb.append(el('option',{value:b},`${b} · ${BLANKS[b].n}`)));sb.value=SET.blank||'C';$('sBlankWhy').textContent=blankWhy(sb.value);
   const o=ORG();ORG_FIELDS.forEach(([id,k])=>{$(id).value=o[k]||'';});
-  renderNorms();renderMy();renderAbbr();renderPacks();renderFolderInfo();$('sVer').textContent=`Skiagrama ${VERSION} бета. Працює без інтернету; оновлення приходять самі, коли є мережа.`;
+  renderNorms();renderMy();renderAbbr();renderPacks();renderFolderInfo();renderAudit();$('sVer').textContent=`Skiagrama ${VERSION} бета. Працює без інтернету; оновлення приходять самі, коли є мережа.`;
 }
+const AUDIT_ACTIONS={study_selected:'Обрано вид дослідження',zone_status_changed:'Змінено стан зони',zone_button_changed:'Змінено параметри зони кнопкою',protocol_saved:'Збережено протокол',protocol_updated:'Оновлено протокол',manual_edit_started:'Почато ручне редагування протоколу',conclusion_button_added:'Додано кнопку висновку',conclusion_selected:'Обрано висновок',conclusion_removed:'Прибрано висновок',audit_cleared:'Журнал очищено'};
+function renderAudit(){
+  const table=$('auditTable');if(!table)return;table.textContent='';
+  const head=el('thead');const hr=el('tr');['Час','Хто (з налаштувань)','Дія'].forEach(t=>hr.append(el('th',null,t)));head.append(hr);
+  const body=el('tbody'),rows=AUDIT.slice(-100).reverse();
+  rows.forEach(e=>{const tr=el('tr');let time='—';const d=new Date(e.time);if(isFinite(d.getTime()))time=d.toLocaleString('uk-UA');
+    tr.append(el('td',null,time),el('td',null,String(e.actor||'Не вказано')),el('td',null,AUDIT_ACTIONS[e.action]||'Інша дія'));body.append(tr);});
+  if(!rows.length){const tr=el('tr');tr.append(el('td',{colspan:'3',class:'empty'},'Подій поки немає.'));body.append(tr);}
+  table.append(head,body);$('auditCount').textContent=`${AUDIT.length} подій · показано до 100 останніх`;
+}
+$('auditExport').onclick=()=>{
+  const field=value=>{const s=String(value??'');const safe=/^[=+\-@\t\r]/.test(s)?`'${s}`:s;return '"'+safe.replace(/"/g,'""')+'"';};
+  const rows=[['Час','Хто (з налаштувань)','Дія'],...AUDIT.map(e=>[e.time,e.actor,AUDIT_ACTIONS[e.action]||'Інша дія'])];
+  const ok=download(`Skiagrama_журнал_дій_${today()}.csv`,'\ufeff'+rows.map(r=>r.map(field).join(';')).join('\r\n'),'text/csv');
+  toast(ok?'Журнал дій завантажено':'Не вдалося зберегти файл');
+};
+$('auditClear').onclick=()=>{
+  if(!confirm('Очистити локальний журнал дій? Цю дію не можна скасувати.'))return;
+  AUDIT=[];audit('audit_cleared');renderAudit();
+};
 function renderNorms(){
   const k=$('sNormStudy').value||'ogk';const root=$('sNorms');root.textContent='';
   STUDIES[k].zones.forEach(d=>{const l=el('label',{class:'f'},d.name+(d.tbd?' (стандартна фраза — припущення)':''));const i=el('input',{type:'text'});const key=k+'.'+d.id;

@@ -7,6 +7,8 @@ const FILE='file://'+fileURLToPath(new URL('../skiagrama.html',import.meta.url))
 let pass=0,fail=0;
 const ok=(cond,name)=>{if(cond){pass++;console.log('  ✓',name);}else{fail++;console.log('  ✗',name);}};
 const paper=p=>p.textContent('#paper');
+const openStudy=async(p,name)=>{const card=p.locator('#sec-study');if(await card.evaluate(e=>e.classList.contains('folded')))await p.locator('#sec-study > .foldh .ft').click();await p.click(`#studyTabs >> text=${name}`);};
+const openPatient=async p=>{if(await p.locator('#sec-patient').evaluate(e=>e.classList.contains('folded')))await p.locator('#sec-patient > .foldh .ft').click();};
 
 const b=await chromium.launch();
 for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:'телефон'}]){
@@ -19,6 +21,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.click('#allNorm');
   let t=await paper(p);
   ok(t.includes('Інфільтративних тіней не виявлено.')&&t.includes('Rö-ч: Без патологічних змін.'),'норма всюди: ОГК');
+  ok(t.includes('Лікар-рентгенолог ______________ [ПІБ]'),'у протоколі є окреме місце для підпису лікаря');
   // пневмонія
   await p.click('#zone-infil .seg button:nth-child(2)');
   await p.click('#zone-infil >> text=обидві');await p.click('#zone-infil >> text=нижньо-медіальні поля');await p.click('#zone-infil >> text=інтенсивні зливні');
@@ -36,9 +39,9 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok(!(await paper(p)).includes('Кальцинати в лівому корені.'),'скасування останньої дії');
   // перевірка перед підписом
   ok((await p.textContent('#checkSum')).includes('зауважень'),'перевірка показує зауваження');
-  ok(await p.evaluate(()=>!document.getElementById('doneCnt').hidden)&&await p.evaluate(()=>document.getElementById('pName').classList.contains('miss')),'лічильник на «Готово» і підсвічене порожнє поле');
+  ok((await p.textContent('#doneBtn')).includes('Зберегти протокол')&&await p.evaluate(()=>!document.getElementById('doneCnt').hidden)&&await p.evaluate(()=>document.getElementById('pName').classList.contains('miss')),'«Зберегти протокол»: лічильник зауважень і підсвічене порожнє поле');
   // хребет і Кобб
-  await p.click('#studyTabs >> text=Хребет');
+  await openStudy(p,'Хребет');
   await p.fill('#meas-cobb input >> nth=0','18');
   ok((await p.textContent('#sugs')).includes('Сколіоз II ступеня'),'Кобб 18° → сколіоз II ступеня');
   // як на папері
@@ -46,7 +49,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok((await paper(p)).includes('пів аркуша'),'«Як на папері» показує, як ляже протокол');
   await p.click('#paperBtn');await closeSheet();
   // флюорографія: потоковий режим
-  await p.click('#studyTabs >> text=ФГ');
+  await openStudy(p,'ФГ');
   await p.fill('#pEed','0,05');await p.fill('#pName','Тест Т.');await p.fill('#pAge','30');await p.fill('#pNum','20');
   await openSheet();await p.click('#doneBtn');
   ok((await p.inputValue('#pName'))===''&&(await p.inputValue('#pNum'))==='21','потік ФГ: наступний пацієнт № 21');
@@ -62,6 +65,52 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.click('#pmClose');
   ok((await p.textContent('#ctrlList')).includes('Пацієнт А.'),'«На контроль»: настав термін');
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
+
+/* ---------- Вигляд ноутбука ---------- */
+{
+  console.log('\nВигляд ноутбука 1366×768');
+  const ctx=await b.newContext({viewport:{width:1366,height:768}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');await p.click('text=Пропустити — заповню пізніше');
+  for(const [id,value] of [['pName','Тест'],['pAge','40'],['pNum','1'],['pEed','0,1']])await p.fill('#'+id,value);
+  await p.locator('#pEed').press('Enter');
+  await p.click('#allNorm');
+  const fit=await p.evaluate(()=>({zoom:getComputedStyle(document.documentElement).getPropertyValue('--z').trim(),
+    cards:[...document.querySelectorAll('.zone')].map(e=>{const r=e.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}),
+    side:document.querySelector('#side').getBoundingClientRect().bottom<=innerHeight,
+    horizontal:document.documentElement.scrollWidth<=document.documentElement.clientWidth,
+    patient:document.querySelector('#sec-patient').classList.contains('folded'),
+    study:document.querySelector('#sec-study').classList.contains('folded')}));
+  ok(fit.zoom==='0.9'&&fit.cards.length===10&&fit.cards.every(Boolean)&&fit.side&&fit.horizontal&&fit.patient&&fit.study,
+    'автопідгонка 90 %: 10 зон і права панель у межах екрана без прокрутки сторінки');
+  await p.locator('#sec-study > .foldh .ft').click();
+  ok(await p.isVisible('#studyTabs'),'згорнуте дослідження можна швидко розгорнути');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
+
+/* ---------- Локальний журнал дій ---------- */
+{
+  console.log('\nЛокальний журнал дій');
+  const ctx=await b.newContext({viewport:{width:1366,height:768},acceptDownloads:true});const p=await ctx.newPage();
+  await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');await p.click('text=Пропустити — заповню пізніше');
+  await p.click('#navSettings');await p.fill('#sDoctor','Лікар Журнал');await p.click('#view-settings [data-back]');
+  await p.fill('#pName','Таємний Пацієнт');await openStudy(p,'ОГК');await p.click('#zone-infil .seg button:nth-child(2)');await openStudy(p,'Хребет');await p.click('#allNorm');
+  await p.click('#ptext .concl');await p.keyboard.press('End');await p.keyboard.type(' Ручна правка.');
+  await p.click('#navSettings');
+  const audit=await p.evaluate(()=>JSON.parse(localStorage.getItem('skiagrama.audit.v1')||'[]'));
+  ok(audit.length>=3&&audit.every(e=>e.actor==='Лікар Журнал')&&audit.some(e=>e.action==='study_selected')&&audit.some(e=>e.action==='zone_status_changed')&&audit.some(e=>e.action==='manual_edit_started'),
+    'журнал записує час, лікаря з налаштувань і типи дій');
+  ok(!JSON.stringify(audit).includes('Таємний Пацієнт')&&!JSON.stringify(audit).includes('Ручна правка'),
+    'журнал не містить ПІБ пацієнта або тексту протоколу');
+  ok(await p.isVisible('#auditTable tbody tr'),'журнал видно в налаштуваннях');
+  const [dl]=await Promise.all([p.waitForEvent('download'),p.click('#auditExport')]);
+  const csv=require('fs').readFileSync(await dl.path(),'utf8');
+  ok(csv.includes('"Час";"Хто (з налаштувань)";"Дія"')&&csv.includes('Лікар Журнал')&&csv.includes('Обрано вид дослідження'),'CSV містить заголовки та записи журналу');
+  p.on('dialog',d=>d.accept());await p.click('#auditClear');
+  ok(await p.evaluate(()=>{const a=JSON.parse(localStorage.getItem('skiagrama.audit.v1')||'[]');return a.length===1&&a[0].action==='audit_cleared';}),
+    'очищення журналу підтверджується й фіксується');
   await ctx.close();
 }
 
@@ -92,11 +141,11 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   const sg=await p.evaluate(()=>window.__skg.suggestions().map(x=>x[0]));
   ok(sg.includes('Правобічна пневмонія (S9, S10)'),'suggestions(): правобічна пневмонія (S9, S10)');
   // вимірювання поза межами
-  await p.click('#studyTabs >> text=Хребет');await p.fill('#meas-cobb input >> nth=0','300');
+  await openStudy(p,'Хребет');await p.fill('#meas-cobb input >> nth=0','300');
   ok(!(await paper(p)).includes('300')&&(await p.textContent('#checkList')).includes('поза можливими межами'),'Кобб 300° — не в протоколі, попередження');
   await p.fill('#meas-cobb input >> nth=0','');
   // повтор дії
-  await p.click('#studyTabs >> text=ОГК');await p.click('#allNorm');
+  await openStudy(p,'ОГК');await p.click('#allNorm');
   await p.click('#zone-sinus .seg button:nth-child(3)');
   const t1=await paper(p);await p.keyboard.press('Control+z');const t2=await paper(p);await p.keyboard.press('Control+y');const t3=await paper(p);
   ok(t1!==t2&&t1===t3,'Ctrl+Z, потім Ctrl+Y повертає дію');
@@ -107,6 +156,9 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   // правка прямо в тексті
   await p.click('#ptext .concl');await p.keyboard.press('End');await p.keyboard.type(' Додано вручну.');
   ok(await p.isVisible('#pman')&&(await p.evaluate(()=>window.__skg.S.manual||'')).includes('Додано вручну.'),'правка прямо в тексті позначається «відредаговано вручну»');
+  await p.click('#conclTools >> text=Редагувати кнопки');await p.fill('#conclTools input[aria-label="Новий висновок"]','Додаткова кнопка висновку');await p.click('#conclTools >> text=+ Додати');await p.click('#conclTools >> text=Готово');
+  await p.click('#conclChips >> text=Додаткова кнопка висновку');
+  ok((await paper(p)).includes('Додано вручну.')&&(await paper(p)).includes('Rö-ч: Додаткова кнопка висновку.'),'кнопка висновку оновлює вручну відредагований протокол, не втрачаючи решту тексту');
   await p.click('#pman button');ok(!(await paper(p)).includes('Додано вручну.')&&await p.isHidden('#pman'),'«Скинути правку» повертає автотекст');
   // Alt+клік відкриває зону
   await p.click('#ptext [data-zone="roots"]',{modifiers:['Alt']});ok(await p.isVisible('#zone-roots .myadd'),'Alt+клік по реченню відкриває зону');
@@ -147,7 +199,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   if(await p.evaluate(()=>innerWidth>760)){ok(await p.evaluate(()=>document.getElementById('sec-patient').classList.contains('folded'))&&(await p.textContent('#sec-patient .fsum')).includes('Петренко'),'ноутбук: після ЕЕД блок пацієнта згорнуто в рядок');await p.click('#sec-patient .foldh .ft');}
   await p.fill('#pAge','1960');await p.click('#pNum');ok((await p.inputValue('#pAge'))===String(new Date().getFullYear()-1960),'рік народження 1960 → вік');
   // свої висновки й рекомендації
-  await p.click('#studyTabs >> text=ОГК');await p.click('#allNorm');
+  await openStudy(p,'ОГК');await p.click('#allNorm');
   await p.fill('#conclFree','Плевральні спайки справа');await p.click('#conclKeep');
   ok(await p.isVisible('#conclChips .chip >> text=Плевральні спайки справа')&&(await paper(p)).includes('Rö-ч: Плевральні спайки справа.'),'свій висновок: кнопка і в протоколі');
   ok((await p.inputValue('#conclFree'))==='','«Запамʼятати як кнопку» очищає поле');
@@ -201,6 +253,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   // памʼятка
   await p.click('#navHelp');await p.click('#dlg >> text=Пам’ятка на 1 сторінку');ok((await p.textContent('#dlg')).includes('Протокол за 5 кроків'),'памʼятка відкривається з довідки');await p.click('#dlg >> text=Закрити');
   // збереження з бланком
+  await openPatient(p);
   await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
   ok(await p.evaluate(()=>{const r=window.__skg.A.slice(-1)[0];return !!(r.doc&&r.blank);}),'архів зберігає дані для бланка');
   await p.click('#samePt');
@@ -340,7 +393,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   // нагадування про копію архіву (без папки даних)
   await p.evaluate(()=>{const K=window.__skg;for(let i=0;i<3;i++)K.A.push({id:'n'+i,ts:i,date:'2026-10-11',name:'Н '+i,study:'ogk',concl:''});});
   await p.waitForTimeout(500);if(await p.isVisible('#dlg'))await p.click('#dlg button >> nth=-1');if(await p.isVisible('#dlg'))await p.keyboard.press('Escape');
-  await p.evaluate(()=>{window.__skg.S.concl=[];window.__skg.renderAll();});await p.fill('#pNum','55');await p.fill('#pAge','40');await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
+  await p.evaluate(()=>{window.__skg.S.concl=[];window.__skg.renderAll();});await openPatient(p);await p.fill('#pNum','55');await p.fill('#pAge','40');await p.fill('#pEed','0,35');await p.keyboard.press('Control+s');
   ok(await p.waitForSelector('#nudgeSave',{timeout:3000}).then(()=>true,()=>false),'раз на день нагадує зберегти копію архіву');
   await p.click('#dlg >> text=Пізніше');
   // переповнене сховище: попередження одразу
@@ -417,7 +470,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
     const buf=require('fs').readFileSync(await d.path());const txt=buf.toString('utf8');
     ok(buf.slice(0,2).toString()==='PK'&&txt.includes(needle)&&txt.includes('Пацієнт Експорт')&&(bl!=='C'||txt.includes('місце для штампу')),`бланк ${bl} → .${ext}: справжній файл з бланком`);}
   // лічильник знімків
-  await p.evaluate(()=>window.__skg.study('bone'));await p.click('#projChips >> text=пряма');await p.click('#projChips >> text=бічна');
+  await p.evaluate(()=>window.__skg.study('bone'));if(await p.locator('#sec-study').evaluate(e=>e.classList.contains('folded')))await p.locator('#sec-study > .foldh .ft').click();await p.click('#projChips >> text=пряма');await p.click('#projChips >> text=бічна');
   ok((await p.inputValue('#pCount'))==='2','знімків = кількість проєкцій');
   await p.evaluate(()=>{const s=[...document.querySelectorAll('#studyExtra select')].find(x=>[...x.options].some(o=>o.value==='о'));s.value='о';s.dispatchEvent(new Event('change'));});
   ok((await p.inputValue('#pCount'))==='4','обидва суглоби — удвічі');
@@ -482,6 +535,7 @@ console.log('\n0.5: розташування, згортання, масштаб
   const sp=await p.evaluate(()=>__skg.SET.splitH);ok(sp>0.55,'межу протокол | висновок можна посунути ('+sp+')');
   await p.dblclick('#hGrip');ok(await p.evaluate(()=>__skg.SET.splitH==null),'подвійний клік по межі — як було');
   // згортання
+  if(await p.locator('#sec-study').evaluate(e=>e.classList.contains('folded')))await p.locator('#sec-study > .foldh .ft').click();
   await p.click('#sec-study .fclose');
   ok(await p.evaluate(()=>document.getElementById('sec-study').classList.contains('folded'))&&(await p.textContent('#sec-study .fsum')).includes('ОГК'),'блок «Дослідження» згорнуто в рядок з підсумком');
   ok((await p.textContent('#foldAll')).includes('Розгорнути'),'коли щось згорнуто — кнопка «Розгорнути все»');
