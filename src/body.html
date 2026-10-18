@@ -125,7 +125,7 @@
   </div>
   <div class="viewbar noprint">
     <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
-    <span class="seg vseg" role="group" aria-label="Вигляд протоколу"><button type="button" id="textBtn" aria-pressed="true" title="Текст протоколу — можна правити">Текст</button><button type="button" id="paperBtn" aria-pressed="false" title="Як протокол ляже на папір у вибраному бланку">Перегляд перед друком</button></span>
+    <button type="button" class="btn" id="paperBtn" title="Як протокол ляже на папір: масштаб, примірники, шапка, підпис, поля">Перегляд перед друком</button>
     <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
     <span class="pmark" id="printMark" hidden></span>
     <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
@@ -227,6 +227,7 @@
       <label class="f wide">Бланк за замовчуванням<select id="sBlank"></select></label>
     </div>
     <p class="note" id="sBlankWhy"></p>
+    <div class="trow"><button class="btn" id="sBlankSetup" type="button">Налаштувати бланк і друк…</button><span class="note">примірники, шапка, підпис, поля — з переглядом аркуша</span></div>
     <div class="fields">
       <label class="f wide">Назва закладу<input id="sOrgName" type="text" placeholder="КНП «…»"></label>
       <label class="f wide">Підпорядкування<input id="sOrgSub" type="text" placeholder="… міської ради"></label>
@@ -311,13 +312,20 @@
   </div>
 </div>
 
-<div class="modal noprint" id="printModal" hidden>
+<div class="modal noprint pmfull" id="printModal" hidden>
   <div class="box" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
-    <div class="trow"><h2 id="pmTitle">Друк</h2><span style="flex:1"></span><button class="btn" id="pmClose" type="button">Закрити</button></div>
-    <p id="pmSummary" style="margin:0"></p>
-    <ol class="steps" id="pmSteps"></ol>
-    <div class="trow" id="pmBtns"></div>
-    <div class="pvgrid" id="pmPreview"></div>
+    <div class="pmtop"><button class="btn" id="pmClose" type="button" title="Закрити (Esc)">← Назад</button><h2 id="pmTitle">Друк</h2><span style="flex:1"></span>
+      <span class="pmzoom" role="group" aria-label="Масштаб"><button type="button" id="pmZoomOut" title="Зменшити (Ctrl + коліщатко)" aria-label="Зменшити">−</button><button type="button" id="pmZoomVal" title="100 %">100 %</button><button type="button" id="pmZoomIn" title="Збільшити (Ctrl + коліщатко)" aria-label="Збільшити">+</button><button type="button" id="pmFitPage">Весь аркуш</button><button type="button" id="pmFitWidth">По ширині</button></span>
+      <div class="trow" id="pmBtns"></div></div>
+    <div class="pmmain">
+      <div class="pmstage" id="pmStage"><div class="pmpages" id="pmPreview"></div></div>
+      <aside class="pmpanel" aria-label="Налаштування бланка і друку">
+        <p id="pmSummary"></p>
+        <ol class="steps" id="pmSteps"></ol>
+        <div id="pmPanelBody"></div>
+        <div class="pmfiles" id="pmFiles"><span class="note">Зберегти файлом:</span><button type="button" class="btn sm" id="pmPdf">PDF</button><button type="button" class="btn sm" id="pmWord">Word</button><button type="button" class="btn sm" id="pmOdt">LibreOffice</button></div>
+      </aside>
+    </div>
   </div>
 </div>
 <div class="modal noprint" id="dlg" hidden><div class="box narrow" role="dialog" aria-modal="true" id="dlgBox"></div></div>

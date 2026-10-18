@@ -161,9 +161,8 @@ function htmlRuns(html){const t=document.createElement('div');t.innerHTML=html;c
   walk(t,{});return out;}
 
 /* вигляд протоколу: текст | перегляд перед друком */
-function setView(paper){paperView=paper;$('paperBtn').setAttribute('aria-pressed',String(paper));$('textBtn').setAttribute('aria-pressed',String(!paper));$('fmtBar').hidden=paper;renderSide();}
-$('textBtn').onclick=()=>setView(false);
-$('paperBtn').onclick=()=>setView(!paperView);
+function setView(paper){paperView=paper;$('fmtBar').hidden=paper;renderSide();}
+/* «Перегляд перед друком» тепер відкриває повноекранний перегляд (082) */
 
 /* запуск (викликається з 110 — коли все оголошено) */
 function initView(){initFolds();initFmt();

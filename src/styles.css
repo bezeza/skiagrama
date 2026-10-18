@@ -364,11 +364,11 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 #printArea{display:none}
 .ppage{width:210mm;height:297mm;background:#fff;color:#111;overflow:hidden;display:flex;flex-direction:column;break-after:page;page-break-after:always}
 .ppage:last-child{break-after:auto;page-break-after:auto}
-.ppage.full{height:auto;min-height:297mm;padding:10mm 12mm;overflow:visible}
-.pslot{height:148.5mm;padding:10mm 12mm;overflow:hidden;flex:none}
+.ppage.full{height:auto;min-height:297mm;padding:10mm 12mm 10mm calc(12mm + var(--bind,0mm));overflow:visible}
+.pslot{height:148.5mm;padding:10mm 12mm 10mm calc(12mm + var(--bind,0mm));overflow:hidden;flex:none;position:relative}
 .pslot.cut{border-top:1px dashed #888;position:relative}
 .pslot.cut::before{content:"✂";position:absolute;top:-9px;left:4mm;font-size:12px;color:#888;background:#fff;padding:0 2px}
-.pdoc{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.42;color:#111;width:186mm}
+.pdoc{font-family:'Times New Roman',Times,serif;font-size:12pt;line-height:1.42;color:#111;width:calc(186mm - var(--bind,0mm))}
 .pdoc p{margin:0 0 1.4mm}
 .pdoc .pt{font-weight:bold}
 .pdoc .concl{font-weight:bold;margin-top:2mm}
@@ -439,6 +439,59 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .pstamp.show{border:1px dashed #bbb;border-radius:2mm;display:flex;align-items:center;justify-content:center;font:9pt Arial,sans-serif;color:#999}
 .ptest{font-family:Arial,sans-serif;font-size:20pt;font-weight:bold;color:#111;display:flex;flex-direction:column;gap:4mm}
 #measure{position:absolute;left:-10000px;top:0;visibility:hidden}
+/* налаштування бланка */
+#printArea .ppage{transform:translate(var(--offx,0mm),var(--offy,0mm))}
+.pcopy{position:absolute;top:3.5mm;right:12mm;font:bold 7pt Arial,sans-serif;letter-spacing:.14em;color:#6A7682}
+.bk-logo{max-height:13mm;max-width:30mm;object-fit:contain;flex:none}
+.bkC-orgw{display:flex;gap:3mm;align-items:flex-start;min-width:0}
+.bkC-h.rev{flex-direction:row-reverse}.bkC-h.rev .bkC-org{align-items:flex-start;text-align:left}.bkC-h.rev .bkC-orgw{flex-direction:row}
+.bkC-h.nost{justify-content:flex-end}
+.bk-sign2{margin-top:3mm;font-size:10.5pt}
+.pdoc.mono,.pdoc.mono *{color:#111 !important;border-color:#111 !important}
+.pdoc.mono .bkB-bar{background:#111}
+/* повноекранний перегляд перед друком */
+body.pm-open{overflow:hidden}
+body.pm-open header.top,body.pm-open .banners,body.pm-open main.wrap,body.pm-open section.view,body.pm-open #mbar{visibility:hidden}
+.modal.pmfull{padding:0;align-items:stretch;background:var(--bg)}
+.modal.pmfull>.box{zoom:1 !important;max-width:none;border-radius:0;padding:0;gap:0;height:100vh;height:100dvh;box-shadow:none}
+.pmtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--surface)}
+.pmtop h2{font-size:17px}
+.pmtop #pmBtns{gap:8px}
+.pmzoom{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pmzoom button{background:var(--surface);color:var(--ink);border:0;border-left:1px solid var(--line);padding:6px 10px;font:inherit;font-size:13px;cursor:pointer;min-height:34px}
+.pmzoom button:first-child{border-left:0}
+.pmzoom button:hover{background:var(--hover,rgba(0,0,0,.05))}
+#pmZoomVal{min-width:62px;font-variant-numeric:tabular-nums}
+.pmmain{flex:1;display:flex;min-height:0}
+.pmstage{flex:1;overflow:auto;background:#7d858d;padding:24px}
+.pmpages{--pz:1;display:flex;flex-direction:column;align-items:center;gap:18px}
+.pmpage{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.pml{font-size:12px;color:#eef1f4}
+.pmsheet{zoom:var(--pz);box-shadow:0 4px 18px rgba(0,0,0,.35);background:#fff}
+.pmsheet .ppage{break-after:auto}
+.pmpanel{width:330px;flex:none;overflow:auto;border-left:1px solid var(--line);background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.pmpanel #pmSummary{margin:0;font-size:13px;line-height:1.45}
+.pmpanel .steps{margin:0;padding-left:20px;font-size:13px}
+.pmpanel .steps:empty{display:none}
+.pmsec{display:flex;flex-direction:column;gap:6px}
+.pmh{font-weight:600;font-size:13px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.pmcopies{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.pmcopies button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer;text-align:center}
+.pmcopies button svg{width:30px;height:40px;color:var(--muted)}
+.pmcopies button b{font-size:13px}
+.pmcopies button span{font-size:10.5px;line-height:1.25;color:var(--muted)}
+.pmcopies button[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft)}
+.pmcopies button[aria-pressed="true"] svg{color:var(--blue)}
+.pmseg{flex-wrap:wrap}
+.pmgrp{border:1px solid var(--line);border-radius:10px;padding:0 10px}
+.pmgrp>summary{cursor:pointer;padding:8px 0;font-weight:600}
+.pmg{display:flex;flex-direction:column;gap:6px;padding-bottom:10px}
+.pmg .chk{display:flex;align-items:center;gap:6px}
+.pmg .trow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pmnum{width:64px}
+.pmlogo{max-height:32px;max-width:90px;object-fit:contain;border:1px solid var(--line);border-radius:4px;background:#fff}
+.pmfiles{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+@media (max-width:760px){.pmmain{flex-direction:column}.pmpanel{width:auto;border-left:0;border-top:1px solid var(--line);max-height:45vh}.pmstage{padding:12px}}
 @media print{
   @page{size:A4;margin:0}
   body{background:#fff}

@@ -46,8 +46,8 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok((await p.textContent('#sugs')).includes('Сколіоз II ступеня'),'Кобб 18° → сколіоз II ступеня');
   // як на папері
   await openSheet();await p.click('#paperBtn');
-  ok((await paper(p)).includes('пів аркуша'),'«Як на папері» показує, як ляже протокол');
-  await p.click('#paperBtn');await closeSheet();
+  ok((await p.textContent('#pmSummary')).includes('пів аркуша'),'«Перегляд перед друком» показує, як ляже протокол');
+  await p.keyboard.press('Escape');
   // флюорографія: потоковий режим
   await openStudy(p,'ФГ');
   await p.fill('#pEed','0,05');await p.fill('#pName','Тест Т.');await p.fill('#pAge','30');await p.fill('#pNum','20');
@@ -179,7 +179,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   // бланки й автопідгонка
   await p.click('#allNorm');
   for(const bl of ['A','B','C','D']){await p.selectOption('#blankSel',bl);await p.click('#paperBtn');
-    const tx=await paper(p);ok(tx.includes('Бланк '+bl)&&tx.includes('пів аркуша A4 ✓'),`бланк ${bl}: коротка норма вміщається в пів аркуша`);await p.click('#paperBtn');}
+    const tx=await p.textContent('#pmSummary');ok(tx.includes('Бланк '+bl)&&tx.includes('пів аркуша A4 ✓'),`бланк ${bl}: коротка норма вміщається в пів аркуша`);await p.click('#pmClose');}
   const kinds=await p.evaluate(()=>{const K=window.__skg;const it=K.currentItem();const long=n=>({...it,doc:{...it.doc,body:Array(n).fill('Легеневий малюнок посилений, збагачений, деформований за рахунок інтерстиційного компонента в базальних відділах обох легень.')}});
     return [8,13,40].map(n=>{const c=K.classify(long(n));return c.kind+(c.cmp?'-cmp':'');}).join(',')+'|'+((K.blankAdvice({...long(13),blank:'A'})||{}).b||'');});
   const [kk,adv]=kinds.split('|');
@@ -554,8 +554,8 @@ console.log('\n0.5: розташування, згортання, масштаб
   await p.click('#viewPop button[title="темна"]');ok(await p.evaluate(()=>document.documentElement.dataset.theme==='dark'),'меню «Вигляд»: тема');
   await p.click('#viewPop button[title="авто"]');await p.click('#viewPop button[title^="Повернути"]');await p.keyboard.press('Escape');await p.mouse.click(5,700);
   // текст | перегляд
-  await p.click('#paperBtn');ok(await p.getAttribute('#textBtn','aria-pressed')==='false'&&(await paper(p)).includes('пів аркуша'),'«Перегляд перед друком»');
-  await p.click('#textBtn');ok(await p.isVisible('#ptext')&&await p.isVisible('#fmtBar'),'«Текст» — правка і панель форматування');
+  await p.click('#paperBtn');ok(await p.isVisible('#pmStage')&&!(await p.isVisible('header.top'))&&(await p.textContent('#pmSummary')).includes('пів аркуша'),'«Перегляд перед друком» — на весь екран, решта схована');
+  await p.click('#pmClose');ok(await p.isVisible('#ptext')&&await p.isVisible('#fmtBar'),'після перегляду — знову текст і панель форматування');
   // форматування
   await p.fill('#pName','Демо Формат');await p.fill('#pAge','40');await p.fill('#pNum','501');await p.click('#allNorm');
   await p.click('#ptext .concl');await p.keyboard.press('Home');await p.keyboard.press('Shift+End');
@@ -604,6 +604,43 @@ console.log('\n0.6: друк і архів');
   await ctx.close();
 }
 
+// ===== 0.6: перегляд перед друком на весь екран + налаштування бланка =====
+console.log('\n0.6: перегляд перед друком і бланк');
+{
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.addInitScript(()=>{window.print=()=>{};});
+  await p.goto(FILE);await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  await p.fill('#pName','Демо Перегляд');await p.click('#allNorm');
+  await p.click('#paperBtn');await p.waitForTimeout(100);
+  const z0=await p.textContent('#pmZoomVal');ok(/^\d+ %$/.test(z0)&&parseInt(z0)<100,'відкривається «Весь аркуш» ('+z0+')');
+  await p.click('#pmFitWidth');const zw=parseInt(await p.textContent('#pmZoomVal'));ok(zw>parseInt(z0),'«По ширині» — більше');
+  await p.click('#pmZoomIn');ok(parseInt(await p.textContent('#pmZoomVal'))>zw,'+ збільшує');
+  await p.hover('#pmStage');await p.keyboard.down('Control');await p.mouse.wheel(0,200);await p.keyboard.up('Control');
+  ok(parseInt(await p.textContent('#pmZoomVal'))<=zw+1,'Ctrl + коліщатко зменшує');
+  await p.click('[data-copies=two]');
+  const pv=await p.textContent('#pmPreview');ok(pv.includes('ПАЦІЄНТУ')&&pv.includes('В ІСТОРІЮ ХВОРОБИ')&&(await p.$$('#pmPreview .pmpage')).length===1,'«Два примірники» — обидві половинки одного аркуша');
+  ok(await p.evaluate(()=>__skg.SET.bl.copies==='two'),'вибір примірників запам’ятовується');
+  await p.click('[data-copies=full]');ok(await p.locator('#pmPreview .ppage.full').count()===1,'«Цілий аркуш»');
+  await p.click('[data-copies=one]');
+  await p.click('#pmPanelBody >> text=Дані пацієнта на бланку');await p.uncheck('[data-bl=eed]');
+  ok(!(await p.textContent('#pmPreview')).includes('ЕЕД'),'ЕЕД можна прибрати з бланка');
+  await p.click('#pmPanelBody >> text=Підпис і штамп');await p.click('#pmPanelBody button:text-is("праворуч")');
+  ok(await p.locator('#pmPreview .bkC-h.rev').count()===1,'рамка під штамп — праворуч');
+  await p.check('[data-bl=head2]');await p.fill('#pmPanelBody input[placeholder="Прізвище І. Б."]','Демо Завідувач');await p.press('#pmPanelBody input[placeholder="Прізвище І. Б."]','Enter');await p.waitForTimeout(100);
+  ok((await p.textContent('#pmPreview')).includes('Демо Завідувач'),'другий підпис — завідувач');
+  await p.click('#pmPanelBody >> text=Папір і принтер');await p.check('[data-bl=bindOn]');
+  ok(await p.evaluate(()=>getComputedStyle(document.documentElement).getPropertyValue('--bind').trim()==='25mm'),'поле під підшивку 25 мм');
+  ok(await p.evaluate(()=>{const d=document.querySelector('#pmPreview .pdoc');return Math.abs(d.getBoundingClientRect().width/parseFloat(getComputedStyle(document.getElementById('pmPreview')).getPropertyValue('--pz'))-(186-25)*96/25.4)<3;}),'текст звужується на ширину поля');
+  await p.check('[data-bl=mono]');ok(await p.locator('#pmPreview .pdoc.mono').count()===1,'чорно-білий режим');
+  await p.click('#pmPanelBody >> text=Пробний аркуш з лінійкою');ok((await p.textContent('#pmPreview')).includes('Рамка має бути рівно 10 мм'),'пробний аркуш з лінійкою');
+  await p.keyboard.press('Escape');ok(await p.isHidden('#printModal')&&await p.isVisible('#ptext'),'Esc закриває перегляд');
+  await p.click('#paperBtn');await p.click('#pmPanelBody >> text=Повернути бланк як було');await p.click('#pmPanelBody >> text=Точно повернути?');
+  ok(await p.evaluate(()=>!__skg.SET.bl&&getComputedStyle(document.documentElement).getPropertyValue('--bind').trim()==='0mm'),'«Повернути бланк як було»');
+  await p.click('#pmBtns button');await p.click('#pmClose');ok((await p.textContent('#printMark')).includes('надруковано'),'друк із перегляду ставить «надруковано»');
+  await p.click('#navSettings');await p.click('#sBlankSetup');ok(await p.isVisible('#pmStage'),'з налаштувань: «Налаштувати бланк і друк…»');
+  ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
+  await ctx.close();
+}
 // ===== 0.6: з форку — під себе, ФГ, перевірки =====
 console.log('\n0.6: зони під себе і перевірки');
 {

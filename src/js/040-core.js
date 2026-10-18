@@ -283,7 +283,7 @@ const STUDY_TITLE=()=>({ogk:'Rö-графія ОГК',fg:'Флюорографі
 function docData(){
   const P=protocol();
   return {name:$('pName').value.trim()||'[ПІБ]',age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),refDoc:$('pRefDoc').value.trim(),
-    num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.join(', '),eed:$('pEed').value.trim(),
+    num:$('pNum').value.trim(),date:$('pDate').value,what:STUDY_TITLE(),proj:S.proj.map(p=>typeof projLabel==='function'?projLabel(p):p).join(', '),count:$('pCount')?$('pCount').value.trim():'',eed:$('pEed').value.trim(),
     study:S.study,urgent:!!S.urgent,status:statusOf(),head:P.head,refLine:P.ref,body:P.body.map(x=>x.t),concl:P.concl.t.replace(/^Rö-ч:\s*/,''),rec:P.rec.replace(/^Рекомендовано:\s*/,''),doctor:SET.doctor,docTitle:DOC_TITLE(),manual:S.manual,manualHtml:S.manual!=null&&S.manualHtml?S.manualHtml:null};
 }
 function genText(P){P=P||protocol();return [P.head,P.ref,P.body.map(x=>x.t).join(' '),P.concl.t,P.rec,P.eed+'   '+P.doc].filter(Boolean).join('\n');}
