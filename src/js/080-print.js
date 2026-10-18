@@ -17,7 +17,7 @@ function measure(html,cls){const m=$('measure');m.className='pdoc '+(cls||'');m.
 const ORG=()=>Object.assign({},DEF_ORG,SET.org||{});
 /* налаштування бланка (перегляд перед друком): що показувати, підпис, папір */
 const BL_DEF={copies:'one',moz:true,sub:true,cab:true,addr:true,tel:true,edrpou:true,logo:true,age:true,sex:true,dept:true,ref:true,refDoc:true,proj:true,count:false,eed:true,
-  stamp:'left',mp:true,head2:false,head2Name:'',head2Title:'Завідувач відділення',bind:0,offX:0,offY:0,mono:false};
+  stamp:'left',stampStyle:'corners',mp:true,head2:false,head2Name:'',head2Title:'Завідувач відділення',bind:0,offX:0,offY:0,mono:false};
 const BL=()=>Object.assign({},BL_DEF,SET.bl||{});
 const ORGB=()=>{const o=ORG(),b=BL();['sub','cab','addr','tel','edrpou'].forEach(k=>{if(!b[k])o[k]='';});return o;};
 const docB=doc=>{const b=BL();const d=Object.assign({},doc);['age','sex','dept','ref','refDoc','proj','eed'].forEach(k=>{if(!b[k])d[k]='';});if(!b.count)d.count='';d.showEed=b.eed;return d;};
@@ -41,7 +41,7 @@ const BLANKS={
  C:{n:'компактний під штамп',sn:'під штамп',why:'звичний формат рентгенолога, рамка під штамп, найбільше місця під текст',
    build(doc,cmp){const o=ORGB(),b=BL();doc=docB(doc);
      const sub=[o.sub,o.cab,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · ');
-     const stamp=b.stamp==='none'?'':'<div class="bkC-stamp">місце для штампу рентгенкабінету<br>(№ і дата)</div>';
+     const stamp=b.stamp==='none'?'':b.stampStyle==='corners'?'<div class="bkC-stamp corn" aria-hidden="true"></div>':'<div class="bkC-stamp">місце для штампу рентгенкабінету<br>(№ і дата)</div>';
      const h=`<div class="bkC-h${b.stamp==='right'?' rev':''}${b.stamp==='none'?' nost':''}">${stamp}<div class="bkC-orgw">${LOGO()}<div class="bkC-org"><b>${esc(o.name||'[Назва закладу]')}</b>${sub?`<span>${esc(sub)}</span>`:''}<span class="bkC-tag">${doc.study==='fg'?'ФЛЮОРОГРАФІЯ':'РЕНТГЕНОГРАФІЯ'}</span></div></div></div>`;
      const u=[{h,blk:true}];
      if(doc.manual!=null)return u.concat(manualBody(doc,true));

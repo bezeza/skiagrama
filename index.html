@@ -411,6 +411,12 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 .bkC-h{display:flex;justify-content:space-between;align-items:flex-start;gap:5mm;margin-bottom:2.5mm}
 .bkC-stamp{width:62mm;height:23mm;border:1.2px dashed #A9B4BF;border-radius:1.5mm;flex:none;display:flex;align-items:center;justify-content:center;text-align:center;font:7.5pt/1.3 Arial,sans-serif;color:#8A96A2;padding:1mm}
 .cmp .bkC-stamp{height:19mm}
+.bkC-stamp.corn{--sc:#9AA6B2;border:0;border-radius:0;background:
+ linear-gradient(var(--sc),var(--sc)) left top/5mm .3mm no-repeat,linear-gradient(var(--sc),var(--sc)) left top/.3mm 5mm no-repeat,
+ linear-gradient(var(--sc),var(--sc)) right top/5mm .3mm no-repeat,linear-gradient(var(--sc),var(--sc)) right top/.3mm 5mm no-repeat,
+ linear-gradient(var(--sc),var(--sc)) left bottom/5mm .3mm no-repeat,linear-gradient(var(--sc),var(--sc)) left bottom/.3mm 5mm no-repeat,
+ linear-gradient(var(--sc),var(--sc)) right bottom/5mm .3mm no-repeat,linear-gradient(var(--sc),var(--sc)) right bottom/.3mm 5mm no-repeat;
+ -webkit-print-color-adjust:exact;print-color-adjust:exact}
 .bkC-org{display:flex;flex-direction:column;align-items:flex-end;text-align:right;gap:.6mm;font-family:Arial,sans-serif;min-width:0}
 .bkC-org b{font-size:9pt;letter-spacing:.02em}
 .bkC-org span{font-size:8pt;color:#4A5866}
@@ -488,6 +494,7 @@ body.locked{overflow:hidden}
 .bkC-h.nost{justify-content:flex-end}
 .bk-sign2{margin-top:3mm;font-size:10.5pt}
 .pdoc.mono,.pdoc.mono *{color:#111 !important;border-color:#111 !important}
+.pdoc.mono .bkC-stamp{color:#666 !important;border-color:#555 !important}.pdoc.mono .bkC-stamp.corn{--sc:#333}
 .pdoc.mono .bkB-bar{background:#111}
 /* повноекранний перегляд перед друком */
 body.pm-open{overflow:hidden}
@@ -1517,7 +1524,7 @@ const PACKS=[{
 const VERSION='0.6';
 const CHANGELOG=[
  ['0.6',['«Перегляд перед друком» — на весь екран, як в Office: решта програми ховається, масштаб − / + / Ctrl+коліщатко, «Весь аркуш», «По ширині», Esc — назад.',
-   'Налаштування бланка прямо в перегляді, без пошуку в «Налаштуваннях»: примірники (один, два — пацієнту й в історію хвороби на одному аркуші, цілий аркуш), бланк A–D, що показувати в шапці й даних пацієнта, логотип, рамка під штамп ліворуч / праворуч / без неї, «М. П.», другий підпис завідувача.',
+   'Налаштування бланка прямо в перегляді, без пошуку в «Налаштуваннях»: примірники (один, два — пацієнту й в історію хвороби на одному аркуші, цілий аркуш), бланк A–D, що показувати в шапці й даних пацієнта, логотип, місце під штамп (лише кутики, рамка з підказкою або без нього; ліворуч чи праворуч), «М. П.», другий підпис завідувача.',
    'Папір і принтер: поле під підшивку, зсув принтера з пробним аркушем-лінійкою, чорно-білий режим.',
    'Позначка «надруковано» тепер ставиться і при друці з головного вікна; якщо протокол змінили після друку — «змінено після друку». В архіві позначку можна перемкнути кліком.',
    'Профіль кабінету: реквізити, бланк, логотип, відділення, ЕЕД і тему можна зберегти одним файлом і завантажити на іншому комп’ютері — навіть у вікні знайомства.',
@@ -3065,7 +3072,7 @@ function measure(html,cls){const m=$('measure');m.className='pdoc '+(cls||'');m.
 const ORG=()=>Object.assign({},DEF_ORG,SET.org||{});
 /* налаштування бланка (перегляд перед друком): що показувати, підпис, папір */
 const BL_DEF={copies:'one',moz:true,sub:true,cab:true,addr:true,tel:true,edrpou:true,logo:true,age:true,sex:true,dept:true,ref:true,refDoc:true,proj:true,count:false,eed:true,
-  stamp:'left',mp:true,head2:false,head2Name:'',head2Title:'Завідувач відділення',bind:0,offX:0,offY:0,mono:false};
+  stamp:'left',stampStyle:'corners',mp:true,head2:false,head2Name:'',head2Title:'Завідувач відділення',bind:0,offX:0,offY:0,mono:false};
 const BL=()=>Object.assign({},BL_DEF,SET.bl||{});
 const ORGB=()=>{const o=ORG(),b=BL();['sub','cab','addr','tel','edrpou'].forEach(k=>{if(!b[k])o[k]='';});return o;};
 const docB=doc=>{const b=BL();const d=Object.assign({},doc);['age','sex','dept','ref','refDoc','proj','eed'].forEach(k=>{if(!b[k])d[k]='';});if(!b.count)d.count='';d.showEed=b.eed;return d;};
@@ -3089,7 +3096,7 @@ const BLANKS={
  C:{n:'компактний під штамп',sn:'під штамп',why:'звичний формат рентгенолога, рамка під штамп, найбільше місця під текст',
    build(doc,cmp){const o=ORGB(),b=BL();doc=docB(doc);
      const sub=[o.sub,o.cab,o.tel?'тел. '+o.tel:''].filter(Boolean).join(' · ');
-     const stamp=b.stamp==='none'?'':'<div class="bkC-stamp">місце для штампу рентгенкабінету<br>(№ і дата)</div>';
+     const stamp=b.stamp==='none'?'':b.stampStyle==='corners'?'<div class="bkC-stamp corn" aria-hidden="true"></div>':'<div class="bkC-stamp">місце для штампу рентгенкабінету<br>(№ і дата)</div>';
      const h=`<div class="bkC-h${b.stamp==='right'?' rev':''}${b.stamp==='none'?' nost':''}">${stamp}<div class="bkC-orgw">${LOGO()}<div class="bkC-org"><b>${esc(o.name||'[Назва закладу]')}</b>${sub?`<span>${esc(sub)}</span>`:''}<span class="bkC-tag">${doc.study==='fg'?'ФЛЮОРОГРАФІЯ':'РЕНТГЕНОГРАФІЯ'}</span></div></div></div>`;
      const u=[{h,blk:true}];
      if(doc.manual!=null)return u.concat(manualBody(doc,true));
@@ -3255,7 +3262,8 @@ $('sTest').onclick=testSheet;
 /* ===== Перегляд перед друком на весь екран: аркуш з масштабом + панель бланка й друку ===== */
 let pmZoom=1,pmZoomMode='page';
 function applyBind(){const b=BL(),r=document.documentElement.style;r.setProperty('--bind',(+b.bind||0)+'mm');r.setProperty('--offx',(+b.offX||0)+'mm');r.setProperty('--offy',(+b.offY||0)+'mm');}
-function setBL(k,v){SET.blankSeen=true;SET.bl=Object.assign({},SET.bl||{},{[k]:v});saveSet();applyBind();if(lastPrint.length)openPrint(lastPrint.map(x=>x.current?currentItem():x));renderSide();}
+function setBL(k,v){setBLm({[k]:v});}
+function setBLm(o){SET.blankSeen=true;SET.bl=Object.assign({},SET.bl||{},o);saveSet();applyBind();if(lastPrint.length)openPrint(lastPrint.map(x=>x.current?currentItem():x));renderSide();}
 function pmOpenShell(){if($('printModal').hidden){$('printModal').hidden=false;document.body.classList.add('pm-open');closeSheet();}}
 /* сторінки: справжній розмір A4, масштаб — через zoom обгортки */
 function renderPmPages(){const pv=$('pmPreview');pv.textContent='';const sh=PLAN.sheets;
@@ -3294,8 +3302,12 @@ function renderPmPanel(){const box=$('pmPanelBody');const sc=box.parentElement.s
   hs.append(lr,el('p',{class:'note'},'Реквізити закладу — у «Налаштуваннях» → «Бланк і реквізити».'));
   const ps=grp('Дані пацієнта на бланку');[['age','Вік'],['sex','Стать'],['dept','Відділення'],['ref','№ е-направлення'],['refDoc','Лікар, що направив'],['proj','Проєкції'],['count','Кількість знімків'],['eed','ЕЕД']].forEach(([k,t])=>chk(ps,k,t));
   ps.append(el('p',{class:'note'},'У бланку C пацієнт і проєкції — як у тексті протоколу; тут діють ЕЕД і кількість знімків.'));
-  const ss=grp('Підпис і штамп');const st=el('div',{class:'trow'});st.append(el('span',{class:'note'},'Рамка під штамп (бланк C):'));const sg=el('div',{class:'seg pmseg'});
-  [['left','ліворуч'],['right','праворуч'],['none','немає']].forEach(([k,t])=>{const x=el('button',{type:'button','aria-pressed':String(b.stamp===k)},t);x.onclick=()=>setBL('stamp',k);sg.append(x);});st.append(sg);ss.append(st);
+  const ss=grp('Підпис і штамп');const st=el('div',{class:'trow'});st.append(el('span',{class:'note'},'Місце під штамп (бланк C):'));const sg=el('div',{class:'seg pmseg','data-stamp':''});
+  const cur=b.stamp==='none'?'none':(b.stampStyle==='frame'?'frame':'corners');
+  [['corners','лише кутики'],['frame','рамка з підказкою'],['none','немає']].forEach(([k,t])=>{const x=el('button',{type:'button','aria-pressed':String(cur===k)},t);
+    x.onclick=()=>setBLm(k==='none'?{stamp:'none'}:{stampStyle:k,stamp:b.stamp==='none'?'left':b.stamp});sg.append(x);});st.append(sg);ss.append(st);
+  if(cur!=='none'){const sp=el('div',{class:'trow'});sp.append(el('span',{class:'note'},'Де:'));const pg=el('div',{class:'seg pmseg'});
+    [['left','ліворуч'],['right','праворуч']].forEach(([k,t])=>{const x=el('button',{type:'button','aria-pressed':String(b.stamp===k)},t);x.onclick=()=>setBL('stamp',k);pg.append(x);});sp.append(pg);ss.append(sp);}
   chk(ss,'mp','«М. П.» (бланки A, D)');chk(ss,'head2','Другий підпис (завідувач)');
   if(b.head2){const f=el('div',{class:'fields'});const mk=(k,t,ph)=>{const l=el('label',{class:'f'},t);const i=el('input',{type:'text',placeholder:ph});i.value=b[k]||'';i.onchange=()=>setBL(k,i.value.trim());l.append(i);f.append(l);};mk('head2Title','Посада','Завідувач відділення');mk('head2Name','ПІБ','Прізвище І. Б.');ss.append(f);}
   const pp=grp('Папір і принтер');

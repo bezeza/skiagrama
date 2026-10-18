@@ -1,7 +1,8 @@
 /* ===== Перегляд перед друком на весь екран: аркуш з масштабом + панель бланка й друку ===== */
 let pmZoom=1,pmZoomMode='page';
 function applyBind(){const b=BL(),r=document.documentElement.style;r.setProperty('--bind',(+b.bind||0)+'mm');r.setProperty('--offx',(+b.offX||0)+'mm');r.setProperty('--offy',(+b.offY||0)+'mm');}
-function setBL(k,v){SET.blankSeen=true;SET.bl=Object.assign({},SET.bl||{},{[k]:v});saveSet();applyBind();if(lastPrint.length)openPrint(lastPrint.map(x=>x.current?currentItem():x));renderSide();}
+function setBL(k,v){setBLm({[k]:v});}
+function setBLm(o){SET.blankSeen=true;SET.bl=Object.assign({},SET.bl||{},o);saveSet();applyBind();if(lastPrint.length)openPrint(lastPrint.map(x=>x.current?currentItem():x));renderSide();}
 function pmOpenShell(){if($('printModal').hidden){$('printModal').hidden=false;document.body.classList.add('pm-open');closeSheet();}}
 /* сторінки: справжній розмір A4, масштаб — через zoom обгортки */
 function renderPmPages(){const pv=$('pmPreview');pv.textContent='';const sh=PLAN.sheets;
@@ -40,8 +41,12 @@ function renderPmPanel(){const box=$('pmPanelBody');const sc=box.parentElement.s
   hs.append(lr,el('p',{class:'note'},'Реквізити закладу — у «Налаштуваннях» → «Бланк і реквізити».'));
   const ps=grp('Дані пацієнта на бланку');[['age','Вік'],['sex','Стать'],['dept','Відділення'],['ref','№ е-направлення'],['refDoc','Лікар, що направив'],['proj','Проєкції'],['count','Кількість знімків'],['eed','ЕЕД']].forEach(([k,t])=>chk(ps,k,t));
   ps.append(el('p',{class:'note'},'У бланку C пацієнт і проєкції — як у тексті протоколу; тут діють ЕЕД і кількість знімків.'));
-  const ss=grp('Підпис і штамп');const st=el('div',{class:'trow'});st.append(el('span',{class:'note'},'Рамка під штамп (бланк C):'));const sg=el('div',{class:'seg pmseg'});
-  [['left','ліворуч'],['right','праворуч'],['none','немає']].forEach(([k,t])=>{const x=el('button',{type:'button','aria-pressed':String(b.stamp===k)},t);x.onclick=()=>setBL('stamp',k);sg.append(x);});st.append(sg);ss.append(st);
+  const ss=grp('Підпис і штамп');const st=el('div',{class:'trow'});st.append(el('span',{class:'note'},'Місце під штамп (бланк C):'));const sg=el('div',{class:'seg pmseg','data-stamp':''});
+  const cur=b.stamp==='none'?'none':(b.stampStyle==='frame'?'frame':'corners');
+  [['corners','лише кутики'],['frame','рамка з підказкою'],['none','немає']].forEach(([k,t])=>{const x=el('button',{type:'button','aria-pressed':String(cur===k)},t);
+    x.onclick=()=>setBLm(k==='none'?{stamp:'none'}:{stampStyle:k,stamp:b.stamp==='none'?'left':b.stamp});sg.append(x);});st.append(sg);ss.append(st);
+  if(cur!=='none'){const sp=el('div',{class:'trow'});sp.append(el('span',{class:'note'},'Де:'));const pg=el('div',{class:'seg pmseg'});
+    [['left','ліворуч'],['right','праворуч']].forEach(([k,t])=>{const x=el('button',{type:'button','aria-pressed':String(b.stamp===k)},t);x.onclick=()=>setBL('stamp',k);pg.append(x);});sp.append(pg);ss.append(sp);}
   chk(ss,'mp','«М. П.» (бланки A, D)');chk(ss,'head2','Другий підпис (завідувач)');
   if(b.head2){const f=el('div',{class:'fields'});const mk=(k,t,ph)=>{const l=el('label',{class:'f'},t);const i=el('input',{type:'text',placeholder:ph});i.value=b[k]||'';i.onchange=()=>setBL(k,i.value.trim());l.append(i);f.append(l);};mk('head2Title','Посада','Завідувач відділення');mk('head2Name','ПІБ','Прізвище І. Б.');ss.append(f);}
   const pp=grp('Папір і принтер');
