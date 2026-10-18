@@ -182,11 +182,11 @@ const recordItem=r=>r.doc?{id:r.id,name:r.name,doc:r.doc,blank:r.blank||SET.blan
 $('printBtn').onclick=()=>openPrint([currentItem()]);
 /* PDF: «Зберегти як PDF» у вікні друку; назва файлу — з назви сторінки, половинка — A5 */
 function savePdf(){
-  const it=classify(currentItem());const half=it.kind==='half';
-  const pages=half?`<div class="ppage a5"><div class="pslot">${wrapDoc(it,it.units)}</div></div>`:(it.kind==='flip'?`<div class="ppage full">${wrapDoc(it,it.units)}</div>`:pageHTML({full:it},'front'));
+  const it=classify(currentItem());const two=BL().copies==='two'&&it.kind==='half';const half=it.kind==='half'&&!two;
+  const pages=two?pack([currentItem()]).sheets.map(s=>pageHTML(s,'front')).join(''):half?`<div class="ppage a5"><div class="pslot">${wrapDoc(it,it.units)}</div></div>`:(it.kind==='flip'?`<div class="ppage full">${wrapDoc(it,it.units)}</div>`:pageHTML({full:it},'front'));
   const st=document.createElement('style');st.textContent=half?'@page{size:A5 landscape;margin:0}':'@page{size:A4;margin:0}';document.head.append(st);
-  const t0=document.title;document.title=fileBase();toast('У вікні друку виберіть «Зберегти як PDF»');
-  const back=()=>{document.title=t0;st.remove();window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
+  const t0=document.title;document.title=fileBase();toast('У вікні друку виберіть «Зберегти як PDF»');document.body.classList.add('pdf-out');
+  const back=()=>{document.title=t0;st.remove();document.body.classList.remove('pdf-out');window.removeEventListener('afterprint',back);};window.addEventListener('afterprint',back);
   setTimeout(()=>{runPrint(pages);setTimeout(back,1500);},50);
 }
 $('pdfBtn').onclick=savePdf;

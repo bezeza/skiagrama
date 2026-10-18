@@ -457,6 +457,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
 body.locked{overflow:hidden}
 /* налаштування бланка */
 #printArea .ppage{transform:translate(var(--offx,0mm),var(--offy,0mm))}
+body.pdf-out #printArea .ppage{transform:none}
 .pcopy{position:absolute;top:3.5mm;right:12mm;font:bold 7pt Arial,sans-serif;letter-spacing:.14em;color:#6A7682}
 .bk-logo{max-height:13mm;max-width:30mm;object-fit:contain;flex:none}
 .bkC-orgw{display:flex;gap:3mm;align-items:flex-start;min-width:0}

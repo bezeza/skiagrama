@@ -468,7 +468,19 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
     await p.evaluate(bl=>{window.__skg.S.blank=bl;window.__skg.renderAll();},bl);
     await p.click('.actbar>details.menu>summary');const [d]=await Promise.all([p.waitForEvent('download'),p.click(btn)]);
     const buf=require('fs').readFileSync(await d.path());const txt=buf.toString('utf8');
-    ok(buf.slice(0,2).toString()==='PK'&&txt.includes(needle)&&txt.includes('Пацієнт Експорт')&&(bl!=='C'||txt.includes('місце для штампу')),`бланк ${bl} → .${ext}: справжній файл з бланком`);}
+    ok(buf.slice(0,2).toString()==='PK'&&txt.includes(needle)&&txt.includes('Пацієнт Експорт')&&(bl!=='C'||txt.includes('РЕНТГЕНОГРАФІЯ')),`бланк ${bl} → .${ext}: справжній файл з бланком`);}
+  // файли беруть налаштування бланка: два примірники, логотип, другий підпис, без «М. П.»
+  await p.evaluate(()=>{const K=window.__skg;const c=document.createElement('canvas');c.width=40;c.height=20;c.getContext('2d').fillRect(0,0,40,20);K.SET.logo=c.toDataURL('image/png');
+    K.SET.bl={copies:'two',head2:true,head2Name:'Демо Завідувач',mp:false,stampStyle:'frame'};K.S.blank='C';K.renderAll();});
+  for(const [btn,ext,img] of [['#wordBtn','docx','word/media/logo.png'],['#odtBtn','odt','Pictures/logo.png']]){
+    await p.click('.actbar>details.menu>summary');const [d]=await Promise.all([p.waitForEvent('download'),p.click(btn)]);
+    const txt=require('fs').readFileSync(await d.path()).toString('utf8');
+    ok(txt.includes(img)&&txt.split('Пацієнт Експорт').length===3&&txt.includes('ПАЦІЄНТУ')&&txt.includes('В ІСТОРІЮ ХВОРОБИ')&&txt.includes('Демо Завідувач')&&txt.includes('місце для штампу'),`.${ext} бере налаштування бланка: 2 примірники, логотип, другий підпис`);}
+  await p.evaluate(()=>{const K=window.__skg;K.SET.bl={copies:'one',mp:false};K.S.blank='A';});
+  ok(await p.evaluate(()=>{const m=window.__skg.docModel(window.__skg.docData(),'A',false);return !JSON.stringify(m.blocks).includes('М. П.')&&m.page.ml===20;}),'Word: без «М. П.», поля як у бланку');
+  await p.evaluate(()=>{const K=window.__skg;K.SET.bl={bind:25};});
+  ok(await p.evaluate(()=>window.__skg.docModel(window.__skg.docData(),'A',false).page.ml===45),'Word: поле під підшивку додається до лівого поля');
+  await p.evaluate(()=>{const K=window.__skg;delete K.SET.bl;delete K.SET.logo;K.S.blank='C';K.renderAll();});
   // лічильник знімків
   await p.evaluate(()=>window.__skg.study('bone'));if(await p.locator('#sec-study').evaluate(e=>e.classList.contains('folded')))await p.locator('#sec-study > .foldh .ft').click();await p.click('#projChips >> text=пряма');await p.click('#projChips >> text=бічна');
   ok((await p.inputValue('#pCount'))==='2','знімків = кількість проєкцій');
