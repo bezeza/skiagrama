@@ -674,6 +674,13 @@ main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
 .viewbar .btn{padding-block:4px}
 .viewbar .vseg{height:38px}
 .viewbar .vseg button{min-height:0;height:100%}
+
+/* 0.6: позначка «надруковано» */
+.pmark{font-size:12.5px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pmark.ok{background:var(--ok-soft);color:var(--ok)}
+.pmark.warn{background:var(--warn-soft);color:var(--warn)}
+button.pill.pbtn{border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:600}
+button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -818,6 +825,7 @@ main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
     <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
     <span class="seg vseg" role="group" aria-label="Вигляд протоколу"><button type="button" id="textBtn" aria-pressed="true" title="Текст протоколу — можна правити">Текст</button><button type="button" id="paperBtn" aria-pressed="false" title="Як протокол ляже на папір у вибраному бланку">Перегляд перед друком</button></span>
     <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
+    <span class="pmark" id="printMark" hidden></span>
     <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
@@ -2073,7 +2081,7 @@ function renderPaper(){
     if(P.rec)tx.append(el('div',{class:'recs'},P.rec));
     tx.append(el('div',{class:'foot'},P.eed+'   '+P.doc));
   }
-  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();S.manualHtml=ptextHtml();if(first)audit('manual_edit_started');updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
+  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();S.manualHtml=ptextHtml();if(first)audit('manual_edit_started');updManualBadge();renderChecks();renderPrintMark();saveDraftSoon();if(first)renderNav();});
   tx.addEventListener('blur',()=>{if(S.manual!=null){renderBlankAdviceSoon();}});
   p.append(tx);
   p.append(el('p',{class:'note phint'},'Текст можна правити прямо тут. Alt+клік по реченню — відкрити його зону.'));
@@ -2146,7 +2154,7 @@ function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new S
   [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?ageStr(r.age)+' · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
-function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
+function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderPrintMark();renderBlankAdviceSoon();saveDraftSoon();}
 function updStudyCard(){}
 /* фокус клавіатури не губиться, коли кнопки перемальовуються (пробіл / Enter на кнопці → фокус лишається на ній) */
 function focusKey(){const a=document.activeElement;if(!a||a.tagName!=='BUTTON')return null;const box=a.closest('[id]');if(!box||box.id==='ptext'||box.id==='dlgBox')return null;
@@ -2285,7 +2293,7 @@ function doSave(){
     name:$('pName').value.trim(),age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),
     study:S.study,what:headerLine().replace(/^На\s*/,'').replace(/ від .*$/,''),eed:$('pEed').value.trim(),
     concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,doc:docData(),blank:curBlank(),
-    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),count:Math.max(1,+$('pCount').value||1),notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
+    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),count:Math.max(1,+$('pCount').value||1),notified:prev?!!prev.notified:false,printed:S.printedSig?true:(prev?!!prev.printed:false),printedSig:S.printedSig||(prev&&prev.printedSig)||null,printedAt:S.printedAt||(prev&&prev.printedAt)||null,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
   saveA();audit(prev?'protocol_updated':'protocol_saved');store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
@@ -2661,7 +2669,9 @@ function renderArchive(){
     const nm=el('td',null,`${r.name}${r.age?', '+ageStr(r.age):''}${r.example?' (приклад)':''}`);
     if(r.urgent){nm.append(document.createTextNode(' '),el('span',{class:'pill '+(r.notified?'o':'b')},r.notified?'терміново · повідомлено':'терміново'));if(!r.notified)tr.classList.add('urgrow');}
     tr.append(el('td',null,fmtD(r.date)),el('td',null,r.num),nm,el('td',null,r.what||''),tdConcl(r));
-    const tp=el('td');tp.append(el('span',{class:'pill '+(r.printed?'o':'w')},r.printed?'так':'ні'));tr.append(tp);
+    const tp=el('td');const ps=printState(r);const pb=el('button',{type:'button',class:'pill pbtn '+(ps==='yes'?'o':'w'),title:ps==='no'?'Позначити як надрукований':'Позначити як не надрукований'+(ps==='changed'?' (текст змінено після друку)':''),'aria-label':'Надруковано: '+PRINT_LABEL[ps]+'. Натисніть, щоб змінити'},PRINT_LABEL[ps]);
+    pb.onclick=()=>{if(printState(r)==='no'){r.printed=true;r.printedSig=sigOf(r.text);r.printedAt=Date.now();}else{r.printed=false;delete r.printedSig;delete r.printedAt;}saveA();if(r.id===editingId){S.printedSig=r.printed?r.printedSig:null;renderPrintMark();}renderArchive();};
+    tp.append(pb);tr.append(tp);
     const ta=el('td');const o=el('button',{type:'button',class:'btn sm'},'Відкрити');o.onclick=()=>openRecord(r);
     if(r.urgent&&!r.notified){const nb=el('button',{type:'button',class:'btn sm'},'Повідомлено');nb.title='Лікаря, що направив, повідомлено';nb.onclick=()=>{r.notified=true;saveA();renderArchive();};ta.append(nb,document.createTextNode(' '));}
     const del=el('button',{type:'button',class:'btn sm danger'},'Видалити');del.onclick=()=>{if(del.dataset.c){A=A.filter(x=>x!==r);selected.delete(r.id);saveA();renderArchive();renderNames();updCtrlBadge();}else{del.dataset.c='1';del.textContent='Точно?';setTimeout(()=>{del.dataset.c='';del.textContent='Видалити';},3000);}};
@@ -2673,7 +2683,7 @@ function renderArchive(){
 const dayOf=ts=>{const d=new Date(ts);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;};
 function renderDaySum(){
   const box=$('dayBox');box.textContent='';const td=today();
-  const todays=A.filter(r=>!r.example&&r.ts&&dayOf(r.ts)===td);const unpr=todays.filter(r=>!r.printed);const allUnpr=A.filter(r=>!r.example&&!r.printed);
+  const todays=A.filter(r=>!r.example&&r.ts&&dayOf(r.ts)===td);const unpr=todays.filter(r=>printState(r)!=='yes');const allUnpr=A.filter(r=>!r.example&&printState(r)!=='yes');
   if(!todays.length){box.append(el('p',{class:'note'},'Сьогодні протоколів ще немає.'+(allUnpr.length?` Ненадрукованих за весь час: ${allUnpr.length}.`:'')));ddButton(box);return;}
   const by={};todays.forEach(r=>{by[r.study]=(by[r.study]||0)+1;});
   const row=el('div',{class:'daynums'});
@@ -2697,12 +2707,13 @@ function updPrintBtn(){const n=[...selected].filter(id=>A.some(r=>r.id===id)).le
 function openRecord(r){
   if(r.state){S=clone(r.state);S.zones=Object.assign(blankZones(S.study),S.zones);S.open=null;}else{S=blank(r.study||'ogk');S.manual=r.text||'';}
   if(r.fields)setFields(r.fields);else{$('pName').value=r.name||'';$('pAge').value=r.age||'';$('pNum').value=r.num||'';$('pDate').value=r.date||'';$('pEed').value=r.eed||'';}
+  S.printedSig=r.printed?(r.printedSig||sigOf(r.text)):null;S.printedAt=r.printedAt||null;
   editingId=r.id;clicks=0;t0=null;tDone=null;hist=[];firstPaint=true;showView('desc');renderAll();toast('Відкрито протокол з архіву');
 }
 ['aSearch','aFrom','aTo','aStudy','aStatus'].forEach(id=>$(id).addEventListener('input',()=>{aLimit=300;renderArchive();}));
 $('aToday').onclick=()=>{$('aFrom').value=today();$('aTo').value=today();renderArchive();};
 $('aClear').onclick=()=>{['aSearch','aFrom','aTo'].forEach(i=>$(i).value='');$('aStudy').value='';$('aStatus').value='';renderArchive();};
-$('aSelUnprinted').onclick=()=>{selected=new Set(aFiltered().filter(r=>!r.printed).map(r=>r.id));renderArchive();if(!selected.size)toast('Ненадрукованих протоколів у вибірці немає');};
+$('aSelUnprinted').onclick=()=>{selected=new Set(aFiltered().filter(r=>printState(r)!=='yes').map(r=>r.id));renderArchive();if(!selected.size)toast('Ненадрукованих протоколів у вибірці немає');};
 $('aPrint').onclick=()=>{const items=A.filter(r=>selected.has(r.id)).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.ts-b.ts).map(recordItem);if(items.length)openPrint(items);};
 $('backupBtn').onclick=()=>{const ok=download(`Skiagrama_архів_${today()}.json`,JSON.stringify({app:'skiagrama',v:2,saved:new Date().toISOString(),archive:A},null,1),'application/json');
   if(ok){SET.lastBackup=today();saveSet();}toast(ok?`Копію архіву (${A.length}) збережено у файл`:'Не вдалося зберегти файл');renderArchive();};
@@ -2729,7 +2740,7 @@ $('demoA').onclick=()=>{
 $('aCsv').onclick=()=>{const rows=aFiltered().filter(r=>!r.example);if(!rows.length){toast('За цими фільтрами протоколів немає');return;}
   const q=v=>{v=String(v==null?'':v);return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
   const head=['Дата','№','ПІБ','Вік','Стать','Відділення','Дослідження','ЕЕД, мЗв','Знімків','Висновок','Результат','Терміново','Надруковано','Контроль до'];
-  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.count||'',r.concl,STATUS[r.status]||'',r.urgent?'так':'',r.printed?'так':'ні',r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
+  const lines=[head.join(';')].concat(rows.slice().reverse().map(r=>[fmtD(r.date),r.num,r.name,r.age,r.sex,r.dept,r.what,r.eed,r.count||'',r.concl,STATUS[r.status]||'',r.urgent?'так':'',PRINT_LABEL[printState(r)],r.ctrlDue?fmtD(r.ctrlDue):''].map(q).join(';')));
   const f=$('aFrom').value,t=$('aTo').value;const ok=download(`Skiagrama_архів_${f||'усі'}${t?'_'+t:''}.csv`,'\ufeff'+lines.join('\r\n'),'text/csv');toast(ok?`Вивантажено ${rows.length} протоколів`:'Не вдалося зберегти файл');};
 
 /* --- 080-print.js --- */
@@ -2854,9 +2865,16 @@ function pack(items){
   flips.forEach(place);halves.forEach(place);fulls.forEach(it=>sheets.push({full:it}));
   return {sheets,cl};
 }
-let PLAN=null,printIds=[];
+/* позначка «надруковано»: підпис тексту на момент друку — щоб помітити правку після друку */
+const sigOf=t=>{const s=String(t||'').replace(/\s+/g,' ').trim();let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36);};
+const printState=r=>!r.printed?'no':(r.printedSig&&r.text!=null&&r.printedSig!==sigOf(r.text)?'changed':'yes');
+const PRINT_LABEL={no:'ні',yes:'так',changed:'змінено після друку'};
+function renderPrintMark(){const m=$('printMark');if(!m)return;if(!S.printedSig){m.hidden=true;return;}
+  const same=sigOf(protocolText())===S.printedSig;m.hidden=false;m.className='pmark '+(same?'ok':'warn');
+  m.textContent=same?'✓ надруковано':'змінено після друку';m.title=same?'Цей протокол уже надруковано':'Текст змінено після друку — передрукуйте, щоб папір збігався з архівом';}
+let PLAN=null,printIds=[],printCurrent=false;
 function openPrint(items){
-  printIds=items.map(i=>i.id).filter(Boolean);
+  printIds=items.map(i=>i.id).filter(Boolean);printCurrent=items.some(i=>i.current);
   PLAN=pack(items);const sh=PLAN.sheets;const backSheets=sh.filter(s=>s.backs&&s.backs.some(Boolean));
   const nHalf=PLAN.cl.filter(x=>x.kind==='half').length,nFlip=PLAN.cl.filter(x=>x.kind==='flip').length,nFull=PLAN.cl.filter(x=>x.kind==='full').length,nCmp=PLAN.cl.filter(x=>x.cmp&&x.kind==='half').length;
   $('pmTitle').textContent=items.length>1?`Друк пачкою: ${items.length} протоколів`:'Друк протоколу';
@@ -2885,9 +2903,12 @@ function doPrint(side){
   if(side==='back'){pages=sh.filter(s=>s.backs&&s.backs.some(Boolean)).map(s=>pageHTML(s,'back'));if(SET.revBacks)pages.reverse();}
   else pages=sh.map(s=>pageHTML(s,'front'));
   runPrint(pages.join(''));
-  if(side==='front'&&printIds.length){A.forEach(r=>{if(printIds.includes(r.id))r.printed=true;});saveA();if(!$('view-archive').hidden)renderArchive();}
+  if(side!=='front')return;
+  const now=Date.now();
+  if(printCurrent){S.printedSig=sigOf(protocolText());S.printedAt=now;saveDraftSoon();renderPrintMark();}
+  if(printIds.length){A.forEach(r=>{if(!printIds.includes(r.id))return;r.printed=true;r.printedAt=now;r.printedSig=printCurrent&&r.id===editingId?S.printedSig:sigOf(r.text);});saveA();if(!$('view-archive').hidden)renderArchive();}
 }
-const currentItem=()=>({id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
+const currentItem=()=>({current:true,id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
 const recordItem=r=>r.doc?{id:r.id,name:r.name,doc:r.doc,blank:r.blank||SET.blank||'C'}:{id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')};
 $('printBtn').onclick=()=>openPrint([currentItem()]);
 /* PDF: «Зберегти як PDF» у вікні друку; назва файлу — з назви сторінки, половинка — A5 */

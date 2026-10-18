@@ -579,6 +579,30 @@ console.log('\n0.5: розташування, згортання, масштаб
   ok(e2.length===0,'телефон: без помилок JavaScript'+(e2.length?': '+e2.join(' | '):''));
   await c2.close();
 }
+
+// ===== 0.6: позначка «надруковано» =====
+console.log('\n0.6: друк і архів');
+{
+  const ctx=await b.newContext({viewport:{width:1366,height:768}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.addInitScript(()=>{window.print=()=>{};});
+  await p.goto(FILE);await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  await p.fill('#pName','Демо Друк');await p.fill('#pAge','50');await p.fill('#pNum','701');await p.click('#allNorm');
+  ok(await p.isHidden('#printMark'),'до друку позначки немає');
+  await p.click('#printBtn');await p.click('#pmBtns button');await p.click('#pmClose');
+  ok((await p.textContent('#printMark')).includes('надруковано'),'друк з головного вікна: «✓ надруковано» біля кнопки');
+  await p.click('#doneBtn');
+  ok(await p.waitForFunction(()=>{const r=__skg.A.find(r=>r.name==='Демо Друк');return r&&r.printed;},null,{timeout:3000}).then(()=>true,()=>false),'надрукували, потім зберегли — в архіві «надруковано: так»');
+  await p.click('#zone-heart .seg button:nth-child(2)');await p.click('#zone-heart .group .chip');
+  ok((await p.textContent('#printMark')).includes('змінено після друку'),'правка після друку: «змінено після друку»');
+  await p.click('#doneBtn');await p.waitForTimeout(200);if(await p.isVisible('text=Зберегти все одно'))await p.click('text=Зберегти все одно');await p.waitForTimeout(200);
+  await p.click('#navArchive');await p.click('#aClear');
+  const row=p.locator('#aTable tr',{hasText:'Демо Друк'});
+  ok((await row.locator('button.pbtn').textContent()).includes('змінено'),'в архіві: «змінено після друку»');
+  await row.locator('button.pbtn').click();
+  ok((await p.locator('#aTable tr',{hasText:'Демо Друк'}).locator('button.pbtn').textContent()).trim()==='ні','позначку в архіві можна перемкнути вручну');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+}
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);
 process.exit(fail?1:0);

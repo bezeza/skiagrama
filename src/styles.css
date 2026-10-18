@@ -644,3 +644,10 @@ main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
 .viewbar .btn{padding-block:4px}
 .viewbar .vseg{height:38px}
 .viewbar .vseg button{min-height:0;height:100%}
+
+/* 0.6: позначка «надруковано» */
+.pmark{font-size:12.5px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pmark.ok{background:var(--ok-soft);color:var(--ok)}
+.pmark.warn{background:var(--warn-soft);color:var(--warn)}
+button.pill.pbtn{border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:600}
+button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}

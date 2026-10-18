@@ -325,7 +325,7 @@ function renderPaper(){
     if(P.rec)tx.append(el('div',{class:'recs'},P.rec));
     tx.append(el('div',{class:'foot'},P.eed+'   '+P.doc));
   }
-  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();S.manualHtml=ptextHtml();if(first)audit('manual_edit_started');updManualBadge();renderChecks();saveDraftSoon();if(first)renderNav();});
+  tx.addEventListener('input',()=>{const first=S.manual==null;tick('text');S.manual=readPtext();S.manualHtml=ptextHtml();if(first)audit('manual_edit_started');updManualBadge();renderChecks();renderPrintMark();saveDraftSoon();if(first)renderNav();});
   tx.addEventListener('blur',()=>{if(S.manual!=null){renderBlankAdviceSoon();}});
   p.append(tx);
   p.append(el('p',{class:'note phint'},'Текст можна правити прямо тут. Alt+клік по реченню — відкрити його зону.'));
@@ -398,7 +398,7 @@ function renderNames(){const dl=$('nameList');dl.textContent='';const seen=new S
   [...A].sort((a,b)=>b.ts-a.ts).forEach(r=>{const k=norm(r.name);if(!k||seen.has(k)||seen.size>400)return;seen.add(k);dl.append(el('option',{value:r.name,label:`${r.age?ageStr(r.age)+' · ':''}${STUDIES[r.study]?STUDIES[r.study].n:''} · ${fmtD(r.date)}`}));});}
 let draftT;
 function saveDraftSoon(){clearTimeout(draftT);draftT=setTimeout(()=>{const f=fieldsObj();const has=f.pName.trim()||S.manual!=null||Object.values(S.zones).some(z=>z.st!=='n')||S.concl.length;if(has)store.set(DRAFT_KEY,Object.assign(snapshot(),{ts:Date.now(),clicks}));else store.del(DRAFT_KEY);},400);}
-function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderBlankAdviceSoon();saveDraftSoon();}
+function renderSide(){if(!paperView)resetPaperStyle();renderPatientSum();renderBlankSel();renderPaper();renderChecks();renderMeter();renderPrintMark();renderBlankAdviceSoon();saveDraftSoon();}
 function updStudyCard(){}
 /* фокус клавіатури не губиться, коли кнопки перемальовуються (пробіл / Enter на кнопці → фокус лишається на ній) */
 function focusKey(){const a=document.activeElement;if(!a||a.tagName!=='BUTTON')return null;const box=a.closest('[id]');if(!box||box.id==='ptext'||box.id==='dlgBox')return null;

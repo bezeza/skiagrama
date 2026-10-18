@@ -119,9 +119,16 @@ function pack(items){
   flips.forEach(place);halves.forEach(place);fulls.forEach(it=>sheets.push({full:it}));
   return {sheets,cl};
 }
-let PLAN=null,printIds=[];
+/* позначка «надруковано»: підпис тексту на момент друку — щоб помітити правку після друку */
+const sigOf=t=>{const s=String(t||'').replace(/\s+/g,' ').trim();let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return (h>>>0).toString(36);};
+const printState=r=>!r.printed?'no':(r.printedSig&&r.text!=null&&r.printedSig!==sigOf(r.text)?'changed':'yes');
+const PRINT_LABEL={no:'ні',yes:'так',changed:'змінено після друку'};
+function renderPrintMark(){const m=$('printMark');if(!m)return;if(!S.printedSig){m.hidden=true;return;}
+  const same=sigOf(protocolText())===S.printedSig;m.hidden=false;m.className='pmark '+(same?'ok':'warn');
+  m.textContent=same?'✓ надруковано':'змінено після друку';m.title=same?'Цей протокол уже надруковано':'Текст змінено після друку — передрукуйте, щоб папір збігався з архівом';}
+let PLAN=null,printIds=[],printCurrent=false;
 function openPrint(items){
-  printIds=items.map(i=>i.id).filter(Boolean);
+  printIds=items.map(i=>i.id).filter(Boolean);printCurrent=items.some(i=>i.current);
   PLAN=pack(items);const sh=PLAN.sheets;const backSheets=sh.filter(s=>s.backs&&s.backs.some(Boolean));
   const nHalf=PLAN.cl.filter(x=>x.kind==='half').length,nFlip=PLAN.cl.filter(x=>x.kind==='flip').length,nFull=PLAN.cl.filter(x=>x.kind==='full').length,nCmp=PLAN.cl.filter(x=>x.cmp&&x.kind==='half').length;
   $('pmTitle').textContent=items.length>1?`Друк пачкою: ${items.length} протоколів`:'Друк протоколу';
@@ -150,9 +157,12 @@ function doPrint(side){
   if(side==='back'){pages=sh.filter(s=>s.backs&&s.backs.some(Boolean)).map(s=>pageHTML(s,'back'));if(SET.revBacks)pages.reverse();}
   else pages=sh.map(s=>pageHTML(s,'front'));
   runPrint(pages.join(''));
-  if(side==='front'&&printIds.length){A.forEach(r=>{if(printIds.includes(r.id))r.printed=true;});saveA();if(!$('view-archive').hidden)renderArchive();}
+  if(side!=='front')return;
+  const now=Date.now();
+  if(printCurrent){S.printedSig=sigOf(protocolText());S.printedAt=now;saveDraftSoon();renderPrintMark();}
+  if(printIds.length){A.forEach(r=>{if(!printIds.includes(r.id))return;r.printed=true;r.printedAt=now;r.printedSig=printCurrent&&r.id===editingId?S.printedSig:sigOf(r.text);});saveA();if(!$('view-archive').hidden)renderArchive();}
 }
-const currentItem=()=>({id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
+const currentItem=()=>({current:true,id:editingId,name:$('pName').value.trim()||'Пацієнт',doc:docData(),blank:curBlank()});
 const recordItem=r=>r.doc?{id:r.id,name:r.name,doc:r.doc,blank:r.blank||SET.blank||'C'}:{id:r.id,name:r.name,units:r.units||unitsFromText(r.text||'')};
 $('printBtn').onclick=()=>openPrint([currentItem()]);
 /* PDF: «Зберегти як PDF» у вікні друку; назва файлу — з назви сторінки, половинка — A5 */

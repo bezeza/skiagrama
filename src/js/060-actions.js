@@ -125,7 +125,7 @@ function doSave(){
     name:$('pName').value.trim(),age:$('pAge').value.trim(),sex:$('pSex').value,dept:$('pDept').value.trim(),ref:$('pRef').value.trim(),
     study:S.study,what:headerLine().replace(/^На\s*/,'').replace(/ від .*$/,''),eed:$('pEed').value.trim(),
     concl:S.manual!=null?((/Rö-ч:\s*(.*)/.exec(S.manual)||[])[1]||''):P.concl.t.replace(/^Rö-ч:\s*/,''),text,units,doc:docData(),blank:curBlank(),
-    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),count:Math.max(1,+$('pCount').value||1),notified:prev?!!prev.notified:false,printed:prev?!!prev.printed:false,state:clone(S),fields:fieldsObj()};
+    ctrlDue:dueFrom(recList(),date),ctrlDone:prev?!!prev.ctrlDone:false,urgent:!!S.urgent,status:statusOf(),count:Math.max(1,+$('pCount').value||1),notified:prev?!!prev.notified:false,printed:S.printedSig?true:(prev?!!prev.printed:false),printedSig:S.printedSig||(prev&&prev.printedSig)||null,printedAt:S.printedAt||(prev&&prev.printedAt)||null,state:clone(S),fields:fieldsObj()};
   const i=A.findIndex(r=>r.id===rec.id);if(i>=0)A[i]=rec;else A.push(rec);
   const n=num(rec.num);if(isFinite(n)&&(SET.lastNumYear!==date.slice(0,4)||!isFinite(num(SET.lastNum))||n>=num(SET.lastNum))){SET.lastNum=String(n);SET.lastNumYear=date.slice(0,4);store.set(SET_KEY,SET);}
   saveA();audit(prev?'protocol_updated':'protocol_saved');store.del(DRAFT_KEY);renderNames();updCtrlBadge();folderSaveProtocol(rec);
