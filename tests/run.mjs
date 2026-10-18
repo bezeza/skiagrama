@@ -340,7 +340,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   ok((await p.textContent('#dlg')).includes('Записано'),'«Помилка чи ідея»: відгук записано');
   await ctx.grantPermissions(['clipboard-read','clipboard-write']);await p.click('#fbCopyOne');
   const clip=await p.evaluate(()=>navigator.clipboard.readText());
-  ok(clip.includes('Ідея')&&clip.includes('плевральні спайки')&&clip.includes('Skiagrama 0.5')&&!clip.includes('Пацієнт Тест'),'відгук копіюється для розробника без даних пацієнта');
+  ok(clip.includes('Ідея')&&clip.includes('плевральні спайки')&&clip.includes('Skiagrama 0.6')&&!clip.includes('Пацієнт Тест'),'відгук копіюється для розробника без даних пацієнта');
   ok(await p.evaluate(()=>JSON.parse(localStorage.getItem('skiagrama.feedback.v1')).length===1&&JSON.parse(localStorage.getItem('skiagrama.feedback.v1'))[0].sent),'відгук збережено й позначено «передано»');
   await p.click('#navFeedback');await p.fill('#fbText','Петренко І. В. — не друкується');
   ok(await p.isVisible('#dlg .warnt'),'попередження, якщо в тексті ПІБ');await p.click('#dlg >> text=Закрити');
