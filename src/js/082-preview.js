@@ -1,7 +1,7 @@
 /* ===== Перегляд перед друком на весь екран: аркуш з масштабом + панель бланка й друку ===== */
 let pmZoom=1,pmZoomMode='page';
 function applyBind(){const b=BL(),r=document.documentElement.style;r.setProperty('--bind',(+b.bind||0)+'mm');r.setProperty('--offx',(+b.offX||0)+'mm');r.setProperty('--offy',(+b.offY||0)+'mm');}
-function setBL(k,v){SET.bl=Object.assign({},SET.bl||{},{[k]:v});saveSet();applyBind();if(lastPrint.length)openPrint(lastPrint.map(x=>x.current?currentItem():x));renderSide();}
+function setBL(k,v){SET.blankSeen=true;SET.bl=Object.assign({},SET.bl||{},{[k]:v});saveSet();applyBind();if(lastPrint.length)openPrint(lastPrint.map(x=>x.current?currentItem():x));renderSide();}
 function pmOpenShell(){if($('printModal').hidden){$('printModal').hidden=false;document.body.classList.add('pm-open');closeSheet();}}
 /* сторінки: справжній розмір A4, масштаб — через zoom обгортки */
 function renderPmPages(){const pv=$('pmPreview');pv.textContent='';const sh=PLAN.sheets;
@@ -61,7 +61,7 @@ function loadLogo(f){const rd=new FileReader();rd.onload=()=>{const im=new Image
 /* пробний аркуш з лінійкою: видно зсув і обрізання країв */
 function rulerSheet(){const tick=(n,horiz)=>Array.from({length:n},(_,i)=>`<span style="position:absolute;${horiz?`left:${i*10}mm;top:0;height:${i%5?3:6}mm;border-left`:`top:${i*10}mm;left:0;width:${i%5?3:6}mm;border-top`}:.3mm solid #111"></span>`).join('');
   const page=`<div class="ppage" style="position:relative">${tick(22,true)}${tick(30,false)}<div style="position:absolute;left:10mm;top:10mm;right:10mm;bottom:10mm;border:.4mm solid #111"></div><div style="position:absolute;left:20mm;top:30mm;font:12pt Arial;line-height:1.5;width:170mm">Пробний аркуш Skiagrama.<br>Рамка має бути рівно 10 мм від кожного краю. Позначки по краях — кожні 10 мм.<br>Якщо рамка зсунута — виміряйте, на скільки, і впишіть зсув у «Папір і принтер» з протилежним знаком.</div></div>`;
-  $('pmTitle').textContent='Пробний аркуш з лінійкою';$('pmSummary').textContent='Перевірка полів і зсуву принтера.';$('pmSteps').textContent='';const btns=$('pmBtns');btns.textContent='';const a=el('button',{type:'button',class:'btn primary'},'Друкувати пробний аркуш');a.onclick=()=>runPrint(page);btns.append(a);
+  $('pmTitle').textContent='Пробний аркуш з лінійкою';$('pmSummary').textContent='Перевірка полів і зсуву принтера.';$('pmSteps').textContent='';const btns=$('pmBtns');btns.textContent='';const a=el('button',{type:'button',class:'btn primary'},'Друкувати пробний аркуш');a.onclick=()=>{runPrint(page);SET.testPrinted=today();saveSet();};btns.append(a);
   showPmPages([['Пробний аркуш',page]]);}
 /* відкрити перегляд: «Друк», «Перегляд перед друком», Налаштування */
 $('paperBtn').onclick=()=>openPrint([currentItem()]);

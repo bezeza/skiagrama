@@ -1,5 +1,6 @@
 /* ===== Налаштування і запуск ===== */
 function renderSettings(){
+  renderReady();$('sLock').value=String(lockMin());
   $('sDoctor').value=SET.doctor;$('sDocTitle').value=SET.docTitle||'';$('sDepts').value=SET.depts;$('sTheme').value=SET.theme;$('sScale').value=String(scaleNow());$('sScreen').value=SET.screen||'auto';$('sLayout').value=layoutNow();
   $('sFlow').checked=!!SET.flow;$('sAutoFold').checked=SET.autoFold!==false;$('sFreq').checked=!!SET.freq;$('sPrintMode').value=SET.printMode;$('sFlipEdge').value=SET.flipEdge;$('sRevBacks').checked=!!SET.revBacks;
   const e=$('sEed');e.textContent='';Object.keys(STUDIES).forEach(k=>{const l=el('label',{class:'f'},STUDIES[k].n);const i=el('input',{type:'text',inputmode:'decimal'});i.value=SET.eed[k]||'';i.addEventListener('input',()=>{SET.eed[k]=i.value.trim();saveSet();});l.append(i);e.append(l);});
@@ -135,7 +136,7 @@ function fillDepts(){const dl=$('deptList');dl.textContent='';SET.depts.split(',
 applyLook();initView();$('vBadge').textContent=`v${VERSION} бета`;
 /* для автотестів: доступ до внутрішніх функцій (не впливає на роботу) */
 window.__skg={get S(){return S;},get A(){return A;},archiveSaved,saveA,get SET(){return SET;},STUDIES,MEAS,zoneText,effList,normConclOf,suggestions,classify,currentItem,blankAdvice,BLANKS,docData,measResults,renderAll,effOpts,applyPhrasePack,swapSide,autoStatus,statusOf,contradictions,checks,phrasePack,PACKS,get TPL(){return TPL;},applyTpl:t=>applyTpl(t),
-  unitsHTML,docModel,htmlBlocks,cleanHtml,layoutNow,
+  unitsHTML,docModel,htmlBlocks,cleanHtml,layoutNow,profileData,applyProfile,exportPilot,lockNow,usbNudge,renderReady,
   setZones(z){S.zones=Object.assign(blankZones(S.study),z);renderAll();},study:k=>switchStudy(k),
   async useFolder(h){dirH=h;dirOK=true;await folderWrite();}};
 fillDepts();renderNames();updCtrlBadge();
@@ -146,7 +147,7 @@ else renderAll();
 setInterval(()=>{if(t0&&!tDone)renderMeter();},1000);
 /* архів: перенесення з localStorage у IndexedDB і підтягування збереженого */
 aChain=aChain.then(async()=>{const db=await kvGet('archive');if(Array.isArray(db))mergeInto(db);aKnown=new Set(A.map(r=>r.id));refreshArchiveViews();
-  if(store.get(A_KEY,null)||!Array.isArray(db))await archivePersist();}).then(()=>folderBoot());
+  if(store.get(A_KEY,null)||!Array.isArray(db))await archivePersist();}).then(()=>folderBoot()).then(()=>setTimeout(usbNudge,1500));
 if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
 if(bc)bc.postMessage('hello');
 if(SET.welcomed&&window.innerWidth>760&&!$('pName').value)setTimeout(()=>{if($('dlg').hidden)$('pName').focus();},50);

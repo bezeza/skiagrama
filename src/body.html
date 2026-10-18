@@ -25,6 +25,7 @@
   <div class="banner" id="fileBanner" hidden><span>Цей браузер не дає папку даних для сторінки з диска: архів житиме лише в браузері. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama і встановіть як програму.</span></div>
   <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button></div>
   <div class="banner" id="tabBanner" hidden>Skiagrama вже відкрита в іншій вкладці або вікні. Працюйте в одній — так надійніше.</div>
+  <div class="banner" id="usbBanner" hidden><span id="usbText"></span><button class="btn sm" id="usbSave" type="button">Зберегти копію архіву</button><button class="btn primary sm" id="usbDone" type="button">Скопіював ✓</button><button class="btn sm" id="usbLater" type="button">Завтра</button></div>
   <div class="banner" id="storeBanner" hidden>Браузер не дає зберігати дані на цьому пристрої: архів, шаблони й чернетка зникнуть після закриття сторінки.</div>
 </div>
 
@@ -191,6 +192,13 @@
 <!-- ============ НАЛАШТУВАННЯ ============ -->
 <section class="view noprint" id="view-settings" hidden>
   <div class="vh"><button class="btn" data-back type="button">← До опису</button><h2 data-ic="gear">Налаштування</h2></div>
+  <div class="card" id="readyCard">
+    <div class="trow"><h2 data-ic="check">Чи все готово до пілоту?</h2><span style="flex:1"></span><b class="note" id="readySum"></b></div>
+    <ul class="ready" id="readyList"></ul>
+    <div class="trow"><button class="btn" id="sProfileLoad" type="button">Завантажити профіль кабінету…</button><button class="btn" id="sProfileSave" type="button">Зберегти профіль кабінету</button><span class="note">Реквізити, бланк, логотип, відділення, ЕЕД, тема — одним файлом для іншого комп’ютера.</span></div>
+    <div class="trow"><button class="btn" id="sPilotCsv" type="button" data-ic="csv">Журнал пілоту (CSV)</button><span class="note">Час кожного протоколу від першої дії до «Готово» і спіймані перевіркою помилки — у форматі аркуша «Журнал». Без ПІБ.</span></div>
+    <div class="trow"><label class="f">Сховати дані пацієнта після простою<select id="sLock"><option value="5">5 хв</option><option value="10">10 хв</option><option value="20">20 хв</option><option value="0">не ховати</option></select></label></div>
+  </div>
   <div class="card">
     <h2 data-ic="folder">Папка даних</h2>
     <p class="note" id="folderInfo"></p>
@@ -329,6 +337,7 @@
   </div>
 </div>
 <div class="modal noprint" id="dlg" hidden><div class="box narrow" role="dialog" aria-modal="true" id="dlgBox"></div></div>
+<div class="lockscr noprint" id="lockScr" hidden><div><b>Skiagrama</b><p>Дані пацієнта сховано після простою.</p><button class="btn primary" id="lockGo" type="button">Продовжити</button></div></div>
 <div id="printArea"></div>
 <div id="measure" class="pdoc" aria-hidden="true" style="position:absolute;left:-10000px;top:0;visibility:hidden;pointer-events:none"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>

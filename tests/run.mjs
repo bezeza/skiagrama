@@ -641,6 +641,37 @@ console.log('\n0.6: перегляд перед друком і бланк');
   ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
   await ctx.close();
 }
+// ===== 0.6: пілот і кабінет =====
+console.log('\n0.6: пілот і кабінет');
+{
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');
+  ok(await p.isVisible('#dlg >> text=Завантажити профіль кабінету…'),'знайомство: «Завантажити профіль кабінету…»');
+  await p.click('text=Пропустити — заповню пізніше');
+  const prof={app:'skiagrama-profile',v:1,profile:{org:{name:'КНП «Демо-лікарня»',edrpou:'00000000'},theme:'grey',depts:'Демо-відділення',bl:{copies:'two'},blank:'B'}};
+  ok(await p.evaluate(d=>__skg.applyProfile(d),prof),'профіль кабінету застосовується');
+  ok(await p.evaluate(()=>{const K=__skg;return K.SET.org.name==='КНП «Демо-лікарня»'&&K.SET.theme==='grey'&&document.documentElement.dataset.theme==='grey'&&K.SET.bl.copies==='two'&&K.SET.blank==='B';}),'профіль: реквізити, тема, бланк');
+  ok(await p.evaluate(()=>!__skg.applyProfile({app:'skiagrama',archive:[]})),'чужий файл — не профіль');
+  ok(await p.evaluate(()=>{const d=__skg.profileData();return d.app==='skiagrama-profile'&&d.profile.org.name==='КНП «Демо-лікарня»'&&!('doctor' in d.profile);}),'збереження профілю — без ПІБ лікаря');
+  await p.fill('#pName','Демо Пілот');await p.click('#allNorm');await p.waitForTimeout(1100);
+  await p.click('#zone-heart .seg button:nth-child(2)');await p.click('#zone-heart .group .chip');
+  const w=await p.evaluate(()=>__skg.S.seenW||[]);
+  await p.evaluate(()=>{const K=__skg;K.S.manual=null;});
+  await p.click('#doneBtn');await p.waitForTimeout(200);if(await p.isVisible('text=Зберегти все одно'))await p.click('text=Зберегти все одно');
+  const pl=await p.evaluate(()=>(__skg.A.find(r=>r.name==='Демо Пілот')||{}).pilot);
+  ok(pl&&pl.sec>=1&&pl.acts>=2&&Array.isArray(pl.caught),'пілот: в архіві час і кількість дій ('+JSON.stringify(pl)+')');
+  const [dl]=await Promise.all([p.waitForEvent('download'),p.evaluate(()=>__skg.exportPilot())]);
+  const csv=(await import('node:fs')).readFileSync(await dl.path(),'utf8');
+  ok(csv.includes('№;Дата;№ знімка;Вид дослідження;Період;Хв;Сек;Час, с;Помилок спіймано;Примітка')&&/\n1;\d\d\.\d\d\.\d{4};[^;]*;ОГК;S;\d+;\d+;\d+;\d+;/.test(csv)&&!csv.includes('Демо Пілот'),'журнал пілоту CSV — як аркуш «Журнал», без ПІБ');
+  await p.evaluate(()=>__skg.lockNow());ok(await p.isVisible('#lockScr')&&await p.isVisible('#lockGo'),'після простою дані сховано');
+  await p.click('#lockGo');ok(await p.isHidden('#lockScr'),'«Продовжити» повертає роботу');
+  await p.evaluate(()=>{const K=__skg;K.A.forEach(r=>{r.date='2026-01-01';});delete K.SET.lastUsb;delete K.SET.usbLater;K.usbNudge();});
+  ok(await p.isVisible('#usbBanner'),'нагадування про флешку через тиждень');
+  await p.click('#usbDone');ok(await p.isHidden('#usbBanner'),'«Скопіював ✓» ховає нагадування');
+  await p.click('#navSettings');const rs=await p.textContent('#readySum');ok(/Готово \d з 8/.test(rs)&&(await p.locator('#readyList li.ok').count())>=2,'«Чи все готово до пілоту?» — '+rs);
+  ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
+  await ctx.close();
+}
 // ===== 0.6: з форку — під себе, ФГ, перевірки =====
 console.log('\n0.6: зони під себе і перевірки');
 {

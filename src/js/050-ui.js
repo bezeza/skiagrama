@@ -448,7 +448,7 @@ function renderBlankAdvice(){
   else if(/Налаштуваннях/.test(a.text)){const b=el('button',{type:'button',class:'btn sm'},'Відкрити налаштування');b.onclick=()=>showView('settings');box.append(b);}
 }
 function renderChecks(saveMode){
-  const w=checks();const box=$('checkBox');box.classList.toggle('has',!!w.length);box.classList.toggle('ok',!w.length);
+  const w=checks();noteChecks(w);const box=$('checkBox');box.classList.toggle('has',!!w.length);box.classList.toggle('ok',!w.length);
   $('checkSum').textContent=w.length?`Перевірка перед підписом: зауважень ${w.length}`:'Перевірка перед підписом: зауважень немає ✓';
   const ul=$('checkList');ul.textContent='';w.forEach(t=>ul.append(el('li',null,t)));
   const act=$('checkAct');act.textContent='';
