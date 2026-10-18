@@ -82,8 +82,8 @@ h2 .ic{color:var(--blue);width:20px;height:20px}
 .ztools{display:flex;gap:6px;align-items:center}
 .cnt{background:var(--warn);color:var(--surface);border-radius:999px;font-size:12px;font-weight:700;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px}
 input.miss{border-color:var(--warn);box-shadow:0 0 0 1px var(--warn) inset;background:var(--warn-soft)}
-.zpen{opacity:.35;transition:opacity .15s}
-.zone:hover .zpen,.zpen:focus-visible,.zpen[aria-pressed="true"]{opacity:1}
+.zpen{opacity:.85;transition:opacity .15s}
+.zone:hover .zpen,.zpen:focus-visible,.zpen[aria-pressed="true"],.zpen.on{opacity:1}
 @media (hover:none){.zpen{opacity:1}}
 .ppage.a5{width:210mm;height:148.5mm}
 .mpop b{font-weight:600}
@@ -175,10 +175,14 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 .zone:not(.wide) .zone-head h3{min-width:0;flex:1 1 auto}
 .zone:not(.wide) .zone-head .phrase{flex-basis:100%;font-size:12.5px}
 .zone.focus{box-shadow:0 0 0 2px var(--accent)}
-.zpen{border:1px solid transparent;background:none;border-radius:6px;padding:0 4px;min-height:26px;color:var(--muted);margin-left:2px;display:inline-flex;align-items:center}
+.zpen{border:1px solid var(--line);background:var(--bg);border-radius:6px;padding:0 6px;min-height:28px;color:var(--muted);margin-left:4px;display:inline-flex;align-items:center}
 .zpen .ic{width:15px;height:15px}
-.zpen:hover{border-color:var(--line);color:var(--blue)}
-.zpen[aria-pressed="true"]{background:var(--blue);color:var(--surface)}
+.zpen:hover{border-color:var(--blue);color:var(--blue)}
+.zpen.on{border-color:var(--accent);color:var(--accent)}
+.zpen[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--surface)}
+.addzone{align-self:flex-start;margin-top:4px}
+.hidzones{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-top:4px}
+.projpen{margin-left:4px}
 .zone.editing{border-color:var(--blue);border-style:dashed}
 .egroup{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:8px}
 .egroup .eh{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
@@ -528,22 +532,54 @@ body.resizing{cursor:col-resize;user-select:none}
 :root.w-lt1280 header.top .btn.search{padding-inline:12px;min-width:0}
 :root.w-lt1180 header.top .brand small{display:none}
 :root.w-lt1180 .wrap{gap:12px;padding-inline:12px}
-:root.scr-laptop header.top{padding-top:8px;padding-bottom:2px}
-:root.scr-laptop .card{padding:12px 14px;gap:10px}
-:root.scr-laptop .form{gap:10px}
-:root.scr-laptop .side{padding:10px 12px;gap:8px}
 :root.scr-monitor .wrap,:root.scr-monitor header.top,:root.scr-monitor .banners{max-width:1760px}
-:root.scr-laptop .card{padding:8px 10px;gap:7px}
-:root.scr-laptop .form{gap:7px}
-:root.scr-laptop #zones{grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:6px}
-:root.scr-laptop .zone{padding:7px 8px;gap:5px}
-:root.scr-laptop .studytabs button .simg{width:28px;height:28px}
+/* ноутбук: шрифт як є, тісніші відступи — щоб на 15″ і читалось, і вміщалось */
+:root.scr-laptop{--fs:15px}
+:root.scr-laptop header.top{padding:6px 14px 2px;gap:6px 10px;max-width:none}
+:root.scr-laptop header.top .brand{gap:8px}
+:root.scr-laptop header.top .blogo{width:34px;height:34px}
+:root.scr-laptop header.top .brand h1{font-size:20px}
+:root.scr-laptop header.top .appnav{margin-left:8px}
+:root.scr-laptop header.top .appnav button{min-height:34px;padding:5px 10px;font-size:14px}
+:root.scr-laptop header.top .btn{min-height:34px;padding:4px 10px}
+:root.scr-laptop header.top .btn.icon{min-width:34px;padding:4px 8px}
+:root.scr-laptop .banners{padding-inline:14px;max-width:none}
+:root.scr-laptop .wrap{padding:6px 14px 24px;gap:12px;max-width:none;grid-template-columns:minmax(0,1.15fr) minmax(360px,.85fr)}
+:root.scr-laptop .form{gap:8px}
+:root.scr-laptop .card{padding:8px 12px;gap:8px;border-radius:12px}
+:root.scr-laptop .card h2{font-size:16px}
+:root.scr-laptop .pbar{padding:8px 12px;gap:6px}
+:root.scr-laptop .prow{gap:6px}
+:root.scr-laptop .prow input,:root.scr-laptop input,:root.scr-laptop select,:root.scr-laptop textarea{min-height:34px;padding:5px 8px}
+:root.scr-laptop .fields{gap:8px}
+:root.scr-laptop .studytabs button{min-height:40px;padding:6px 4px 5px;font-size:13px;gap:3px}
+:root.scr-laptop .studytabs button .simg{width:26px;height:26px}
+:root.scr-laptop .chip{min-height:30px;padding:3px 10px;font-size:13px}
+:root.scr-laptop .seg button{min-height:32px;padding:4px 9px;font-size:13px}
+:root.scr-laptop .tpl button{min-height:30px;padding:3px 8px}
+:root.scr-laptop #zones{grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:6px}
+:root.scr-laptop .zone{padding:6px 8px;gap:5px;border-radius:10px}
+:root.scr-laptop .zone-head h3{font-size:14px;min-width:0}
+:root.scr-laptop .zone-head .phrase{font-size:13px}
 :root.scr-laptop .zhead .navrow{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap;scrollbar-width:thin;overscroll-behavior-inline:contain;padding-bottom:2px}
 :root.scr-laptop .zhead .navrow .nk{width:auto}
-:root.scr-laptop #sec-patient.folded{padding:7px 10px}
+:root.scr-laptop .navrow button{min-height:30px;padding:4px 8px;font-size:13.5px}
+:root.scr-laptop .secnav button{min-height:28px;padding:3px 8px;font-size:13px}
+:root.scr-laptop .side{padding:8px 10px;gap:6px;border-radius:12px;top:6px}
+:root.scr-laptop .side .sh h2{font-size:16px}
+:root.scr-laptop .actbar .btn,:root.scr-laptop .viewbar .btn,:root.scr-laptop .viewbar label.bsel select{min-height:34px;height:34px}
+:root.scr-laptop .viewbar .vseg{height:34px}
+:root.scr-laptop .pscroll{padding:6px}
+:root.scr-laptop .paper{padding:12px 16px 16px;line-height:1.5}
+:root.scr-laptop .fmtbar{padding:2px 3px;margin-bottom:4px}
+:root.scr-laptop .fmtbar button{min-width:28px;height:28px;min-height:28px}
+:root.scr-laptop #sec-patient.folded{padding:6px 10px}
 :root.scr-laptop #sec-patient.folded .secrow{margin:2px -4px -2px;padding-top:2px}
 :root.scr-laptop #sec-patient.folded .morerow{display:flex!important}
 :root.scr-laptop #sec-patient.folded .morerow>.more{display:none!important}
+:root.scr-laptop .cntrow{margin-top:4px;gap:8px}
+:root.scr-laptop .group .gl{width:80px}
+:root.scr-laptop label.chk{min-height:30px}
 
 /* права панель: протокол | висновок */
 .sbody{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:0}
@@ -651,3 +687,10 @@ main.lay-a .sbody.dfold #partDoc{flex:0 0 auto}
 .pmark.warn{background:var(--warn-soft);color:var(--warn)}
 button.pill.pbtn{border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:600}
 button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}
+
+/* 0.6: ширина з ручки і дзеркальне розташування мають перевагу над щільним «ноутбуком» */
+@media (min-width:761px){
+  :root main.wrap.customw{grid-template-columns:minmax(380px,1fr) var(--sidew)}
+  :root main.wrap.mirror{grid-template-columns:minmax(360px,.85fr) minmax(0,1.15fr)}
+  :root main.wrap.mirror.customw{grid-template-columns:var(--sidew) minmax(380px,1fr)}
+}

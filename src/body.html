@@ -22,6 +22,7 @@
 </header>
 <div class="banners noprint">
   <div class="banner" id="updBanner" hidden><span>Доступна нова версія Skiagrama. Незбережений протокол не загубиться.</span><button class="btn primary sm" id="updBtn" type="button">Оновити зараз</button></div>
+  <div class="banner" id="fileBanner" hidden><span>Цей браузер не дає папку даних для сторінки з диска: архів житиме лише в браузері. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama і встановіть як програму.</span></div>
   <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button></div>
   <div class="banner" id="tabBanner" hidden>Skiagrama вже відкрита в іншій вкладці або вікні. Працюйте в одній — так надійніше.</div>
   <div class="banner" id="storeBanner" hidden>Браузер не дає зберігати дані на цьому пристрої: архів, шаблони й чернетка зникнуть після закриття сторінки.</div>
@@ -202,7 +203,7 @@
       <label class="f">Посада в підписі<input id="sDocTitle" type="text" placeholder="Лікар-рентгенолог"></label>
       <label class="f">Тема<select id="sTheme"><option value="system">як у системі</option><option value="light">світла</option><option value="grey">кабінет — темно-сіра</option><option value="dark">темна</option></select></label>
       <label class="f">Масштаб програми<select id="sScale"><option value="90">90 %</option><option value="100">100 %</option><option value="110">110 %</option><option value="125">125 %</option><option value="150">150 %</option></select></label>
-      <label class="f">Екран<select id="sScreen"><option value="auto">визначати самому</option><option value="laptop">ноутбук — компактно</option><option value="monitor">монітор — просторо</option></select></label>
+      <label class="f">Екран<select id="sScreen"><option value="auto">визначати самому</option><option value="laptop">ноутбук — щільно, текст як є</option><option value="monitor">монітор — просторо</option></select></label>
       <label class="f">Розташування<select id="sLayout"><option value="A">А · Класичне</option><option value="B">Б · Робоче місце</option><option value="C">В · Дзеркальне</option><option value="D">Г · Один стовпчик</option></select></label>
       <label class="f wide">Відділення (через кому)<input id="sDepts" type="text"></label>
     </div>

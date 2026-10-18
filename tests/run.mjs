@@ -82,8 +82,8 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
     horizontal:document.documentElement.scrollWidth<=document.documentElement.clientWidth,
     patient:document.querySelector('#sec-patient').classList.contains('folded'),
     study:document.querySelector('#sec-study').classList.contains('folded')}));
-  ok(fit.zoom==='0.9'&&fit.cards.length===10&&fit.cards.every(Boolean)&&fit.side&&fit.horizontal&&fit.patient&&fit.study,
-    'автопідгонка 90 %: 10 зон і права панель у межах екрана без прокрутки сторінки');
+  ok(fit.zoom==='1'&&fit.cards.length===13&&fit.cards.slice(0,6).every(Boolean)&&fit.side&&fit.horizontal&&fit.patient&&fit.study,
+    'ноутбук: текст 100 %, щільно, права панель у межах екрана, без прокрутки вбік');
   await p.locator('#sec-study > .foldh .ft').click();
   ok(await p.isVisible('#studyTabs'),'згорнуте дослідження можна швидко розгорнути');
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
@@ -207,9 +207,9 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.click('#conclTools >> text=Редагувати кнопки');
   await p.fill('#conclTools .erow[data-k="Емфізема легень"] input','Емфізема легень (буллезна)');
   await p.fill('#conclTools input[aria-label="Висновок норми"]','Органи грудної клітки без патології');
-  await p.click('#conclTools .erow[data-k="Гідроторакс"] >> text=Сховати');
+  await p.click('#conclTools .erow[data-k="Правобічний гідроторакс"] >> text=Сховати');
   await p.click('#conclTools >> text=Готово');
-  ok(!(await p.isVisible('#conclChips .chip >> text=Гідроторакс'))&&await p.isVisible('#conclChips .chip >> text=Емфізема легень (буллезна)'),'олівець висновку: перейменувати, сховати');
+  ok(!(await p.isVisible('#conclChips .chip >> text=Правобічний гідроторакс'))&&await p.isVisible('#conclChips .chip >> text=Емфізема легень (буллезна)'),'олівець висновку: перейменувати, сховати');
   await p.evaluate(()=>{const S=window.__skg.S;S.concl=[];window.__skg.renderAll();});
   ok((await paper(p)).includes('Rö-ч: Органи грудної клітки без патології.'),'свій висновок норми');
   await p.click('#zone-pneum .seg button:nth-child(2)');await p.click('#zone-pneum >> text=підвищена');
@@ -221,7 +221,7 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   {const q=await ctx.newPage();await q.goto(FILE);await q.click('#allNorm');
    ok(await q.isVisible('#conclChips .chip >> text=Плевральні спайки справа')&&(await paper(q)).includes('Органи грудної клітки без патології'),'свої висновки зберігаються після перезапуску');
    await q.click('#conclTools >> text=Редагувати кнопки');await q.click('#conclTools button >> text=Повернути як було');await q.click('#conclTools button >> text=Точно');
-   ok(await q.isVisible('#conclChips .chip >> text=Гідроторакс')&&!(await q.isVisible('#conclChips .chip >> text=Плевральні спайки справа')),'«Повернути як було» для висновків');await q.close();}
+   ok(await q.isVisible('#conclChips .chip >> text=Правобічний гідроторакс')&&!(await q.isVisible('#conclChips .chip >> text=Плевральні спайки справа')),'«Повернути як було» для висновків');await q.close();}
   await p.click('#allNorm');
   // бічність і «Терміново»
   await p.click('#allNorm');await p.click('#zone-infil .seg button:nth-child(2)');for(const t of ['права','нижні поля','інфільтративні'])await p.click(`#zone-infil >> text=${t}`);
@@ -602,6 +602,31 @@ console.log('\n0.6: друк і архів');
   ok((await p.locator('#aTable tr',{hasText:'Демо Друк'}).locator('button.pbtn').textContent()).trim()==='ні','позначку в архіві можна перемкнути вручну');
   ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
   await ctx.close();
+}
+
+// ===== 0.6: з форку — під себе, ФГ, перевірки =====
+console.log('\n0.6: зони під себе і перевірки');
+{
+  const ctx=await b.newContext({viewport:{width:1366,height:768}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  ok(await p.evaluate(()=>!!document.getElementById('zone-ptx')&&!!document.getElementById('zone-atel')&&!!document.getElementById('zone-mass')),'ОГК: зони пневмоторакс, ателектаз, утвір');
+  await openStudy(p,'ФГ');
+  ok(await p.evaluate(()=>!document.getElementById('zone-ptx')&&document.querySelector('.hidzones')?.textContent.includes('Пневмоторакс')),'ФГ: нові зони сховані, їх можна показати');
+  await p.click('.hidzones button:has-text("Пневмоторакс")');ok(await p.evaluate(()=>!!document.getElementById('zone-ptx')),'ФГ: «показати» повертає зону');
+  await openStudy(p,'ОГК');
+  await p.click('#zones .addzone');await p.waitForTimeout(100);
+  ok(await p.evaluate(()=>__skg.SET.customZones&&(__skg.SET.customZones.ogk||[]).length===1),'«+ Своя зона» додає зону');
+  await p.click('#zone-pneum .zpen');await p.click('#zone-pneum >> text=Сховати зону');await p.click('#zone-pneum >> text=Точно сховати');
+  ok(await p.evaluate(()=>!document.getElementById('zone-pneum')),'олівець зони: «Сховати зону»');
+  const c=await p.evaluate(()=>{const S=__skg.S;S.concl=['Ексудативний плеврит'];return __skg.contradictions().join(' ');});
+  ok(!/Кістки/.test(c),'«ексудативний» не плутається з ЕКС у перевірці висновку');
+  const cb=await p.evaluate(()=>__skg.MEAS.cobb.grade(8,{}));ok(cb.ok&&!/сколіоз/.test(cb.ph),'Кобб 8° — без «сколіозу»');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
+  const c2=await b.newContext({viewport:{width:390,height:844}});const q=await c2.newPage();
+  await q.goto(FILE);await q.waitForTimeout(450);if(await q.isVisible('text=Пропустити — заповню пізніше'))await q.click('text=Пропустити — заповню пізніше');
+  ok(await q.evaluate(()=>{const s=document.querySelector('#zone-infil .seg').getBoundingClientRect();return s.width>100&&!document.documentElement.classList.contains('scr-laptop');}),'телефон: кнопки зон на повну ширину, без стилю «ноутбук»');
+  await c2.close();
 }
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);

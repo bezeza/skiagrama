@@ -1,5 +1,6 @@
-/* ===== Папка даних на комп'ютері (Chrome / Edge) ===== */
-const FOLDER_SUPPORTED=typeof window.showDirectoryPicker==='function';
+/* ===== Папка даних на комп'ютері (Chrome / Edge) =====
+   File System Access API потребує безпечного контексту (у Chrome/Edge це і сайт, і файл з диска). */
+const FOLDER_SUPPORTED=typeof window.showDirectoryPicker==='function'&&!!window.isSecureContext;
 const DATA_DIR='Skiagrama — дані';
 let dirH=null,dirOK=false,folderT=null,folderBusy=false;
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('skiagrama',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
@@ -14,9 +15,20 @@ async function writeJSON(dir,name,obj,compact){await writeText(dir,name,JSON.str
 async function folderSync(){
   if(!dirH)return;
   const a=await readJSON(dirH,'архів.json');let added=0;
-  if(a&&Array.isArray(a.archive))added=mergeArchive(a.archive);
+  if(a&&Array.isArray(a.archive))added=mergeInto(a.archive);
   const s=await readJSON(dirH,'налаштування.json');
-  if(s&&s.settings&&!SET.__fromFolder){const keep={lastBackup:SET.lastBackup};const mergedMy=Object.assign({},s.settings.my||{},SET.my||{});SET=Object.assign({},s.settings,SET,{my:mergedMy});SET.eed=Object.assign({...DEF_EED},s.settings.eed||{},SET.eed||{});Object.assign(SET,keep);}
+  if(s&&s.settings){
+    const keep={lastBackup:SET.lastBackup||s.settings.lastBackup||''};
+    const f=s.settings;
+    const fill=(a,b)=>{const o=Object.assign({},a||{},b||{});Object.keys(a||{}).forEach(k=>{if(typeof o[k]==='string'&&!o[k].trim()&&a[k])o[k]=a[k];});return o;};
+    const mergedMy=Object.assign({},f.my||{},SET.my||{});
+    const mergedOrg=fill(f.org,SET.org);
+    const mergedEed=fill(Object.assign({...DEF_EED},f.eed||{}),SET.eed);
+    SET=Object.assign({},f,SET,{my:mergedMy,org:mergedOrg,eed:mergedEed});
+    if(!String(SET.doctor||'').trim()&&f.doctor)SET.doctor=f.doctor;
+    if(!String(SET.docTitle||'').trim()&&f.docTitle)SET.docTitle=f.docTitle;
+    Object.assign(SET,keep);
+  }
   if(s&&Array.isArray(s.templates)){const names=new Set(TPL.map(t=>t.study+'|'+t.name));s.templates.forEach(t=>{if(!names.has(t.study+'|'+t.name))TPL.push(t);});}
   saveA();store.set(SET_KEY,SET);store.set(TPL_KEY,TPL);
   await folderWrite();
@@ -35,9 +47,10 @@ async function folderWrite(){
     /* архів ще й по місяцях: архів/2026/2026-10.json — зручно відкрити чи віддати один місяць */
     const ad=await dirH.getDirectoryHandle('архів',{create:true});const byM={};
     A.filter(r=>!r.example).forEach(r=>{const m=(r.date||today()).slice(0,7);(byM[m]=byM[m]||[]).push(r);});
-    const months=Object.keys(byM);const touch=months.filter(m=>!folderWrite.done||folderWrite.done[m]!==byM[m].length||m===today().slice(0,7));
+    const months=Object.keys(byM);const stamp=m=>{const maxTs=byM[m].reduce((a,r)=>Math.max(a,r.ts||0),0);return byM[m].length+':'+maxTs;};
+    const touch=months.filter(m=>!folderWrite.done||folderWrite.done[m]!==stamp(m)||m===today().slice(0,7));
     for(const m of touch){const yd=await ad.getDirectoryHandle(m.slice(0,4),{create:true});await writeJSON(yd,m+'.json',{app:'skiagrama',v:2,month:m,archive:byM[m]},true);}
-    folderWrite.done=Object.fromEntries(months.map(m=>[m,byM[m].length]));
+    folderWrite.done=Object.fromEntries(months.map(m=>[m,stamp(m)]));
     const cp=await dirH.getDirectoryHandle('копії',{create:true});
     await writeText(cp,`архів-${today()}.json`,aJson);
     if(SET.lastBackup!==today()){SET.lastBackup=today();store.set(SET_KEY,SET);}
@@ -47,11 +60,12 @@ async function folderWrite(){
 function folderSoon(){if(!folderOK())return;clearTimeout(folderT);folderT=setTimeout(folderWrite,800);}
 function showFolderBanner(t){$('folderBannerText').textContent=t;$('folderBanner').hidden=false;}
 async function folderPick(){
+  if(!window.isSecureContext){toast('Цей браузер не дає папку даних для сторінки з диска. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama або встановіть як програму.');return;}
   if(!FOLDER_SUPPORTED){toast('Папка даних працює в Chrome або Edge на комп’ютері');return;}
   try{const parent=await window.showDirectoryPicker({id:'skiagrama',mode:'readwrite'});
     dirH=await parent.getDirectoryHandle(DATA_DIR,{create:true});dirOK=true;await kvSet('dir',dirH);
     $('folderBanner').hidden=true;await folderSync();toast(`Папку даних «${DATA_DIR}» підключено`);renderFolderInfo();}
-  catch(e){if(e&&e.name!=='AbortError')toast('Не вдалося підключити папку');}
+  catch(e){if(e&&e.name!=='AbortError')toast('Не вдалося підключити папку'+(e&&e.name?': '+e.name:''));}
 }
 async function folderGrant(){
   if(!dirH)return folderPick();
@@ -61,6 +75,7 @@ async function folderGrant(){
 async function folderForget(){dirH=null;dirOK=false;await kvDel('dir');renderFolderInfo();toast('Папку даних від’єднано. Дані в ній лишилися.');}
 function renderFolderInfo(){
   const i=$('folderInfo');if(!i)return;
+  if(!window.isSecureContext){i.textContent='Цей браузер не дає папку даних для сторінки з диска. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama і встановіть як програму.';$('folderPick').hidden=true;return;}
   if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На комп’ютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
   $('folderPick').hidden=false;$('folderForget').hidden=!dirH;
   i.textContent=folderOK()?`Підключено: «${folderName()}». Туди самі зберігаються: налаштування, пакет фраз, архів (і по місяцях у «архів»), копія кожного протоколу як аркуша — у «протоколи», щоденна копія — у «копії». Після перевстановлення браузера або на іншому комп’ютері просто оберіть цю папку знову.`
@@ -69,11 +84,17 @@ function renderFolderInfo(){
 }
 $('folderPick').onclick=folderPick;$('folderForget').onclick=folderForget;$('folderGrant').onclick=folderGrant;
 async function folderBoot(){
-  if(!FOLDER_SUPPORTED)return;
-  const h=await kvGet('dir');if(!h)return;dirH=h;
+  if(!window.isSecureContext){showFileBanner();renderFolderInfo();return;}
+  if(!FOLDER_SUPPORTED){renderFolderInfo();return;}
+  const h=await kvGet('dir');
+  if(!h){if(SET.welcomed)showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.');renderFolderInfo();return;}
+  dirH=h;
   try{const p=await h.queryPermission({mode:'readwrite'});if(p==='granted'){dirOK=true;await folderSync();}else showFolderBanner(`Папка даних «${h.name}» потребує дозволу браузера.`);}
   catch(e){showFolderBanner('Папка даних потребує дозволу браузера.');}
   renderFolderInfo();
+}
+function showFileBanner(){
+  const b=$('fileBanner');if(b)b.hidden=false;
 }
 
 /* копія протоколу як аркуша: протоколи/2026-10/Rö_Прізвище_2026-10-11_№1025.html */
@@ -88,5 +109,5 @@ async function folderSaveProtocol(rec){
     const pd=await dirH.getDirectoryHandle('протоколи',{create:true});const md=await pd.getDirectoryHandle((rec.date||today()).slice(0,7),{create:true});
     const nm=`Rö_${(rec.name||'протокол').replace(/[^\p{L}\p{N}]+/gu,'_')}_${rec.date||today()}${rec.num?'_№'+String(rec.num).replace(/[^\p{L}\p{N}]+/gu,''):''}.html`;
     const fh=await md.getFileHandle(nm,{create:true});const w=await fh.createWritable();await w.write(html);await w.close();
-  }catch(e){}
+  }catch(e){console.warn('folderSaveProtocol',e);if(!folderSaveProtocol.warned){folderSaveProtocol.warned=true;toast('Протокол у архіві є, але копію в папку «протоколи» не записано');}}
 }

@@ -13,8 +13,8 @@ function unitsHTML(units){
 const STAMP='<div class="pstamp"></div>';
 function measure(html,cls){const m=$('measure');m.className='pdoc '+(cls||'');m.innerHTML=html;return m.offsetHeight;}
 
-/* реквізити закладу */
-const ORG=()=>Object.assign({name:'',sub:'',cab:'Рентгенологічний кабінет',addr:'',tel:'',edrpou:'',form:'',order:''},SET.org||{});
+/* реквізити закладу (DEF_ORG — у 040-core.js) */
+const ORG=()=>Object.assign({},DEF_ORG,SET.org||{});
 const dLong=v=>{if(!v)return '__.__.____';const [y,m,d]=v.split('-');return `${d}.${m}.${y}`;};
 const sexW=s=>s==='ч'?'чол.':s==='ж'?'жін.':'';
 function manualBody(doc,keepHead){

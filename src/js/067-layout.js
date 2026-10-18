@@ -2,7 +2,7 @@
 const LAYOUTS={A:'Класичне',B:'Робоче місце',C:'Дзеркальне',D:'Один стовпчик'};
 const SCALES=[90,100,110,125,150];
 const isPhone=()=>window.innerWidth<=760;
-const scaleNow=()=>SET.scale||((SET.screen==='laptop'||((SET.screen||'auto')==='auto'&&window.innerWidth<1500))?90:100);
+const scaleNow=()=>SET.scale||100;
 const zoomNow=()=>isPhone()?1:scaleNow()/100;
 const screenNow=()=>{const m=SET.screen||'auto';return m==='auto'?(window.innerWidth<1500?'laptop':'monitor'):m;};
 const layoutNow=()=>isPhone()?'A':(LAYOUTS[SET.layout]?SET.layout:'B');
@@ -16,16 +16,16 @@ function applySideHeight(){
 }
 function applyScale(){const z=zoomNow(),r=document.documentElement;r.style.setProperty('--z',z);r.style.setProperty('--vh100',(window.innerHeight/z).toFixed(1)+'px');
   const ew=window.innerWidth/z;r.classList.toggle('w-lt1280',!isPhone()&&ew<1280);r.classList.toggle('w-lt1180',!isPhone()&&ew<1180);
-  r.classList.toggle('scr-laptop',screenNow()==='laptop');r.classList.toggle('scr-monitor',screenNow()==='monitor');
+  r.classList.toggle('scr-laptop',!isPhone()&&screenNow()==='laptop');r.classList.toggle('scr-monitor',!isPhone()&&screenNow()==='monitor');
   if(screenNow()!=='laptop'&&laptopStudyAutoFold){laptopStudyAutoFold=false;applyFolds();}
   applySideHeight();}
 function setScale(v,quiet){SET.scale=Math.max(SCALES[0],Math.min(SCALES[SCALES.length-1],v));saveSet();applyScale();applySideW();if(!quiet)toast(`Масштаб ${SET.scale} %`);renderViewMenu();if(paperView)renderSide();}
 function stepScale(d){const cur=scaleNow();let i=SCALES.findIndex(s=>s>=cur);if(i<0)i=SCALES.length-1;if(SCALES[i]!==cur&&d<0)i=i;else i=Math.max(0,Math.min(SCALES.length-1,i+d));setScale(SCALES[i]);}
 
-/* режим екрана: ноутбук — компактно (90 %), монітор — просторо (110 %, більший текст протоколу) */
-function setScreen(k){SET.screen=k;if(k!=='auto'){SET.scale=k==='laptop'?90:110;SET.pfs=k==='laptop'?'m':'l';}saveSet();applyLook();applyScale();applySideW();applySplit();renderViewMenu();renderSide();
+/* режим екрана: ноутбук — щільно, шрифт 100 %; монітор — просторо (110 %, більший текст протоколу) */
+function setScreen(k){SET.screen=k;if(k!=='auto'){SET.scale=k==='laptop'?100:110;SET.pfs=k==='laptop'?'m':'l';}saveSet();applyLook();applyScale();applySideW();applySplit();renderViewMenu();renderSide();
   if(!$('view-settings').hidden){$('sScale').value=String(scaleNow());$('sScreen').value=k;}
-  toast(k==='auto'?'Екран: визначається сам':k==='laptop'?'Екран: ноутбук — компактно':'Екран: монітор — просторо');}
+  toast(k==='auto'?'Екран: визначається сам':k==='laptop'?'Екран: ноутбук — щільно, текст як є':'Екран: монітор — просторо');}
 /* розташування */
 function applyLayout(){
   const L=layoutNow(),w=$('view-desc'),pc=$('partConcl'),c=$('sec-concl'),r=$('sec-rec'),ck=$('checkBox');
@@ -83,7 +83,7 @@ function foldInfo(id){
   const v=x=>$(x).value.trim();
   switch(id){
     case 'sec-patient':{const miss=['pName','pAge','pNum','pDate','pEed'].some(x=>!v(x));return [[v('pName')||'ПІБ не вказано',v('pAge')?ageStr(v('pAge')):'',v('pNum')?'№ '+v('pNum'):'',v('pDate')?fmtD(v('pDate')):'',v('pEed')?'ЕЕД '+v('pEed'):''].filter(Boolean).join(' · '),miss?'e':''];}
-    case 'sec-study':{const n=+$('pCount').value||1;return [[study().n+(S.study==='bone'?' · '+objPhrase():''),S.proj.join(', '),n+' '+(n===1?'знімок':n<5?'знімки':'знімків')].filter(Boolean).join(' · '),''];}
+    case 'sec-study':{const n=+$('pCount').value||1;return [[study().n+(S.study==='bone'?' · '+objPhrase():''),S.proj.map(projLabel).join(', '),n+' '+(n===1?'знімок':n<5?'знімки':'знімків')].filter(Boolean).join(' · '),''];}
     case 'sec-zones':{const vz=visibleZones(),st=vz.map(zoneState),ch=vz.filter((d,i)=>st[i]==='c'||st[i]==='e');return [ch.length?'змінено: '+ch.map(d=>d.name).join(', ')+(ch.length<vz.length?' · решта в нормі':''):'усі зони в нормі',st.includes('e')?'e':ch.length?'c':'n'];}
     case 'measPanel':{const n=measResults().length;return [n?`виміряно: ${n}`:'немає вимірювань',''];}
     case 'sec-concl':{const it=conclItems();const t=it.length?it.join('; '):allNormal()?normConclOf():'не заповнено';return [t+' · '+STATUS[statusOf()],!it.length&&!allNormal()?'e':''];}

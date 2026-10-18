@@ -9,20 +9,22 @@ function renderStudy(){
   const ex=$('studyExtra');ex.textContent='';
   if(S.study==='bone'){
     const l1=el('label',{class:'f wide'},'Кістка / суглоб');const s1=el('select');
-    BONE_OBJ.forEach(o=>{const op=el('option',{value:o[0]},o[1]);if(o[0]===S.obj)op.selected=true;s1.append(op);});
+    effBone().forEach(o=>{const op=el('option',{value:o.id},o.n);if(o.id===S.obj)op.selected=true;s1.append(op);});
     s1.onchange=()=>{tick();S.obj=s1.value;renderAll();};l1.append(s1);ex.append(l1);
-    const o=BONE_OBJ.find(x=>x[0]===S.obj);
-    if(o&&o[3]!=='none'){const l2=el('label',{class:'f'},'Бік');const s2=el('select');[['п','правий'],['л','лівий'],['о','обидва']].forEach(([k,t])=>{const op=el('option',{value:k},t);if(k===S.side)op.selected=true;s2.append(op);});
+    const o=effBone(true).find(x=>x.id===S.obj);
+    if(o&&o.g!=='none'){const l2=el('label',{class:'f'},'Бік');const s2=el('select');[['п','правий'],['л','лівий'],['о','обидва']].forEach(([k,t])=>{const op=el('option',{value:k},t);if(k===S.side)op.selected=true;s2.append(op);});
       s2.onchange=()=>{tick();S.side=s2.value;renderAll();};l2.append(s2);ex.append(l2);}
+    const eb=el('button',{type:'button',class:'btn sm'},'✎ Список кісток');eb.onclick=editBones;ex.append(eb);
   }
   if(S.study==='spine'){const l=el('label',{class:'f wide'},'Відділ');const s=el('select');
     SPINE_DEPT.forEach(d=>{const op=el('option',{value:d[0]},d[1]);if(d[0]===S.dept)op.selected=true;s.append(op);});s.onchange=()=>{tick();S.dept=s.value;renderAll();};l.append(s);ex.append(l);}
   if(S.study==='skull'){const l=el('label',{class:'f wide'},'Що досліджуємо');const s=el('select');
     [['ppn','Приносові пазухи (ППН)'],['cherep','Кістки черепа']].forEach(([k,t])=>{const op=el('option',{value:k},t);if(k===S.skull)op.selected=true;s.append(op);});s.onchange=()=>{tick();S.skull=s.value;renderAll();};l.append(s);ex.append(l);}
   ex.hidden=!ex.childElementCount;
-  const pc=$('projChips');pc.hidden=!['bone','spine','skull','ogk'].includes(S.study);[...pc.querySelectorAll('.chip')].forEach(n=>n.remove());
-  PROJ.forEach(p=>{const on=S.proj.includes(p);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},p);
-    b.onclick=()=>{tick();on?S.proj.splice(S.proj.indexOf(p),1):S.proj.push(p);renderAll();};pc.append(b);});
+  const pc=$('projChips');pc.hidden=!['bone','spine','skull','ogk'].includes(S.study);[...pc.querySelectorAll('.chip,.projpen')].forEach(n=>n.remove());
+  effProj().forEach(p=>{const on=S.proj.includes(p.k);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},p.t);
+    b.onclick=()=>{tick();on?S.proj.splice(S.proj.indexOf(p.k),1):S.proj.push(p.k);renderAll();};pc.append(b);});
+  if(!pc.hidden){const ep=el('button',{type:'button',class:'btn sm projpen',title:'Додати, сховати або перейменувати проєкції'});ep.append(icEl('pen'),document.createTextNode('Проєкції'));ep.onclick=editProjections;pc.append(ep);}
   syncCount();
 }
 /* лічильник знімків: проєкції × (обидва суглоби → 2); ручне число не перезаписуємо */
@@ -66,10 +68,10 @@ function renderZones(){const fk=focusKey();renderZonesInner();focusRestore(fk);}
 function renderZonesInner(){
   const root=$('zones');root.textContent='';
   visibleZones().forEach((d,i)=>{
-    const z=S.zones[d.id];const zs=zoneState(d);const ed=editZone===d.id;
+    const z=S.zones[d.id]||(S.zones[d.id]={st:'n',sel:{}});const zs=zoneState(d);const ed=editZone===d.id;
     const box=el('div',{class:'zone'+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
     const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));
-    const pen=el('button',{type:'button',class:'zpen','aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Редагувати кнопки зони: напис, фраза, порядок','aria-label':'Редагувати кнопки зони '+d.name});pen.append(icEl('pen'));
+    const pen=el('button',{type:'button',class:'zpen'+(zoneHasEdits(d)?' on':''),'aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Правити кнопки, фразу норми й назву зони під себе','aria-label':'Правити кнопки зони '+d.name});pen.append(icEl('pen'));
     pen.onclick=()=>{editZone=ed?null:d.id;S.focus=d.id;renderZones();if(!ed){const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}};
     h.append(pen);head.append(h);
     const seg=el('div',{class:'seg',role:'group','aria-label':d.name});
@@ -83,7 +85,7 @@ function renderZonesInner(){
     head.append(ph);box.append(head);
     if(ed)renderZoneEditor(d,box);
     else if(isOpen){
-      d.groups.forEach(g=>{const row=el('div',{class:'group'});row.append(el('span',{class:'gl'},g.l));
+      (d.groups||[]).forEach(g=>{const row=el('div',{class:'group'});row.append(el('span',{class:'gl'},g.l));
         if(g.type==='text'){const inp=el('input',{class:'t',type:'text',placeholder:g.ph||'','aria-label':d.name+': '+g.l});inp.value=z.sel[g.id]||'';
           inp.addEventListener('input',()=>{tick('text');z.sel[g.id]=inp.value;ph.textContent=zoneText(d);renderSide();renderConcl();renderNav();});row.append(inp);}
         else effOpts(d,g).forEach(o=>{const k=o.k;const on=g.many?(z.sel[g.id]||[]).includes(k):z.sel[g.id]===k;
@@ -105,20 +107,40 @@ function renderZonesInner(){
       const done=el('button',{type:'button',class:'btn sm'},'Згорнути');done.onclick=()=>{S.open=null;renderZones();renderNav();};box.append(done);
     }
     root.append(box);});
+  const hid=hiddenZones();
+  if(hid.length){const row=el('div',{class:'hidzones'});row.append(el('span',{class:'note'},'Сховані зони: '));
+    hid.forEach(d=>{const b=el('button',{type:'button',class:'btn sm'},d.name+' — показати');b.onclick=()=>{const k=S.study+'.'+d.id;SET.zoneMeta[k]=Object.assign({},SET.zoneMeta[k]||{},{hidden:false});if(!(ZONE_HIDE_DEF[S.study]||[]).includes(d.id)&&!SET.zoneMeta[k].name&&!SET.zoneMeta[k].tpl)delete SET.zoneMeta[k];saveSet();if(!S.zones[d.id])S.zones[d.id]={st:'n',sel:{}};renderAll();toast('Зону «'+d.name+'» показано');};row.append(b);});
+    root.append(row);}
+  const addz=el('button',{type:'button',class:'btn sm addzone'},'+ Своя зона');addz.onclick=addCustomZone;root.append(addz);
 }
 /* редактор кнопок зони */
 const zonePrefix=d=>`${S.study}.${d.id}.`;
-function zoneHasEdits(d){const p=zonePrefix(d);return [SET.btn,SET.btnAdd,SET.btnOrder].some(o=>Object.keys(o||{}).some(k=>k.startsWith(p)))||isNormOverridden(d);}
-function resetZoneButtons(d){const p=zonePrefix(d);[SET.btn,SET.btnAdd,SET.btnOrder].forEach(o=>Object.keys(o).forEach(k=>{if(k.startsWith(p))delete o[k];}));delete SET.norms[S.study+'.'+d.id];saveSet();}
+function zoneHasEdits(d){const p=zonePrefix(d);const m=zoneMetaOf(S.study,d.id);return [SET.btn,SET.btnAdd,SET.btnOrder].some(o=>Object.keys(o||{}).some(k=>k.startsWith(p)))||isNormOverridden(d)||!!(m.name||m.tpl)||isCustomZone(d);}
+function resetZoneButtons(d){const p=zonePrefix(d);[SET.btn,SET.btnAdd,SET.btnOrder].forEach(o=>Object.keys(o).forEach(k=>{if(k.startsWith(p))delete o[k];}));delete SET.norms[S.study+'.'+d.id];const mk=S.study+'.'+d.id;if(SET.zoneMeta[mk]){const hid=!!SET.zoneMeta[mk].hidden;if(hid)SET.zoneMeta[mk]={hidden:true};else delete SET.zoneMeta[mk];}saveSet();}
 function setBtn(gk,k,patch){const key=gk+'.'+k;const o=Object.assign({},SET.btn[key]||{},patch);Object.keys(o).forEach(x=>{if(o[x]===''||o[x]===false||o[x]==null)delete o[x];});if(Object.keys(o).length)SET.btn[key]=o;else delete SET.btn[key];saveSet();}
 function setAdded(gk,k,patch){const a=SET.btnAdd[gk]||[];const x=a.find(y=>y.k===k);if(x)Object.assign(x,patch);saveSet();}
 function moveBtn(d,g,k,to){const list=effOpts(d,g,true).map(o=>o.k);const i=list.indexOf(k);if(i<0)return;list.splice(i,1);list.splice(Math.max(0,Math.min(list.length,to)),0,k);SET.btnOrder[gKey(d,g)]=list;saveSet();}
+function patchZoneMeta(d,patch){const k=S.study+'.'+d.id;const o=Object.assign({},SET.zoneMeta[k]||{},patch);Object.keys(o).forEach(x=>{if(o[x]===''||o[x]===false||o[x]==null)delete o[x];});if(Object.keys(o).length)SET.zoneMeta[k]=o;else delete SET.zoneMeta[k];saveSet();}
+function customZoneRef(d){const a=SET.customZones[S.study]||[];return a.find(z=>z.id===d.id);}
+function addCustomZone(){
+  const id='u'+Date.now().toString(36);
+  const z={id,name:'Нова зона',norm:'',custom:1,groups:[{id:'ch',l:'Зміни',req:1,o:[]}],tpl:'{ch}.'};
+  (SET.customZones[S.study]||(SET.customZones[S.study]=[])).push(z);saveSet();
+  S.zones[id]={st:'c',sel:{}};S.open=id;S.focus=id;editZone=id;renderAll();toast('Свою зону додано — назвіть її і додайте кнопки');
+}
 function renderZoneEditor(d,box){
-  box.append(el('p',{class:'note'},'Режим редагування кнопок. Напис — що на кнопці, фраза — що піде в протокол. Порядок: стрілки ↑↓ або перетягніть рядок. Зміни зберігаються одразу.'));
-  const nr=el('div',{class:'egroup'});nr.append(el('div',{class:'eh'},'Фраза норми'));
+  box.append(el('p',{class:'note'},'Правите під себе. Напис — що на кнопці, фраза — що піде в протокол. Порядок: стрілки ↑↓ або перетягніть рядок. Зміни зберігаються одразу (і в папку даних, якщо підключена).'));
+  const nr=el('div',{class:'egroup'});nr.append(el('div',{class:'eh'},'Назва зони і фраза норми'));
+  const nn=el('input',{type:'text','aria-label':'Назва зони',placeholder:'Назва зони'});nn.value=d.name;
+  nn.addEventListener('input',()=>{const v=nn.value.trim();if(isCustomZone(d)){const c=customZoneRef(d);if(c)c.name=v||c.name;saveSet();}else{const orig=(STUDIES[S.study].zones.find(z=>z.id===d.id)||d).name;patchZoneMeta(d,{name:v&&v!==orig?v:''});}renderNav();});
   const ni=el('input',{type:'text','aria-label':'Фраза норми зони '+d.name,placeholder:'(у нормі не описується)'});ni.value=normOf(d);
-  ni.addEventListener('input',()=>{SET.norms[S.study+'.'+d.id]=ni.value;saveSet();renderSide();});nr.append(ni);box.append(nr);
-  d.groups.filter(g=>g.type!=='text').forEach(g=>{
+  ni.addEventListener('input',()=>{SET.norms[S.study+'.'+d.id]=ni.value;saveSet();renderSide();});
+  nr.append(nn,ni);box.append(nr);
+  const tp=el('div',{class:'egroup'});tp.append(el('div',{class:'eh'},'Шаблон речення змін (як збирається протокол)'));
+  const ti=el('input',{type:'text','aria-label':'Шаблон',placeholder:'{ch}.'});ti.value=d.tpl||'{ch}.';
+  ti.addEventListener('input',()=>{const v=ti.value;if(isCustomZone(d)){const c=customZoneRef(d);if(c)c.tpl=v||'{ch}.';saveSet();}else{const orig=(STUDIES[S.study].zones.find(z=>z.id===d.id)||d).tpl||'';patchZoneMeta(d,{tpl:v!==orig?v:''});}renderSide();});
+  tp.append(ti,el('p',{class:'note'},'{група} — значення кнопки. {, |група} — кома і значення, лише якщо вибрано. Порожнє обов’язкове → «…».'));box.append(tp);
+  (d.groups||[]).filter(g=>g.type!=='text').forEach(g=>{
     const gk=gKey(d,g);const wrap=el('div',{class:'egroup'});wrap.append(el('div',{class:'eh'},g.l));
     const list=effOpts(d,g,true);
     list.forEach((o,idx)=>{
@@ -148,8 +170,71 @@ function renderZoneEditor(d,box){
   const r=el('div',{class:'trow'});
   const rs=el('button',{type:'button',class:'btn sm',disabled:zoneHasEdits(d)?null:''},'Повернути як було');
   rs.onclick=()=>{if(rs.dataset.c){resetZoneButtons(d);renderZones();renderSide();toast('Кнопки зони «'+d.name+'» повернуто');}else{rs.dataset.c='1';rs.textContent='Точно повернути стандартні кнопки?';setTimeout(()=>{rs.dataset.c='';rs.textContent='Повернути як було';},3000);}};
+  const hd=el('button',{type:'button',class:'btn sm'},'Сховати зону');
+  hd.onclick=()=>{if(hd.dataset.c){patchZoneMeta(d,{hidden:true});editZone=null;if(S.open===d.id)S.open=null;renderAll();toast('Зону «'+d.name+'» сховано — з’явиться внизу списку, можна повернути');}else{hd.dataset.c='1';hd.textContent='Точно сховати «'+d.name+'»?';setTimeout(()=>{hd.dataset.c='';hd.textContent='Сховати зону';},3000);}};
   const ok=el('button',{type:'button',class:'btn sm primary'},'Готово');ok.onclick=()=>{editZone=null;renderZones();};
-  r.append(ok,rs);box.append(r);
+  r.append(ok,hd);
+  if(isCustomZone(d)){const del=el('button',{type:'button',class:'btn sm danger'},'Видалити свою зону');
+    del.onclick=()=>{if(del.dataset.c){SET.customZones[S.study]=(SET.customZones[S.study]||[]).filter(z=>z.id!==d.id);if(!SET.customZones[S.study].length)delete SET.customZones[S.study];delete SET.zoneMeta[S.study+'.'+d.id];delete SET.norms[S.study+'.'+d.id];delete S.zones[d.id];saveSet();editZone=null;renderAll();toast('Свою зону видалено');}else{del.dataset.c='1';del.textContent='Точно видалити?';setTimeout(()=>{del.dataset.c='';del.textContent='Видалити свою зону';},3000);}};r.append(del);}
+  else r.append(rs);
+  box.append(r);
+}
+function editProjections(){
+  openDlg(box=>{dlgHead(box,'Проєкції під себе');
+    box.append(el('p',{class:'note'},'Перейменуйте, сховайте зайве, додайте свої (напр. «лордоз», «на видиху»). Що вибрано в протоколі — не зітреться.'));
+    const L=()=>SET.proj||(SET.proj={});
+    const wrap=el('div',{class:'egroup'});
+    const draw=()=>{wrap.textContent='';
+      const list=effProj(true);
+      const move=(k,to)=>{const ks=effProj(true).map(x=>x.k);const i=ks.indexOf(k);ks.splice(i,1);ks.splice(Math.max(0,Math.min(ks.length,to)),0,k);L().order=ks;saveSet();draw();renderStudy();renderSide();};
+      list.forEach((o,idx)=>{
+        const r=el('div',{class:'erow'+(o.hid?' hid':'')});
+        const up=el('button',{type:'button',class:'btn sm icon',disabled:idx===0?'':null},'↑');up.onclick=()=>move(o.k,idx-1);
+        const dn=el('button',{type:'button',class:'btn sm icon',disabled:idx===list.length-1?'':null},'↓');dn.onclick=()=>move(o.k,idx+1);
+        const ti=el('input',{type:'text',class:'eph'});ti.value=o.t;
+        ti.addEventListener('input',()=>{const v=ti.value.trim();if(o.added){const a=(L().add||[]).find(y=>y.k===o.k);if(a&&v)a.t=v;}else{L().edit=L().edit||{};if(v&&v!==o.k)L().edit[o.k]=v;else delete L().edit[o.k];}saveSet();renderStudy();renderSide();});
+        const hd=el('button',{type:'button',class:'btn sm'},o.hid?'Показати':'Сховати');
+        hd.onclick=()=>{const h=L().hidden||(L().hidden=[]);const i=h.indexOf(o.k);i>=0?h.splice(i,1):h.push(o.k);saveSet();draw();renderStudy();};
+        r.append(up,dn,ti,hd);
+        if(o.added){const x=el('button',{type:'button',class:'btn sm danger'},'×');
+          x.onclick=()=>{L().add=(L().add||[]).filter(y=>y.k!==o.k);saveSet();draw();renderStudy();};r.append(x);}
+        wrap.append(r);});
+      const ar=el('div',{class:'erow add'});const ai=el('input',{type:'text',class:'eph',placeholder:'Нова проєкція, напр. лордоз'});
+      const ab=el('button',{type:'button',class:'btn sm'},'+ Додати');ab.onclick=()=>{const v=ai.value.trim();if(!v){ai.focus();return;}(L().add||(L().add=[])).push({k:'u'+Date.now().toString(36),t:v});saveSet();draw();renderStudy();toast('Проєкцію додано');};
+      ai.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ab.click();}});ar.append(ai,ab);wrap.append(ar);};
+    draw();box.append(wrap);
+    const rs=el('button',{type:'button',class:'btn sm'},'Повернути стандартні проєкції');
+    rs.onclick=()=>{if(rs.dataset.c){SET.proj={};saveSet();closeDlg();renderAll();toast('Проєкції повернуто');}else{rs.dataset.c='1';rs.textContent='Точно повернути?';setTimeout(()=>{rs.dataset.c='';rs.textContent='Повернути стандартні проєкції';},3000);}};
+    box.append(rs);});
+}
+function editBones(){
+  openDlg(box=>{dlgHead(box,'Кістки і суглоби під себе');
+    box.append(el('p',{class:'note'},'Назва в списку, фраза в протокол ({s} = правого/лівого), рід для відмінка. Сховайте те, чого немає в кабінеті, додайте своє (напр. лопатка, грудина).'));
+    const wrap=el('div',{class:'egroup'});
+    const draw=()=>{wrap.textContent='';
+      effBone(true).forEach(o=>{
+        const r=el('div',{class:'erow'+(o.hid?' hid':'')});
+        const ni=el('input',{type:'text',class:'elb',placeholder:'Назва'});ni.value=o.n;
+        const ph=el('input',{type:'text',class:'eph',placeholder:'{s} плечового суглоба'});ph.value=o.ph;
+        const g=el('select');[['m','чол. (правого)'],['f','жін. (правої)'],['adv','справа/зліва'],['none','без боку']].forEach(([k,t])=>{const op=el('option',{value:k},t);if(o.g===k)op.selected=true;g.append(op);});
+        const both=el('input',{type:'text',class:'elb',placeholder:'обох …'});both.value=o.both||'';
+        const save=()=>{if(o.added){const a=(SET.boneAdd||[]).find(x=>x.id===o.id);if(a){a.n=ni.value.trim()||a.n;a.phrase=ph.value.trim()||a.phrase;a.g=g.value;a.both=both.value.trim();}}
+          else{const x=SET.boneEdit[o.id]||(SET.boneEdit[o.id]={});x.n=ni.value.trim();x.phrase=ph.value.trim();x.g=g.value;x.both=both.value.trim();Object.keys(x).forEach(k=>{if(!x[k])delete x[k];});if(!Object.keys(x).length)delete SET.boneEdit[o.id];}
+          saveSet();renderStudy();renderSide();};
+        ni.addEventListener('change',save);ph.addEventListener('change',save);g.onchange=save;both.addEventListener('change',save);
+        const hd=el('button',{type:'button',class:'btn sm'},o.hid?'Показати':'Сховати');
+        hd.onclick=()=>{const i=SET.boneHide.indexOf(o.id);i>=0?SET.boneHide.splice(i,1):SET.boneHide.push(o.id);saveSet();draw();renderStudy();};
+        r.append(ni,ph,g,both,hd);
+        if(o.added){const x=el('button',{type:'button',class:'btn sm danger'},'×');
+          x.onclick=()=>{SET.boneAdd=SET.boneAdd.filter(y=>y.id!==o.id);saveSet();draw();renderStudy();};r.append(x);}
+        wrap.append(r);});
+      const ar=el('div',{class:'erow add'});const an=el('input',{type:'text',class:'elb',placeholder:'Назва, напр. Лопатка'});const ap=el('input',{type:'text',class:'eph',placeholder:'{s} лопатки'});
+      const ab=el('button',{type:'button',class:'btn sm'},'+ Додати');ab.onclick=()=>{const n=an.value.trim();if(!n){an.focus();return;}SET.boneAdd.push({id:'u'+Date.now().toString(36),n,phrase:ap.value.trim()||('{s} '+n.toLowerCase()),g:'f',both:'обох '+n.toLowerCase()});saveSet();draw();renderStudy();toast('Додано в список кісток');};
+      an.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ab.click();}});ar.append(an,ap,ab);wrap.append(ar);};
+    draw();box.append(wrap);
+    const rs=el('button',{type:'button',class:'btn sm'},'Повернути стандартний список');
+    rs.onclick=()=>{if(rs.dataset.c){SET.boneEdit={};SET.boneAdd=[];SET.boneHide=[];saveSet();closeDlg();renderAll();toast('Список кісток повернуто');}else{rs.dataset.c='1';rs.textContent='Точно повернути?';setTimeout(()=>{rs.dataset.c='';rs.textContent='Повернути стандартний список';},3000);}};
+    box.append(rs);});
 }
 function renderMeas(){
   const ids=activeMeas();$('measPanel').hidden=!ids.length;const root=$('meas');root.textContent='';

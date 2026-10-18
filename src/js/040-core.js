@@ -1,10 +1,16 @@
 /* ===== Сховища, налаштування, стан, генерація тексту ===== */
 const SET_KEY='skiagrama.settings.v1',TPL_KEY='skiagrama.templates.v1',A_KEY='skiagrama.archive.v1',DRAFT_KEY='skiagrama.draft.v1',USE_KEY='skiagrama.usage.v1',AUDIT_KEY='skiagrama.audit.v1';
+const DEF_ORG={name:'',sub:'',cab:'Рентгенологічний кабінет',addr:'',tel:'',edrpou:'',form:'',order:''};
 let SET=Object.assign({doctor:'',depts:'Терапевтичне №1, Терапевтичне №2, Хірургічне, Неврологічне, Інфекційне, Педіатричне, Амбулаторно',
   eed:{...DEF_EED},docTitle:'Лікар-рентгенолог',norms:{},my:{},theme:'system',font:'m',pfs:'m',flow:true,freq:true,printMode:'full',flipEdge:'long',revBacks:false,blank:'C',org:{},btn:{},btnAdd:{},btnOrder:{},lists:{},conclNorm:{},
   lastNum:'',lastNumYear:'',lastBackup:'',welcomed:false,seenVersion:''},store.get(SET_KEY,{}));
 SET.eed=Object.assign({...DEF_EED},SET.eed||{});SET.norms=SET.norms||{};SET.my=SET.my||{};
-['org','btn','btnAdd','btnOrder','lists','conclNorm'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
+['org','btn','btnAdd','btnOrder','lists','conclNorm','zoneMeta','customZones','boneEdit'].forEach(k=>{if(!SET[k]||typeof SET[k]!=='object')SET[k]={};});
+if(!SET.proj||typeof SET.proj!=='object')SET.proj={};
+if(!Array.isArray(SET.boneAdd))SET.boneAdd=[];
+if(!Array.isArray(SET.boneHide))SET.boneHide=[];
+/* 0.5.1: ноутбук більше не зменшує все до 90 % — текст лишається читабельним */
+if(!SET.v051lap){SET.v051lap=true;if(SET.screen==='laptop'&&SET.scale===90)SET.scale=100;store.set(SET_KEY,SET);}
 /* скорочення: «.кт» + пробіл → фраза; «__» — пропуск, Tab переходить до наступного */
 const DEF_ABBR={'кт':'КТ ОГК для уточнення характеру змін','конт':'Rö-контроль через __ днів','вог':'В __ долі __ легені визначається вогнищева тінь __ мм з __ контурами.'};
 if(!SET.abbr||typeof SET.abbr!=='object')SET.abbr=Object.assign({},DEF_ABBR);
@@ -66,11 +72,22 @@ const DOC_TITLE=()=>(SET.docTitle||'').trim()||'Лікар-рентгеноло�
 /* стан */
 const FIELDS=['pName','pAge','pSex','pNum','pDate','pEed','pDept','pRef','pRefDoc','pCount','conclFree','recFree'];
 let S,clicks=0,t0=null,tDone=null,editingId=null;
-function blankZones(study){const z={};STUDIES[study].zones.forEach(d=>z[d.id]={st:'n',sel:{}});return z;}
+const zoneMetaOf=(st,id)=>(SET.zoneMeta||{})[st+'.'+id]||{};
+/* у флюорографії нові зони ОГК сховані, поки лікар сам їх не покаже */
+const ZONE_HIDE_DEF={fg:['ptx','atel','mass']};
+const zoneHidden=(st,id)=>{const m=zoneMetaOf(st,id);return m.hidden!=null?!!m.hidden:(ZONE_HIDE_DEF[st]||[]).includes(id);};
+const allZonesOf=st=>(STUDIES[st]||{zones:[]}).zones.concat((SET.customZones||{})[st]||[]);
+function blankZones(study){const z={};allZonesOf(study).forEach(d=>z[d.id]={st:'n',sel:{}});return z;}
 function blank(study){return {study,obj:'kol',side:'п',dept:'poper',skull:'ppn',proj:[],zones:blankZones(study),open:null,meas:{},concl:[],dismissed:[],recs:[],dyn:null,prevId:null,manual:null};}
 S=blank('ogk');
 const study=()=>STUDIES[S.study];
-const visibleZones=()=>study().zones.filter(d=>!d.mode||d.mode===S.skull);
+function visibleZones(){
+  return allZonesOf(S.study).filter(d=>(!d.mode||d.mode===S.skull)&&!zoneHidden(S.study,d.id)).map(d=>{
+    const m=zoneMetaOf(S.study,d.id);return (!m.name&&!m.tpl)?d:Object.assign({},d,{name:m.name||d.name,tpl:m.tpl||d.tpl});
+  });
+}
+const hiddenZones=()=>allZonesOf(S.study).filter(d=>(!d.mode||d.mode===S.skull)&&zoneHidden(S.study,d.id)).map(d=>{const m=zoneMetaOf(S.study,d.id);return Object.assign({},d,{name:m.name||d.name});});
+const isCustomZone=d=>!!d.custom||((SET.customZones||{})[S.study]||[]).some(z=>z.id===d.id);
 const normOf=d=>{const o=SET.norms[S.study+'.'+d.id];return o!=null?o:d.norm;};
 const isNormOverridden=d=>SET.norms[S.study+'.'+d.id]!=null;
 const fieldsObj=()=>{const o={};FIELDS.forEach(k=>o[k]=$(k).value);return o;};
@@ -93,7 +110,7 @@ function redo(){const s=future.pop();if(!s){toast('Немає що повтор�
 const gKey=(d,g)=>`${S.study}.${d.id}.${g.id}`;
 function effOpts(d,g,all){
   const gk=gKey(d,g),ov=SET.btn||{};
-  let list=g.o.map((o,i)=>{const x=ov[gk+'.'+o[0]]||{};return {k:o[0],ph:x.phrase!=null&&x.phrase!==''?x.phrase:o[1],lb:x.label!=null&&x.label!==''?x.label:o[2],hid:!!x.hidden,i,added:false};});
+  let list=(g.o||[]).map((o,i)=>{const x=ov[gk+'.'+o[0]]||{};return {k:o[0],ph:x.phrase!=null&&x.phrase!==''?x.phrase:o[1],lb:x.label!=null&&x.label!==''?x.label:o[2],hid:!!x.hidden,i,added:false};});
   ((SET.btnAdd||{})[gk]||[]).forEach((a,j)=>list.push({k:a.k,ph:a.phrase,lb:a.label||a.phrase,hid:!!a.hidden,i:1000+j,added:true}));
   const ord=(SET.btnOrder||{})[gk];
   if(ord&&ord.length){const pos=k=>{const i=ord.indexOf(k);return i<0?9999:i;};list.sort((a,b)=>pos(a.k)-pos(b.k)||a.i-b.i);}
@@ -129,29 +146,43 @@ function groupVal(d,z,gid,showReq){
   if(g.many){const a=(v||[]).map(k=>optPhrase(d,g,k)).filter(Boolean);return a.length?a.join(g.join||', '):(showReq&&g.req?'…':'');}
   const ph=v?optPhrase(d,g,v):'';return ph||(showReq&&g.req?'…':'');
 }
-const hasStd=(d,z)=>d.groups.some(g=>groupVal(d,z,g.id,false));
+const hasStd=(d,z)=>(d.groups||[]).some(g=>groupVal(d,z,g.id,false));
 const sentence=t=>{t=String(t).trim();if(!t)return '';t=cap(t);return /[.!?]$/.test(t)?t:t+'.';};
 function zoneText(d){
   const z=S.zones[d.id];if(!z||z.st==='x')return '';
   if(z.st==='n')return normOf(d);
   const my=(z.sel.__my||[]).filter(p=>myList(d).includes(p)).map(sentence).join(' ');
   if(!hasStd(d,z)&&my)return my;
-  let t=d.tpl.replace('{|segclose}',groupVal(d,z,'seg',false)?')':'').replace(/\{([^{}|]*)\|(\w+)\}/g,(m,pre,g)=>{const v=groupVal(d,z,g,false);return v?pre+v:'';})
+  let t=(d.tpl||'{ch}.').replace('{|segclose}',groupVal(d,z,'seg',false)?')':'').replace(/\{([^{}|]*)\|(\w+)\}/g,(m,pre,g)=>{const v=groupVal(d,z,g,false);return v?pre+v:'';})
              .replace(/\{(\w+)\}/g,(m,g)=>groupVal(d,z,g,true));
   t=t.replace(/\s+/g,' ').replace(/\s+([,.])/g,'$1').replace(/\.\./g,'.').trim();
   return cap(t)+(my?' '+my:'');
 }
 function zoneState(d){const z=S.zones[d.id];if(z.st==='x')return 'x';if(z.st==='n')return 'n';return zoneText(d).includes('…')?'e':'c';}
-function objPhrase(){
-  const o=BONE_OBJ.find(x=>x[0]===S.obj)||BONE_OBJ[0];
-  if(o[3]==='none')return o[2];
-  if(S.side==='о')return o[4];
-  const f=SIDE_FORMS[o[3]]||SIDE_FORMS.m;return o[2].replace('{s}',S.side==='л'?f[1]:f[0]);
+function effBone(all){
+  const ed=SET.boneEdit||{},hid=SET.boneHide||[];
+  const list=BONE_OBJ.map((o,i)=>{const x=ed[o[0]]||{};return {id:o[0],n:x.n||o[1],ph:x.phrase||o[2],g:x.g||o[3],both:x.both||o[4],hid:hid.includes(o[0]),i,added:false};});
+  (SET.boneAdd||[]).forEach((a,j)=>list.push({id:a.id,n:a.n,ph:a.phrase,g:a.g,both:a.both,hid:hid.includes(a.id),i:1000+j,added:true}));
+  return all?list:list.filter(x=>!x.hid);
 }
+function objPhrase(){
+  const o=effBone(true).find(x=>x.id===S.obj)||effBone()[0]||{ph:'',g:'none',both:''};
+  if(o.g==='none')return o.ph;
+  if(S.side==='о')return o.both||o.ph;
+  const f=SIDE_FORMS[o.g]||SIDE_FORMS.m;return String(o.ph).replace('{s}',S.side==='л'?f[1]:f[0]);
+}
+function effProj(all){
+  const L=SET.proj||{},ed=L.edit||{},hid=L.hidden||[];
+  let list=PROJ.map((t,i)=>({k:t,t:ed[t]||t,hid:hid.includes(t),i,added:false}));
+  (L.add||[]).forEach((a,j)=>list.push({k:a.k,t:a.t,hid:hid.includes(a.k),i:1000+j,added:true}));
+  const ord=L.order;if(ord&&ord.length){const pos=k=>{const i=ord.indexOf(k);return i<0?9999:i;};list.sort((a,b)=>pos(a.k)-pos(b.k)||a.i-b.i);}
+  return all?list:list.filter(x=>!x.hid);
+}
+function projLabel(p){const x=effProj(true).find(o=>o.k===p);return x?x.t:p;}
 const deptGen=()=>(SPINE_DEPT.find(x=>x[0]===S.dept)||SPINE_DEPT[2])[2];
 function headerLine(){
   const d=fmtD($('pDate').value),n=$('pNum').value.trim()||'___';
-  const proj=S.proj.length?` (${S.proj.join(', ')} ${S.proj.length>1?'проєкції':'проєкція'})`:'';
+  const proj=S.proj.length?` (${S.proj.map(projLabel).join(', ')} ${S.proj.length>1?'проєкції':'проєкція'})`:'';
   switch(S.study){
     case 'fg':return `На ФГ ОГК від ${d} р. № ${n}:`;
     case 'bone':return `На Rö-гр. ${objPhrase()}${proj} від ${d} р. № ${n}:`;
@@ -183,12 +214,32 @@ function suggestions(){
     if(pat.includes('застій'))add('Застій у малому колі кровообігу','застійний малюнок');
     if(sel('heart','ch')==='легеневе')add('Хронічне легеневе серце','легенева конфігурація серця');
     if(['рідП','рідЛ'].includes(sel('sinus','ch')))add(sel('sinus','ch')==='рідП'?'Правобічний гідроторакс':'Лівобічний гідроторакс','рідина в плевральній порожнині');
+    if(ch('ptx')&&hasStd(OGK_ZONES.find(z=>z.id==='ptx'),Z.ptx)){const side={права:'Правобічний',ліва:'Лівобічний',обидві:'Двобічний'}[sel('ptx','side')]||'';add(cap(`${side} пневмоторакс`.replace(/\s+/g,' ').trim().toLowerCase()),'пневмоторакс');}
+    if(ch('atel')&&hasStd(OGK_ZONES.find(z=>z.id==='atel'),Z.atel)){const side={права:'Правобічний',ліва:'Лівобічний'}[sel('atel','side')]||'';add(cap(`${side} ателектаз`.replace(/\s+/g,' ').trim().toLowerCase()),'ателектаз');}
+    if(ch('mass')&&hasStd(OGK_ZONES.find(z=>z.id==='mass'),Z.mass))add('Округла тінь (утвір) — потребує дообстеження','округла тінь',1);
+    if(['правий','лівий','обидва'].includes(sel('sinus','ch')))add('Плевральні спайки','облітерація синуса');
+    if(sel('heart','ch')==='вліво')add('Кардіомегалія','серце розширене вліво');
+    if(sel('heart','ch')==='аорта')add('Аорта ущільнена','аорта');
+    const bx=sel('bones','ch')||[];
+    if(bx.includes('екс'))add('Штучний водій ритму (ЕКС)','тінь ЕКС');
+    if(bx.includes('шви'))add('Післяопераційні шви на легенях','шви');
+    if(bx.includes('кліпси'))add('Металеві кліпси','кліпси');
+    if(bx.includes('торако'))add('Стан після торакотомії','торакотомія');
+    if(bx.includes('метал'))add('Металеве стороннє тіло','метал');
+    if(bx.includes('резек'))add('Стан після резекції легені','після резекції');
+    if(bx.includes('перел'))add('Перелом ребра','перелом ребра');
+    const infX=sel('infil','extra')||[];if(infX.includes('порожн'))add('Порожнина розпаду','порожнина в інфільтраті',1);
+    if(sel('atel','loc')==='диск')add('Дископодібний ателектаз','дископодібний ателектаз');
+    if((sel('roots','extra')||[]).includes('кальц'))add('Кальцинати коренів','кальцинати коренів');
   }
   if(S.study==='bone'){
-    if(ch('frac')&&hasStd(BONE_ZONES[0],Z.frac)){const w=groupVal(BONE_ZONES[0],Z.frac,'where',false);const dsp=groupVal(BONE_ZONES[0],Z.frac,'disp',false);add(`Перелом ${w||'…'}${dsp?' '+dsp:''}`,'травматичні зміни');}
+    if(ch('frac')&&hasStd(BONE_ZONES[0],Z.frac)){const w=groupVal(BONE_ZONES[0],Z.frac,'where',false);const dsp=groupVal(BONE_ZONES[0],Z.frac,'disp',false);add(`Перелом ${w||'…'}${dsp?' '+dsp:''}`,'травматичні зміни');
+      const fx=(sel('frac','extra')||[]);if(fx.includes('мозоль'))add('Кісткова мозоль','консолідація');if(fx.includes('консол'))add('Ознаки консолідації перелому','консолідація');}
     const st={нерівн:'I',пом:'II',знач:'III'}[sel('space','ch')];
     if(st)add(`Деформуючий остеоартроз ${objPhrase()} ${st} ст.`,'звуження щілини',1);
     const s=sel('struct','ch')||[];if(s.some(k=>['плям','диф','регіон'].includes(k)))add('Остеопороз','кісткова структура');
+    if(ch('lux')&&hasStd(BONE_ZONES.find(z=>z.id==='lux'),Z.lux))add(zoneText(BONE_ZONES.find(z=>z.id==='lux')).replace(/\.$/,''),'вивих');
+    if(ch('impl')&&hasStd(BONE_ZONES.find(z=>z.id==='impl'),Z.impl))add('Стан після остеосинтезу','метал / фіксація');
   }
   if(S.study==='spine'){
     if((ch('discs')&&hasStd(SPINE_ZONES[3],Z.discs))||(ch('plates')&&hasStd(SPINE_ZONES[4],Z.plates)))add(`Остеохондроз ${deptGen()} відділу хребта`,'щілини / пластинки');
@@ -259,8 +310,11 @@ function swapSide(t){return String(t).replace(SIDE_RE,(w,all,stem)=>{const lw=w.
   return w[0]!==w[0].toLowerCase()?r[0].toUpperCase()+r.slice(1):r;});}
 /* висновок суперечить опису: у висновку патологія, а її зона — «норма» */
 const CONTRA=[[/гідроторакс|плеврит|рідин|плевральн/,['sinus']],[/пневмоні|інфільтр/,['infil','foci']],[/ззтб|туберкул/,['foci','roots']],
-  [/пневмоторакс/,['pneum','sinus']],[/емфізем/,['pneum']],[/застій/,['pattern','roots']],[/бронхіт/,['pattern','roots']],[/кардіомегал|серц/,['heart']],
-  [/перелом/,['frac','bones','vault','bodies']],[/артроз/,['space','surf']],[/остеопороз/,['struct','bodies']],[/остеохондроз|спондил/,['discs','plates']],
+  [/пневмоторакс|гідропневмоторакс/,['ptx','pneum','sinus']],[/ателектаз/,['atel']],[/округл|утвір|утворен/,['mass']],[/порожнин/,['infil','mass']],
+  [/емфізем/,['pneum']],[/застій/,['pattern','roots']],[/бронхіт/,['pattern','roots']],[/кардіомегал|серц|аорта/,['heart']],
+  [/водій ритму|(^|[^а-яіїєґ'’])екс([^а-яіїєґ'’]|$)|кардіостимулятор|шви на леген|кліпс|торакотомі|резекц\S* леген/,['bones']],
+  [/перелом/,['frac','bones','vault','bodies']],[/вивих|підвивих/,['lux','frac']],[/остеосинтез|ендопротез|пластина|стриж/,['impl']],
+  [/артроз/,['space','surf']],[/остеопороз/,['struct','bodies']],[/остеохондроз|спондил/,['discs','plates']],
   [/компресійн/,['bodies']],[/лістез/,['list']],[/сколіоз/,['scol','curves']],[/перфорац|пневмоперитон/,['gas']],[/непрохідн/,['levels','loops']],
   [/конкремент|сечокам|камен/,['stones']],[/гайморит/,['max']],[/фронтит/,['front']],[/етмоїдит/,['ethm']],[/синусит/,['max','front','ethm']],[/викривлен.*перегород/,['septum']]];
 function contradictions(){

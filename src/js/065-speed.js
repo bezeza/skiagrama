@@ -2,7 +2,7 @@
 
 /* подвійне клацання по реченню протоколу міняє бік */
 function swapZoneSide(id){
-  const d=study().zones.find(z=>z.id===id);const z=S.zones[id];if(!d||!z||z.st!=='c')return false;
+  const d=visibleZones().find(z=>z.id===id)||allZonesOf(S.study).find(z=>z.id===id);const z=S.zones[id];if(!d||!z||z.st!=='c')return false;
   const next=clone(z.sel);let changed=false;
   d.groups.forEach(g=>{const v=z.sel[g.id];if(v==null||v==='')return;const opts=effOpts(d,g,true);
     const one=k=>{const o=opts.find(x=>x.k===k);if(!o)return k;const sw=swapSide(o.ph);if(sw===o.ph)return k;const t=opts.find(x=>x.ph===sw);if(t){changed=true;return t.k;}return k;};
