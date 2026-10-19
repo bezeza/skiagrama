@@ -35,10 +35,12 @@ function applyLayout(){
   applySplit();applyFolds();applySideHeight();
 }
 /* межа між протоколом і висновком */
-const splitDef=()=>screenNow()==='monitor'?0.6:0.55;
-function autoSplit(){const sb=$('sbody'),pd=$('partDoc'),pa=$('paper');const h=sb.clientHeight;if(!h||!pa)return splitDef();
+const splitDef=()=>screenNow()==='monitor'?0.6:0.5;
+function autoSplit(){const sb=$('sbody'),pd=$('partDoc'),pa=$('paper'),pc=$('partConcl');const h=sb.clientHeight;if(!h||!pa)return splitDef();
   const need=pa.offsetHeight+(pd.offsetHeight-pd.querySelector('.pscroll').clientHeight)+20+12;
-  return Math.max(.3,Math.min(splitDef(),need/h));}
+  /* висновку — місце під усі вибрані діагнози (до кнопок висновку), щоб не гортати їх у віконці */
+  const ch=$('chosen');let needC=0;if(ch&&pc&&pc.contains(ch)&&!isFolded('sec-concl')){const r0=pc.getBoundingClientRect(),r1=ch.getBoundingClientRect();needC=r1.bottom-r0.top+pc.scrollTop+16;}
+  return Math.max(.3,Math.min(splitDef(),need/h,needC?1-needC/h:1));}
 function applySplit(){const v=SET.splitH||autoSplit();$('sbody').style.setProperty('--split',(v*100).toFixed(1)+'%');}
 let splitT=0;const applySplitSoon=()=>{if(SET.splitH)return;cancelAnimationFrame(splitT);splitT=requestAnimationFrame(applySplit);};
 (()=>{const g=$('hGrip');let d=null;
@@ -112,6 +114,7 @@ function renderViewMenu(){const box=$('viewPop');if(!box)return;box.textContent=
   row('Екран',[['auto','авто'],['laptop','ноутбук'],['monitor','монітор']],SET.screen||'auto',k=>setScreen(k));
   row('Розташування',Object.keys(LAYOUTS).map(k=>[k,`${k==='A'?'А':k==='B'?'Б':k==='C'?'В':'Г'} · ${LAYOUTS[k]}`,`<svg width="30" height="22" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">${LAY_PIC[k]}</svg><span>${LAYOUTS[k]}</span>`]),layoutNow(),k=>{SET.layout=k;saveSet();applyLayout();renderViewMenu();renderSide();toast('Розташування: '+LAYOUTS[k]);});
   if(!isPhone())row('Пацієнт після заповнення',[['on','згортати в рядок'],['off','не згортати']],SET.autoFold===false?'off':'on',k=>{SET.autoFold=k==='on';saveSet();renderViewMenu();if(!$('view-settings').hidden)$('sAutoFold').checked=SET.autoFold;toast(SET.autoFold?'Дані пацієнта згортатимуться після Enter у полі ЕЕД (ноутбук)':'Дані пацієнта не згортаються самі');});
+  row('Зона в нормі',[['off','лише кнопки'],['on','з фразою']],SET.zonePhrase?'on':'off',k=>{SET.zonePhrase=k==='on';saveSet();renderViewMenu();renderZones();toast(SET.zonePhrase?'Під зоною в нормі видно її фразу':'Зони в нормі — компактно, фраза лише в протоколі');});
   const r=el('div',{class:'vrow'});r.append(el('span',{class:'vl'},'Масштаб'));const s=el('div',{class:'seg'});
   const m=el('button',{type:'button','data-keep':'1',title:'Зменшити (Alt+−)','aria-label':'Зменшити масштаб'},'A−');m.onclick=()=>stepScale(-1);
   const cur=el('button',{type:'button','data-keep':'1',title:'Повернути 100 % (Alt+0)'},`${scaleNow()} %`);cur.onclick=()=>setScale(100);
@@ -161,7 +164,7 @@ function htmlRuns(html){const t=document.createElement('div');t.innerHTML=html;c
   walk(t,{});return out;}
 
 /* вигляд протоколу: текст | перегляд перед друком */
-function setView(paper){paperView=paper;$('fmtBar').hidden=paper;renderSide();}
+function setView(paper){paperView=paper;renderSide();}
 /* «Перегляд перед друком» тепер відкриває повноекранний перегляд (082) */
 
 /* запуск (викликається з 110 — коли все оголошено) */

@@ -69,7 +69,7 @@ function renderZonesInner(){
   const root=$('zones');root.textContent='';
   visibleZones().forEach((d,i)=>{
     const z=S.zones[d.id]||(S.zones[d.id]={st:'n',sel:{}});const zs=zoneState(d);const ed=editZone===d.id;
-    const box=el('div',{class:'zone'+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
+    const box=el('div',{class:'zone st-'+z.st+(SET.zonePhrase?' showph':'')+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
     const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));
     const pen=el('button',{type:'button',class:'zpen'+(zoneHasEdits(d)?' on':''),'aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Правити кнопки, фразу норми й назву зони під себе','aria-label':'Правити кнопки зони '+d.name});pen.append(icEl('pen'));
     pen.onclick=()=>{editZone=ed?null:d.id;S.focus=d.id;renderZones();if(!ed){const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}};
@@ -287,7 +287,7 @@ function renderConcl(){
       else if(k==='Enter'||k===' '){if(e.target===row){e.preventDefault();row.click();}}};
     ch.append(row);});
   if(!S.concl.length&&allNormal())ch.append(el('p',{class:'note'},'Усі зони в нормі — у протокол піде «'+normConclOf()+'».'));
-  renderChipList('concl');
+  renderChipList('concl');applySplitSoon();
 }
 const conclChipList=()=>[normConclOf(),...effList('concl').map(x=>x.t)];
 function renderRecs(){renderChipList('rec');}

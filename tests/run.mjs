@@ -567,7 +567,8 @@ console.log('\n0.5: розташування, згортання, масштаб
   await p.click('#viewPop button[title="авто"]');await p.click('#viewPop button[title^="Повернути"]');await p.keyboard.press('Escape');await p.mouse.click(5,700);
   // текст | перегляд
   await p.click('#paperBtn');ok(await p.isVisible('#pmStage')&&!(await p.isVisible('header.top'))&&(await p.textContent('#pmSummary')).includes('пів аркуша'),'«Перегляд перед друком» — на весь екран, решта схована');
-  await p.click('#pmClose');ok(await p.isVisible('#ptext')&&await p.isVisible('#fmtBar'),'після перегляду — знову текст і панель форматування');
+  await p.click('#pmClose');ok(await p.isVisible('#ptext'),'після перегляду — знову текст');
+  await p.click('#ptext');await p.waitForTimeout(250);ok(await p.evaluate(()=>getComputedStyle(document.getElementById('fmtBar')).opacity==='1'),'панель форматування з’являється, коли курсор у тексті');
   // форматування
   await p.fill('#pName','Демо Формат');await p.fill('#pAge','40');await p.fill('#pNum','501');await p.click('#allNorm');
   await p.click('#ptext .concl');await p.keyboard.press('Home');await p.keyboard.press('Shift+End');
@@ -702,6 +703,25 @@ console.log('\n0.6: порядок діагнозів');
   await p.keyboard.press('Alt+Home');ok(await order()==='Третій,Другий,Перший,Четвертий','Alt+Home — на початок');
   await p.keyboard.press('Alt+ArrowDown');ok(await order()==='Другий,Третій,Перший,Четвертий','Alt+↓ — нижче');
   ok((await p.textContent('#paper')).includes('Другий'),'протокол оновлюється');
+  ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
+  await ctx.close();
+}
+// ===== 0.6: ергономіка =====
+console.log('\n0.6: ергономіка');
+{
+  const ctx=await b.newContext({viewport:{width:1366,height:768}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  await p.click('#allNorm');
+  ok(!(await p.isVisible('#zone-infil .phrase')),'зона в нормі — компактно, без фрази');
+  await p.click('#zone-heart .seg button:nth-child(2)');ok(await p.isVisible('#zone-heart .phrase'),'змінена зона — з фразою');
+  await p.evaluate(()=>{__skg.SET.zonePhrase=true;__skg.renderAll();});ok(await p.isVisible('#zone-infil .phrase'),'«Вигляд» → «Зона в нормі: з фразою»');
+  await p.evaluate(()=>{delete __skg.SET.zonePhrase;__skg.renderAll();});
+  const tb=await p.evaluate(()=>{const r=[...document.querySelectorAll('#doneBtn,#printBtn,#paperBtn,#blankSel')].map(e=>Math.round(e.getBoundingClientRect().top));return Math.max(...r)-Math.min(...r);});
+  ok(tb<12,'дії над протоколом — в один ряд на ноутбуці 1366 (різниця '+tb+' px)');
+  await p.evaluate(()=>{const K=__skg;K.S.concl=['Перший діагноз','Другий діагноз','Третій діагноз','Четвертий діагноз'];K.renderAll();});await p.waitForTimeout(300);
+  ok(await p.evaluate(()=>{const pc=document.getElementById('partConcl').getBoundingClientRect(),c=document.getElementById('chosen').getBoundingClientRect();return c.bottom<=pc.bottom+2;}),'висновку вистачає місця: 4 діагнози видно без гортання');
+  ok(await p.evaluate(()=>document.getElementById('navSettings').classList.contains('dotw')||!window.isSecureContext||!('showDirectoryPicker' in window)),'папка не підключена — крапка на шестерні');
+  if(await p.isVisible('#folderLater')){await p.click('#folderLater');ok(await p.isHidden('#folderBanner')&&await p.evaluate(()=>__skg.SET.folderLater===new Date().toISOString().slice(0,10)||!!__skg.SET.folderLater),'«Завтра» ховає банер про папку до завтра');}
   ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
   await ctx.close();
 }

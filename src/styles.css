@@ -340,7 +340,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   #sec-zones .navrow{display:none}
   .appnav,.btn.search{display:none}
   .hide-m{display:none}
-  .zone .zone-head h3{flex-basis:100%}
+  .zone .zone-head h3,.zone:not(.wide) .zone-head h3{flex-basis:100%}
   .btn.norm{white-space:nowrap}
   .studytabs button{font-size:13px;gap:5px;padding:7px 4px}
   .studytabs button .ic{width:16px;height:16px}
@@ -771,3 +771,28 @@ button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}
   :root main.wrap.mirror{grid-template-columns:minmax(360px,.85fr) minmax(0,1.15fr)}
   :root main.wrap.mirror.customw{grid-template-columns:var(--sidew) minmax(380px,1fr)}
 }
+
+/* ===== 0.6: ергономіка ===== */
+/* одна панель дій над протоколом: дії + бланк/перегляд/друк в один ряд, переносяться лише на вузькому */
+.toolrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolrow>.actbar,.toolrow>.viewbar{display:contents}
+.toolrow #pfsBtn{display:none}
+@container (max-width:900px){.toolrow{gap:6px}.toolrow .lbl,.toolrow .lbl2{display:none}.toolrow .split>.btn,.toolrow #paperBtn,.toolrow #printBtn{padding-inline:11px}
+  .toolrow label.bsel{font-size:0;gap:0}.toolrow label.bsel select{width:96px;min-width:0;text-overflow:ellipsis}}
+@container (max-width:560px){.toolrow .lbl3{display:none}}
+/* форматування — плаваюча панель, з’являється, коли курсор у тексті (без стрибка тексту) */
+#partDoc{position:relative}
+#partDoc>.fmtbar{position:absolute;top:8px;right:16px;z-index:6;margin:0;box-shadow:0 6px 18px rgba(0,0,0,.14);opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .15s,transform .15s}
+#partDoc:focus-within>.fmtbar,#partDoc>.fmtbar:hover{opacity:1;transform:none;pointer-events:auto}
+/* компактні зони: у нормі й «не описується» — без фрази (вона вже в протоколі) */
+.zone.st-n:not(.showph):not(.editing) .zone-head .phrase,.zone.st-x:not(.showph):not(.editing) .zone-head .phrase{display:none}
+/* крапка-нагадування на шестерні: папка даних не підключена */
+#navSettings{position:relative}
+#navSettings.dotw::after{content:"";position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)}
+/* сучасні дрібниці */
+h1,h2,h3,.vh h2{text-wrap:balance}
+.note,.paper p,.why{text-wrap:pretty}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.18s}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (pointer:coarse){.btn,.seg button,.chip,.tpl button,.vbtn,.zpen,.fmtbar button{min-height:44px}.btn.sm{min-height:40px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}

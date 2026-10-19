@@ -58,7 +58,10 @@ async function folderWrite(){
   folderBusy=false;
 }
 function folderSoon(){if(!folderOK())return;clearTimeout(folderT);folderT=setTimeout(folderWrite,800);}
-function showFolderBanner(t){$('folderBannerText').textContent=t;$('folderBanner').hidden=false;}
+/* «не підключена» — банер раз на день («Завтра» ховає), решту часу — крапка на шестерні; помилки запису й дозволи — завжди */
+function showFolderBanner(t,soft){folderBadge();if(soft&&SET.folderLater===today())return;$('folderBannerText').textContent=t;$('folderBanner').hidden=false;$('folderLater').hidden=!soft;}
+function folderBadge(){const n=$('navSettings');if(!n)return;const need=window.isSecureContext&&FOLDER_SUPPORTED&&!folderOK();n.classList.toggle('dotw',need);n.title=need?'Налаштування — папка даних не підключена':'Налаштування';}
+$('folderLater').onclick=()=>{SET.folderLater=today();saveSet();$('folderBanner').hidden=true;toast('Нагадаю завтра. Підключити можна в «Налаштуваннях»');};
 async function folderPick(){
   if(!window.isSecureContext){toast('Цей браузер не дає папку даних для сторінки з диска. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama або встановіть як програму.');return;}
   if(!FOLDER_SUPPORTED){toast('Папка даних працює в Chrome або Edge на комп’ютері');return;}
@@ -73,7 +76,7 @@ async function folderGrant(){
   catch(e){toast('Браузер не дав доступу до папки');}
 }
 async function folderForget(){dirH=null;dirOK=false;await kvDel('dir');renderFolderInfo();toast('Папку даних від’єднано. Дані в ній лишилися.');}
-function renderFolderInfo(){
+function renderFolderInfo(){folderBadge();
   const i=$('folderInfo');if(!i)return;
   if(!window.isSecureContext){i.textContent='Цей браузер не дає папку даних для сторінки з диска. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama і встановіть як програму.';$('folderPick').hidden=true;return;}
   if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На комп’ютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
@@ -87,7 +90,7 @@ async function folderBoot(){
   if(!window.isSecureContext){showFileBanner();renderFolderInfo();return;}
   if(!FOLDER_SUPPORTED){renderFolderInfo();return;}
   const h=await kvGet('dir');
-  if(!h){if(SET.welcomed)showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.');renderFolderInfo();return;}
+  if(!h){if(SET.welcomed)showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.',true);renderFolderInfo();return;}
   dirH=h;
   try{const p=await h.queryPermission({mode:'readwrite'});if(p==='granted'){dirOK=true;await folderSync();}else showFolderBanner(`Папка даних «${h.name}» потребує дозволу браузера.`);}
   catch(e){showFolderBanner('Папка даних потребує дозволу браузера.');}

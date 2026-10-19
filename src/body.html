@@ -23,7 +23,7 @@
 <div class="banners noprint">
   <div class="banner" id="updBanner" hidden><span>Доступна нова версія Skiagrama. Незбережений протокол не загубиться.</span><button class="btn primary sm" id="updBtn" type="button">Оновити зараз</button></div>
   <div class="banner" id="fileBanner" hidden><span>Цей браузер не дає папку даних для сторінки з диска: архів житиме лише в браузері. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama і встановіть як програму.</span></div>
-  <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button></div>
+  <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button><button class="btn sm" id="folderLater" type="button">Завтра</button></div>
   <div class="banner" id="tabBanner" hidden>Skiagrama вже відкрита в іншій вкладці або вікні. Працюйте в одній — так надійніше.</div>
   <div class="banner" id="usbBanner" hidden><span id="usbText"></span><button class="btn sm" id="usbSave" type="button">Зберегти копію архіву</button><button class="btn primary sm" id="usbDone" type="button">Скопіював ✓</button><button class="btn sm" id="usbLater" type="button">Завтра</button></div>
   <div class="banner" id="storeBanner" hidden>Браузер не дає зберігати дані на цьому пристрої: архів, шаблони й чернетка зникнуть після закриття сторінки.</div>
@@ -114,8 +114,9 @@
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
     <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
   </div>
+  <div class="toolrow noprint">
   <div class="actbar noprint">
-    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Зберегти протокол</span><span class="cnt" id="doneCnt" hidden></span></button>
+    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Зберегти<span class="lbl3"> протокол</span></span><span class="cnt" id="doneCnt" hidden></span></button>
     <div class="split">
       <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><i data-i="copy"></i><span class="lbl2">Копіювати</span></button>
       <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
@@ -126,10 +127,11 @@
   </div>
   <div class="viewbar noprint">
     <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
-    <button type="button" class="btn" id="paperBtn" title="Як протокол ляже на папір: масштаб, примірники, шапка, підпис, поля">Перегляд перед друком</button>
+    <button type="button" class="btn" id="paperBtn" title="Перегляд перед друком: як протокол ляже на папір — масштаб, примірники, шапка, підпис, поля" aria-label="Перегляд перед друком"><i data-i="paper"></i><span class="lbl">Перегляд</span></button>
     <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
     <span class="pmark" id="printMark" hidden></span>
     <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
+  </div>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
   <div id="checkHome"></div>

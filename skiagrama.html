@@ -367,7 +367,7 @@ kbd.k{font-family:var(--body);font-size:12.5px;border:1px solid var(--line);bord
   #sec-zones .navrow{display:none}
   .appnav,.btn.search{display:none}
   .hide-m{display:none}
-  .zone .zone-head h3{flex-basis:100%}
+  .zone .zone-head h3,.zone:not(.wide) .zone-head h3{flex-basis:100%}
   .btn.norm{white-space:nowrap}
   .studytabs button{font-size:13px;gap:5px;padding:7px 4px}
   .studytabs button .ic{width:16px;height:16px}
@@ -798,6 +798,31 @@ button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}
   :root main.wrap.mirror{grid-template-columns:minmax(360px,.85fr) minmax(0,1.15fr)}
   :root main.wrap.mirror.customw{grid-template-columns:var(--sidew) minmax(380px,1fr)}
 }
+
+/* ===== 0.6: ергономіка ===== */
+/* одна панель дій над протоколом: дії + бланк/перегляд/друк в один ряд, переносяться лише на вузькому */
+.toolrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolrow>.actbar,.toolrow>.viewbar{display:contents}
+.toolrow #pfsBtn{display:none}
+@container (max-width:900px){.toolrow{gap:6px}.toolrow .lbl,.toolrow .lbl2{display:none}.toolrow .split>.btn,.toolrow #paperBtn,.toolrow #printBtn{padding-inline:11px}
+  .toolrow label.bsel{font-size:0;gap:0}.toolrow label.bsel select{width:96px;min-width:0;text-overflow:ellipsis}}
+@container (max-width:560px){.toolrow .lbl3{display:none}}
+/* форматування — плаваюча панель, з’являється, коли курсор у тексті (без стрибка тексту) */
+#partDoc{position:relative}
+#partDoc>.fmtbar{position:absolute;top:8px;right:16px;z-index:6;margin:0;box-shadow:0 6px 18px rgba(0,0,0,.14);opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .15s,transform .15s}
+#partDoc:focus-within>.fmtbar,#partDoc>.fmtbar:hover{opacity:1;transform:none;pointer-events:auto}
+/* компактні зони: у нормі й «не описується» — без фрази (вона вже в протоколі) */
+.zone.st-n:not(.showph):not(.editing) .zone-head .phrase,.zone.st-x:not(.showph):not(.editing) .zone-head .phrase{display:none}
+/* крапка-нагадування на шестерні: папка даних не підключена */
+#navSettings{position:relative}
+#navSettings.dotw::after{content:"";position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--surface)}
+/* сучасні дрібниці */
+h1,h2,h3,.vh h2{text-wrap:balance}
+.note,.paper p,.why{text-wrap:pretty}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.18s}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (pointer:coarse){.btn,.seg button,.chip,.tpl button,.vbtn,.zpen,.fmtbar button{min-height:44px}.btn.sm{min-height:40px}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -839,7 +864,7 @@ button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}
 <div class="banners noprint">
   <div class="banner" id="updBanner" hidden><span>Доступна нова версія Skiagrama. Незбережений протокол не загубиться.</span><button class="btn primary sm" id="updBtn" type="button">Оновити зараз</button></div>
   <div class="banner" id="fileBanner" hidden><span>Цей браузер не дає папку даних для сторінки з диска: архів житиме лише в браузері. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama і встановіть як програму.</span></div>
-  <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button></div>
+  <div class="banner" id="folderBanner" hidden><span id="folderBannerText">Папка даних потребує дозволу браузера.</span><button class="btn primary sm" id="folderGrant" type="button">Підключити папку</button><button class="btn sm" id="folderLater" type="button">Завтра</button></div>
   <div class="banner" id="tabBanner" hidden>Skiagrama вже відкрита в іншій вкладці або вікні. Працюйте в одній — так надійніше.</div>
   <div class="banner" id="usbBanner" hidden><span id="usbText"></span><button class="btn sm" id="usbSave" type="button">Зберегти копію архіву</button><button class="btn primary sm" id="usbDone" type="button">Скопіював ✓</button><button class="btn sm" id="usbLater" type="button">Завтра</button></div>
   <div class="banner" id="storeBanner" hidden>Браузер не дає зберігати дані на цьому пристрої: архів, шаблони й чернетка зникнуть після закриття сторінки.</div>
@@ -930,8 +955,9 @@ button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}
     <button class="btn mclose" id="closeSheet" type="button">← До опису</button>
     <div class="shh"><h2 data-ic="sheet">Протокол</h2><div class="psum" id="pSum"></div></div>
   </div>
+  <div class="toolrow noprint">
   <div class="actbar noprint">
-    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Зберегти протокол</span><span class="cnt" id="doneCnt" hidden></span></button>
+    <button class="btn primary" id="doneBtn" type="button" title="Зберегти в архів (Ctrl+S)"><i data-i="check"></i><span>Зберегти<span class="lbl3"> протокол</span></span><span class="cnt" id="doneCnt" hidden></span></button>
     <div class="split">
       <button class="btn" id="copyAll" type="button" title="Копіювати весь протокол (Ctrl+Enter)"><i data-i="copy"></i><span class="lbl2">Копіювати</span></button>
       <details class="menu"><summary class="btn" title="Копіювати частинами для h24" aria-label="Копіювати частинами">▾</summary>
@@ -942,10 +968,11 @@ button.pill.pbtn:hover{outline:2px solid var(--blue);outline-offset:1px}
   </div>
   <div class="viewbar noprint">
     <label class="bsel" title="Бланк протоколу">Бланк<select id="blankSel" aria-label="Бланк протоколу"></select></label>
-    <button type="button" class="btn" id="paperBtn" title="Як протокол ляже на папір: масштаб, примірники, шапка, підпис, поля">Перегляд перед друком</button>
+    <button type="button" class="btn" id="paperBtn" title="Перегляд перед друком: як протокол ляже на папір — масштаб, примірники, шапка, підпис, поля" aria-label="Перегляд перед друком"><i data-i="paper"></i><span class="lbl">Перегляд</span></button>
     <button class="btn" id="printBtn" type="button" title="Друк (Ctrl+P)" aria-label="Друк"><i data-i="print"></i><span class="lbl">Друк</span></button>
     <span class="pmark" id="printMark" hidden></span>
     <button class="vbtn" id="pfsBtn" type="button" title="Розмір тексту протоколу на екрані">Aa</button>
+  </div>
   </div>
   <div class="advice noprint" id="blankAdvice" hidden></div>
   <div id="checkHome"></div>
@@ -1527,7 +1554,8 @@ const PACKS=[{
    Дрібні правки номер не змінюють. */
 const VERSION='0.6';
 const CHANGELOG=[
- ['0.6',['«Перегляд перед друком» — на весь екран, як в Office: решта програми ховається, масштаб − / + / Ctrl+коліщатко, «Весь аркуш», «По ширині», Esc — назад.',
+ ['0.6',['Ергономіка: дії над протоколом — в один ряд (на вузькому — значки з підказками); панель форматування з’являється, коли курсор у тексті, і не зсуває текст; висновок отримує місце під усі вибрані діагнози; зони в нормі — компактно, без фрази (у «Вигляд» можна повернути); нагадування про папку даних — раз на день і крапка на шестерні; плавні переходи, більші кнопки на сенсорному екрані, режим «менше руху».',
+   '«Перегляд перед друком» — на весь екран, як в Office: решта програми ховається, масштаб − / + / Ctrl+коліщатко, «Весь аркуш», «По ширині», Esc — назад.',
    'Налаштування бланка прямо в перегляді, без пошуку в «Налаштуваннях»: примірники (один, два — пацієнту й в історію хвороби на одному аркуші, цілий аркуш), бланк A–D, що показувати в шапці й даних пацієнта, логотип, місце під штамп (лише кутики, рамка з підказкою або без нього; ліворуч чи праворуч), «М. П.», другий підпис завідувача.',
    'Папір і принтер: поле під підшивку, зсув принтера з пробним аркушем-лінійкою, чорно-білий режим.',
    '«Зберегти як» PDF, Word і LibreOffice беруть ті самі налаштування бланка: два примірники на аркуші, логотип, місце під штамп, другий підпис, поле під підшивку — можна надрукувати одразу або пізніше з файлу.',
@@ -2056,7 +2084,7 @@ function renderZonesInner(){
   const root=$('zones');root.textContent='';
   visibleZones().forEach((d,i)=>{
     const z=S.zones[d.id]||(S.zones[d.id]={st:'n',sel:{}});const zs=zoneState(d);const ed=editZone===d.id;
-    const box=el('div',{class:'zone'+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
+    const box=el('div',{class:'zone st-'+z.st+(SET.zonePhrase?' showph':'')+(z.st==='c'||ed?' wide':'')+(zs==='e'?' err':'')+(S.focus===d.id?' focus':'')+(ed?' editing':''),id:'zone-'+d.id});const head=el('div',{class:'zone-head'});
     const h=el('h3');h.append(el('span',{class:'dot '+zoneState(d),'aria-hidden':'true'}));if(i<9)h.append(el('kbd',{class:'hk'},String(i+1)));h.append(document.createTextNode(d.name));
     const pen=el('button',{type:'button',class:'zpen'+(zoneHasEdits(d)?' on':''),'aria-pressed':String(ed),title:ed?'Завершити редагування кнопок':'Правити кнопки, фразу норми й назву зони під себе','aria-label':'Правити кнопки зони '+d.name});pen.append(icEl('pen'));
     pen.onclick=()=>{editZone=ed?null:d.id;S.focus=d.id;renderZones();if(!ed){const n=$('zone-'+d.id);if(n)n.scrollIntoView({block:'nearest'});}};
@@ -2274,7 +2302,7 @@ function renderConcl(){
       else if(k==='Enter'||k===' '){if(e.target===row){e.preventDefault();row.click();}}};
     ch.append(row);});
   if(!S.concl.length&&allNormal())ch.append(el('p',{class:'note'},'Усі зони в нормі — у протокол піде «'+normConclOf()+'».'));
-  renderChipList('concl');
+  renderChipList('concl');applySplitSoon();
 }
 const conclChipList=()=>[normConclOf(),...effList('concl').map(x=>x.t)];
 function renderRecs(){renderChipList('rec');}
@@ -2668,7 +2696,10 @@ function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;i
     if(cur!==secCur){secCur=cur;document.querySelectorAll('#secNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===cur));}};
   window.addEventListener('scroll',()=>{if(!upd.t)upd.t=requestAnimationFrame(()=>{upd.t=0;upd();});},{passive:true});})();
 /* перегляди */
-function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
+/* плавний перехід між екранами (де браузер уміє і користувач не просив менше руху) */
+const calm=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function showView(v){const cur=['desc','archive','settings'].find(k=>!$('view-'+k).hidden);if(cur!==v&&document.startViewTransition&&!calm()&&!navigator.webdriver){document.startViewTransition(()=>showViewNow(v));return;}showViewNow(v);}
+function showViewNow(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}
 $('navArchive').onclick=()=>showView('archive');$('navDesc').onclick=()=>showView('desc');$('navSettings').onclick=()=>{showView('settings');renderReady();};
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showView('desc'));
@@ -2814,10 +2845,12 @@ function applyLayout(){
   applySplit();applyFolds();applySideHeight();
 }
 /* межа між протоколом і висновком */
-const splitDef=()=>screenNow()==='monitor'?0.6:0.55;
-function autoSplit(){const sb=$('sbody'),pd=$('partDoc'),pa=$('paper');const h=sb.clientHeight;if(!h||!pa)return splitDef();
+const splitDef=()=>screenNow()==='monitor'?0.6:0.5;
+function autoSplit(){const sb=$('sbody'),pd=$('partDoc'),pa=$('paper'),pc=$('partConcl');const h=sb.clientHeight;if(!h||!pa)return splitDef();
   const need=pa.offsetHeight+(pd.offsetHeight-pd.querySelector('.pscroll').clientHeight)+20+12;
-  return Math.max(.3,Math.min(splitDef(),need/h));}
+  /* висновку — місце під усі вибрані діагнози (до кнопок висновку), щоб не гортати їх у віконці */
+  const ch=$('chosen');let needC=0;if(ch&&pc&&pc.contains(ch)&&!isFolded('sec-concl')){const r0=pc.getBoundingClientRect(),r1=ch.getBoundingClientRect();needC=r1.bottom-r0.top+pc.scrollTop+16;}
+  return Math.max(.3,Math.min(splitDef(),need/h,needC?1-needC/h:1));}
 function applySplit(){const v=SET.splitH||autoSplit();$('sbody').style.setProperty('--split',(v*100).toFixed(1)+'%');}
 let splitT=0;const applySplitSoon=()=>{if(SET.splitH)return;cancelAnimationFrame(splitT);splitT=requestAnimationFrame(applySplit);};
 (()=>{const g=$('hGrip');let d=null;
@@ -2891,6 +2924,7 @@ function renderViewMenu(){const box=$('viewPop');if(!box)return;box.textContent=
   row('Екран',[['auto','авто'],['laptop','ноутбук'],['monitor','монітор']],SET.screen||'auto',k=>setScreen(k));
   row('Розташування',Object.keys(LAYOUTS).map(k=>[k,`${k==='A'?'А':k==='B'?'Б':k==='C'?'В':'Г'} · ${LAYOUTS[k]}`,`<svg width="30" height="22" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">${LAY_PIC[k]}</svg><span>${LAYOUTS[k]}</span>`]),layoutNow(),k=>{SET.layout=k;saveSet();applyLayout();renderViewMenu();renderSide();toast('Розташування: '+LAYOUTS[k]);});
   if(!isPhone())row('Пацієнт після заповнення',[['on','згортати в рядок'],['off','не згортати']],SET.autoFold===false?'off':'on',k=>{SET.autoFold=k==='on';saveSet();renderViewMenu();if(!$('view-settings').hidden)$('sAutoFold').checked=SET.autoFold;toast(SET.autoFold?'Дані пацієнта згортатимуться після Enter у полі ЕЕД (ноутбук)':'Дані пацієнта не згортаються самі');});
+  row('Зона в нормі',[['off','лише кнопки'],['on','з фразою']],SET.zonePhrase?'on':'off',k=>{SET.zonePhrase=k==='on';saveSet();renderViewMenu();renderZones();toast(SET.zonePhrase?'Під зоною в нормі видно її фразу':'Зони в нормі — компактно, фраза лише в протоколі');});
   const r=el('div',{class:'vrow'});r.append(el('span',{class:'vl'},'Масштаб'));const s=el('div',{class:'seg'});
   const m=el('button',{type:'button','data-keep':'1',title:'Зменшити (Alt+−)','aria-label':'Зменшити масштаб'},'A−');m.onclick=()=>stepScale(-1);
   const cur=el('button',{type:'button','data-keep':'1',title:'Повернути 100 % (Alt+0)'},`${scaleNow()} %`);cur.onclick=()=>setScale(100);
@@ -2940,7 +2974,7 @@ function htmlRuns(html){const t=document.createElement('div');t.innerHTML=html;c
   walk(t,{});return out;}
 
 /* вигляд протоколу: текст | перегляд перед друком */
-function setView(paper){paperView=paper;$('fmtBar').hidden=paper;renderSide();}
+function setView(paper){paperView=paper;renderSide();}
 /* «Перегляд перед друком» тепер відкриває повноекранний перегляд (082) */
 
 /* запуск (викликається з 110 — коли все оголошено) */
@@ -3622,7 +3656,10 @@ async function folderWrite(){
   folderBusy=false;
 }
 function folderSoon(){if(!folderOK())return;clearTimeout(folderT);folderT=setTimeout(folderWrite,800);}
-function showFolderBanner(t){$('folderBannerText').textContent=t;$('folderBanner').hidden=false;}
+/* «не підключена» — банер раз на день («Завтра» ховає), решту часу — крапка на шестерні; помилки запису й дозволи — завжди */
+function showFolderBanner(t,soft){folderBadge();if(soft&&SET.folderLater===today())return;$('folderBannerText').textContent=t;$('folderBanner').hidden=false;$('folderLater').hidden=!soft;}
+function folderBadge(){const n=$('navSettings');if(!n)return;const need=window.isSecureContext&&FOLDER_SUPPORTED&&!folderOK();n.classList.toggle('dotw',need);n.title=need?'Налаштування — папка даних не підключена':'Налаштування';}
+$('folderLater').onclick=()=>{SET.folderLater=today();saveSet();$('folderBanner').hidden=true;toast('Нагадаю завтра. Підключити можна в «Налаштуваннях»');};
 async function folderPick(){
   if(!window.isSecureContext){toast('Цей браузер не дає папку даних для сторінки з диска. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama або встановіть як програму.');return;}
   if(!FOLDER_SUPPORTED){toast('Папка даних працює в Chrome або Edge на комп’ютері');return;}
@@ -3637,7 +3674,7 @@ async function folderGrant(){
   catch(e){toast('Браузер не дав доступу до папки');}
 }
 async function folderForget(){dirH=null;dirOK=false;await kvDel('dir');renderFolderInfo();toast('Папку даних від’єднано. Дані в ній лишилися.');}
-function renderFolderInfo(){
+function renderFolderInfo(){folderBadge();
   const i=$('folderInfo');if(!i)return;
   if(!window.isSecureContext){i.textContent='Цей браузер не дає папку даних для сторінки з диска. Відкрийте Skiagrama з сайту bezeza.github.io/skiagrama і встановіть як програму.';$('folderPick').hidden=true;return;}
   if(!FOLDER_SUPPORTED){i.textContent='Цей браузер не вміє працювати з папками. На комп’ютері відкрийте Skiagrama в Chrome або Edge. На телефоні робіть резервну копію в «Архіві».';$('folderPick').hidden=true;return;}
@@ -3651,7 +3688,7 @@ async function folderBoot(){
   if(!window.isSecureContext){showFileBanner();renderFolderInfo();return;}
   if(!FOLDER_SUPPORTED){renderFolderInfo();return;}
   const h=await kvGet('dir');
-  if(!h){if(SET.welcomed)showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.');renderFolderInfo();return;}
+  if(!h){if(SET.welcomed)showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.',true);renderFolderInfo();return;}
   dirH=h;
   try{const p=await h.queryPermission({mode:'readwrite'});if(p==='granted'){dirOK=true;await folderSync();}else showFolderBanner(`Папка даних «${h.name}» потребує дозволу браузера.`);}
   catch(e){showFolderBanner('Папка даних потребує дозволу браузера.');}
@@ -3826,7 +3863,7 @@ function openHelp(){
 <li><b>Вигляд</b> — кнопка з монітором угорі: тема; екран «ноутбук» (щільно, текст як є) чи «монітор» (просторо); розташування А–Г; масштаб усієї програми <kbd class="k">Alt</kbd>+<kbd class="k">+</kbd> / <kbd class="k">Alt</kbd>+<kbd class="k">−</kbd>, <kbd class="k">Alt</kbd>+<kbd class="k">0</kbd> — 100 %. Друк і файли масштаб не змінює.</li>
 <li><b>Розташування Б «Робоче місце»</b> (типово): висновок і рекомендації — праворуч під протоколом. Межу між ними можна потягнути; подвійний клік — порівну.</li>
 <li><b>Згорнути</b> будь-який блок — стрілка біля заголовка; згорнутий показує рядок-підсумок і крапку, якщо щось не заповнено. «Згорнути все» — у рядку розділів. На ноутбуці дані пацієнта згортаються самі після Enter в останньому полі.</li>
-<li><b>Форматування</b> тексту протоколу: Ж, К, П, вирівнювання, «прибрати форматування» — іде на друк, у PDF і Word. Копія для h24 — простим текстом.</li>
+<li><b>Форматування</b> — клацніть у текст протоколу, і зверху з’явиться панель:  Ж, К, П, вирівнювання, «прибрати форматування» — іде на друк, у PDF і Word. Копія для h24 — простим текстом.</li>
 <li><b>Під себе без коду.</b> Олівець біля кожної зони — напис і фраза кнопок, фраза норми, назва зони, шаблон речення, сховати зону. Внизу опису — «+ Своя зона». Висновок і рекомендації — «Редагувати кнопки». Проєкції — олівець у рядку проєкцій. Кістки — «✎ Список кісток». Усе зберігається в налаштуваннях і папці даних; «Повернути як було» скидає лише цей список.</li>
 <li>«Архів»: друк пачкою, «На контроль», підсумок дня, вивантаження в Excel.</li>
 <li>Папка даних («Налаштування»): архів, копія кожного протоколу як аркуша й налаштування зберігаються на диск самі.</li></ul>
@@ -3861,7 +3898,7 @@ function openWelcome(){
     const t=el('button',{type:'button',class:'btn'},'Пробний аркуш друку');t.onclick=()=>{save();closeDlg();testSheet();};r.append(t);
     box.append(r);
     const save=()=>{SET.doctor=d.value.trim();SET.eed.ogk=e1.value.trim();SET.eed.fg=e2.value.trim();SET.welcomed=true;SET.seenVersion=VERSION;saveSet();setEedDefault();renderSide();};
-    const afterWelcome=()=>{if(window.isSecureContext&&!folderOK())showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.');};
+    const afterWelcome=()=>{if(window.isSecureContext&&!folderOK())showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.',true);};
     const r2=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Готово');ok.onclick=()=>{save();closeDlg();toast('Збережено');afterWelcome();};
     const skip=el('button',{type:'button',class:'btn'},'Пропустити — заповню пізніше');skip.onclick=()=>{SET.welcomed=true;SET.seenVersion=VERSION;saveSet();closeDlg();afterWelcome();};
     r2.append(ok,skip);box.append(r2);setTimeout(()=>d.focus(),30);

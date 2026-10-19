@@ -172,7 +172,10 @@ function applySideW(){const w=document.querySelector('main.wrap');if(!w)return;i
     if(cur!==secCur){secCur=cur;document.querySelectorAll('#secNav button').forEach(b=>b.classList.toggle('on',b.dataset.sec===cur));}};
   window.addEventListener('scroll',()=>{if(!upd.t)upd.t=requestAnimationFrame(()=>{upd.t=0;upd();});},{passive:true});})();
 /* перегляди */
-function showView(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
+/* плавний перехід між екранами (де браузер уміє і користувач не просив менше руху) */
+const calm=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function showView(v){const cur=['desc','archive','settings'].find(k=>!$('view-'+k).hidden);if(cur!==v&&document.startViewTransition&&!calm()&&!navigator.webdriver){document.startViewTransition(()=>showViewNow(v));return;}showViewNow(v);}
+function showViewNow(v){['desc','archive','settings'].forEach(k=>{$('view-'+k).hidden=k!==v;});$('navDesc').classList.toggle('on',v==='desc');$('navArchive').classList.toggle('on',v==='archive');$('mbar').style.display=v==='desc'?'':'none';closeSheet();window.scrollTo(0,0);
   if(v==='archive')renderArchive();if(v==='settings')renderSettings();}
 $('navArchive').onclick=()=>showView('archive');$('navDesc').onclick=()=>showView('desc');$('navSettings').onclick=()=>{showView('settings');renderReady();};
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>showView('desc'));
