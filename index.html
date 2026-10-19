@@ -43,19 +43,19 @@
   --blue:#7DB3DE; --blue-soft:#1C3347; --accent:#F2A65A; --accent-soft:#3A2A1A;
   --warn:#F2C26B; --warn-soft:#3A2F17; --bad:#FF8A80; --bad-soft:#3D1F1F; --ok:#7FD1A0; --ok-soft:#173326;
   --dot-n:#5CCB8A; --dot-c:#F2A65A; --dot-x:#6E7F8F; --dot-e:#FF6B61;
-  --paper:#F4F1EA; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+  --paper:#DDD8CC; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0E1822; --surface:#15222F; --line:#2A3B4B; --ink:#E4ECF3; --muted:#9FB0C0;
   --blue:#7DB3DE; --blue-soft:#1C3347; --accent:#F2A65A; --accent-soft:#3A2A1A;
   --warn:#F2C26B; --warn-soft:#3A2F17; --bad:#FF8A80; --bad-soft:#3D1F1F; --ok:#7FD1A0; --ok-soft:#173326;
   --dot-n:#5CCB8A; --dot-c:#F2A65A; --dot-x:#6E7F8F; --dot-e:#FF6B61;
-  --paper:#F4F1EA; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+  --paper:#DDD8CC; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}
 :root[data-theme="grey"]{ /* «Кабінет»: нейтральний темно-сірий для притемненої кімнати */
   --bg:#2A2B2D; --surface:#343538; --line:#4A4C50; --ink:#E6E6E6; --muted:#A8AAAE;
   --blue:#9DB8CF; --blue-soft:#3E434A; --accent:#E0A35E; --accent-soft:#45392B;
   --warn:#E8C27A; --warn-soft:#45402F; --bad:#F09A92; --bad-soft:#4A3232; --ok:#8FCFA6; --ok-soft:#2F4237;
   --dot-n:#6CC08C; --dot-c:#E8A75C; --dot-x:#7C7F84; --dot-e:#F07A70;
-  --paper:#E9E9E6; --paper-ink:#1E1E1E; --flash:#E9D9A8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+  --paper:#D2D2CE; --paper-ink:#1E1E1E; --flash:#E9D9A8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 html,body{margin:0}
@@ -834,6 +834,37 @@ h1,h2,h3,.vh h2{text-wrap:balance}
 .mcap small{font-size:11px;color:var(--muted);line-height:1.1}
 .mhow summary{cursor:pointer;font-size:12.5px;color:var(--blue);list-style-position:inside}
 .swlist{margin:0 0 6px}
+
+/* ===== 0.6.x: дизайн-поліровка ===== */
+/* знайомство: одне поле і «Почати», решта — під «Більше» */
+.modal .box.welcome{max-width:540px;gap:14px;padding:22px 24px}
+.modal .box.welcome h2{font-size:22px}
+.welcome .wlead{margin:-4px 0 0;color:var(--muted);font-size:14.5px}
+.welcome .fields{grid-template-columns:1fr}
+.welcome .btn.ghost{border-color:transparent;background:none;color:var(--muted);font-weight:400}
+.welcome .btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.welcome .wmore{border-top:1px solid var(--line);padding-top:10px}
+.welcome .wmore>summary{cursor:pointer;color:var(--blue);font-size:14px;font-weight:500;padding:4px 0}
+.welcome .wmore[open]>summary{margin-bottom:10px}
+.welcome .wmore>*+*{margin-top:12px}
+/* плашка про папку — тонша, менше з’їдає висоту */
+.banner{padding:5px 8px 5px 14px;font-size:13.5px;margin-top:6px;gap:8px 10px}
+.banner .btn.sm{min-height:30px}
+#folderBannerText{flex:1 1 320px}
+:root.scr-laptop .banner{margin-top:4px;padding-block:3px}
+/* висновок: кнопки згруповані з підписами */
+#conclChips.grouped{flex-direction:column;align-items:stretch;gap:8px}
+#conclChips.grouped>.chip{align-self:flex-start}
+.cgroup{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cgroup .cgl{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+.cgroup+.cgroup{border-top:1px solid var(--line);padding-top:8px}
+/* бланк: назва не обрізається до «С · під…» */
+@container (max-width:900px){.toolrow label.bsel select{width:126px;padding-inline:6px 2px}}
+/* рядок зон в «Описі»: згасання по краю, коли далі ще є пункти */
+.navrow.ovf-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
+.navrow.ovf-l.ovf-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
+.navrow.ovf-l:not(.ovf-r){-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px);mask-image:linear-gradient(90deg,transparent,#000 40px)}
+@container (max-width:640px){.toolrow .lbl3{display:none}}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -1495,11 +1526,22 @@ const SPINE_DEPT=[['shyi','Шийний','шийного'],['grud','Грудни
 
 const STUDIES={
  ogk:{n:'ОГК',zones:OGK_ZONES,normConcl:'Без патологічних змін',normTbd:1,meas:['kti'],
-   chips:['Гострий бронхіт','Хронічний бронхіт','Хронічний обструктивний бронхіт','Правобічна пневмонія','Лівобічна пневмонія','Двобічна пневмонія','Інфільтративні зміни','ЗЗТБ','Емфізема легень','Бульозна емфізема','Пневмофіброз','Вогнищевий пневмофіброз','Плевральні спайки','Хронічне легеневе серце','Кардіомегалія','Аорта ущільнена','Правобічний гідроторакс','Лівобічний гідроторакс','Правобічний пневмоторакс','Лівобічний пневмоторакс','Гідропневмоторакс','Ателектаз','Дископодібний ателектаз','Округла тінь','Порожнина розпаду','Застій у малому колі кровообігу','Перелом ребра','Штучний водій ритму (ЕКС)','Післяопераційні шви на легенях','Стан після торакотомії','Стан після резекції легені','Металеве стороннє тіло','Кальцинати коренів','Потребує дообстеження (КТ ОГК)']},
+   chips:['Гострий бронхіт','Хронічний бронхіт','Хронічний обструктивний бронхіт','Правобічна пневмонія','Лівобічна пневмонія','Двобічна пневмонія','Інфільтративні зміни','ЗЗТБ','Емфізема легень','Бульозна емфізема','Пневмофіброз','Вогнищевий пневмофіброз','Плевральні спайки','Хронічне легеневе серце','Кардіомегалія','Аорта ущільнена','Правобічний гідроторакс','Лівобічний гідроторакс','Правобічний пневмоторакс','Лівобічний пневмоторакс','Гідропневмоторакс','Ателектаз','Дископодібний ателектаз','Округла тінь','Порожнина розпаду','Застій у малому колі кровообігу','Перелом ребра','Штучний водій ритму (ЕКС)','Післяопераційні шви на легенях','Стан після торакотомії','Стан після резекції легені','Металеве стороннє тіло','Кальцинати коренів','Потребує дообстеження (КТ ОГК)'],
+   groups:[['Бронхи',['Гострий бронхіт','Хронічний бронхіт','Хронічний обструктивний бронхіт']],
+     ['Запалення, ТБ',['Правобічна пневмонія','Лівобічна пневмонія','Двобічна пневмонія','Інфільтративні зміни','ЗЗТБ']],
+     ['Емфізема, фіброз',['Емфізема легень','Бульозна емфізема','Пневмофіброз','Вогнищевий пневмофіброз','Кальцинати коренів']],
+     ['Плевра',['Плевральні спайки','Правобічний гідроторакс','Лівобічний гідроторакс','Правобічний пневмоторакс','Лівобічний пневмоторакс','Гідропневмоторакс']],
+     ['Тіні, ателектаз',['Ателектаз','Дископодібний ателектаз','Округла тінь','Порожнина розпаду']],
+     ['Серце, судини',['Хронічне легеневе серце','Кардіомегалія','Аорта ущільнена','Застій у малому колі кровообігу']],
+     ['Після втручань, інше',['Перелом ребра','Штучний водій ритму (ЕКС)','Післяопераційні шви на легенях','Стан після торакотомії','Стан після резекції легені','Металеве стороннє тіло','Потребує дообстеження (КТ ОГК)']]]},
  fg:{n:'Флюорографія',zones:OGK_ZONES,normConcl:'Патології не виявлено',normTbd:1,meas:[],
    chips:['ЗЗТБ','Пневмофіброз','Емфізема легень','Хронічний бронхіт','Плевральні спайки','Пневмоторакс','Штучний водій ритму (ЕКС)','Післяопераційні шви на легенях','Потребує дообстеження (Rö-гр. ОГК)']},
  bone:{n:'Кістки і суглоби',zones:BONE_ZONES,normConcl:'Без кістково-травматичних змін',normTbd:1,meas:[],
-   chips:['Деформуючий остеоартроз I ст.','Деформуючий остеоартроз II ст.','Деформуючий остеоартроз III ст.','Остеопороз','Перелом без зміщення','Перелом зі зміщенням','Вивих','Підвивих','Кісткова мозоль','Ознаки консолідації','Стан після остеосинтезу','Стан після ендопротезування','Поздовжня плоскостопість','Hallux valgus']},
+   chips:['Деформуючий остеоартроз I ст.','Деформуючий остеоартроз II ст.','Деформуючий остеоартроз III ст.','Остеопороз','Перелом без зміщення','Перелом зі зміщенням','Вивих','Підвивих','Кісткова мозоль','Ознаки консолідації','Стан після остеосинтезу','Стан після ендопротезування','Поздовжня плоскостопість','Hallux valgus'],
+   groups:[['Дегенеративні',['Деформуючий остеоартроз I ст.','Деформуючий остеоартроз II ст.','Деформуючий остеоартроз III ст.','Остеопороз']],
+     ['Травма',['Перелом без зміщення','Перелом зі зміщенням','Вивих','Підвивих']],
+     ['Після лікування',['Кісткова мозоль','Ознаки консолідації','Стан після остеосинтезу','Стан після ендопротезування']],
+     ['Стопа',['Поздовжня плоскостопість','Hallux valgus']]]},
  spine:{n:'Хребет',zones:SPINE_ZONES,normConcl:'Без патологічних змін',normTbd:1,meas:['cobb','kyph','lord','genant'],
    chips:['Остеохондроз {dept} відділу хребта','Спондильоз','Спондилоартроз','Унковертебральний артроз','Сколіоз','Компресійна деформація','Лістез','Гіперкіфоз','Сплощення лордозу']},
  abd:{n:'ОЧП',zones:ABD_ZONES,normConcl:'Без патологічних змін',normTbd:1,meas:[],
@@ -1572,7 +1614,7 @@ const PACKS=[{
    Дрібні правки номер не змінюють. */
 const VERSION='0.6';
 const CHANGELOG=[
- ['0.6',['Ергономіка: дії над протоколом — в один ряд (на вузькому — значки з підказками); панель форматування з’являється, коли курсор у тексті, і не зсуває текст; висновок отримує місце під усі вибрані діагнози; зони в нормі — компактно, без фрази (у «Вигляд» можна повернути); нагадування про папку даних — раз на день і крапка на шестерні; плавні переходи, більші кнопки на сенсорному екрані, режим «менше руху».',
+ ['0.6',['Вигляд: коротке знайомство — одне поле й «Почати», решта під «Більше»; кнопки висновку ОГК і кісток — у групах з підписами; тонша плашка про папку; назва бланка не обрізається; рядок зон в «Описі» згасає по краю, коли далі є пункти; у темних темах аркуш протоколу приглушений.','Ергономіка: дії над протоколом — в один ряд (на вузькому — значки з підказками); панель форматування з’являється, коли курсор у тексті, і не зсуває текст; висновок отримує місце під усі вибрані діагнози; зони в нормі — компактно, без фрази (у «Вигляд» можна повернути); нагадування про папку даних — раз на день і крапка на шестерні; плавні переходи, більші кнопки на сенсорному екрані, режим «менше руху».',
    '«Перегляд перед друком» — на весь екран, як в Office: решта програми ховається, масштаб − / + / Ctrl+коліщатко, «Весь аркуш», «По ширині», Esc — назад.',
    'Налаштування бланка прямо в перегляді, без пошуку в «Налаштуваннях»: примірники (один, два — пацієнту й в історію хвороби на одному аркуші, цілий аркуш), бланк A–D, що показувати в шапці й даних пацієнта, логотип, місце під штамп (лише кутики, рамка з підказкою або без нього; ліворуч чи праворуч), «М. П.», другий підпис завідувача.',
    'Папір і принтер: поле під підшивку, зсув принтера з пробним аркушем-лінійкою, чорно-білий режим.',
@@ -2373,10 +2415,17 @@ function renderChipList(kind){
   const isC=kind==='concl';const root=$(isC?'conclChips':'recChips'),tools=$(isC?'conclTools':'recTools');root.textContent='';tools.textContent='';
   const arr=isC?S.concl:S.recs;
   if(editList===kind){root.hidden=true;renderListEditor(kind,tools);return;}root.hidden=false;
-  const chip=(t,k)=>{const on=arr.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
-    b.onclick=()=>{const extra=isC?manualConclusionExtra():'';tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}if(isC){audit(on?'conclusion_removed':'conclusion_selected');syncManualConclusion(extra);}renderAll();};root.append(b);};
+  const chip=(t,k,par)=>{const on=arr.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
+    b.onclick=()=>{const extra=isC?manualConclusionExtra():'';tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}if(isC){audit(on?'conclusion_removed':'conclusion_selected');syncManualConclusion(extra);}renderAll();};(par||root).append(b);};
   if(isC)chip(normConclOf(),null);
-  effList(kind).forEach(x=>chip(x.t,x.k));
+  const items=effList(kind),G=isC&&study().groups,ord=(SET.lists[listKeyOf(kind)]||{}).order;
+  /* групи з підписами — лише поки лікар сам не переставив кнопки (тоді його порядок головніший) */
+  root.classList.toggle('grouped',!!(G&&!(ord&&ord.length)));
+  if(!G||(ord&&ord.length)){items.forEach(x=>chip(x.t,x.k));}
+  else{const seen=new Set();
+    const grp=(label,list)=>{if(!list.length)return;const g=el('div',{class:'cgroup',role:'group','aria-label':label});g.append(el('span',{class:'cgl'},label));const c=el('div',{class:'chips'});g.append(c);list.forEach(x=>{seen.add(x.k);chip(x.t,x.k,c);});root.append(g);};
+    G.forEach(([label,keys])=>grp(label,items.filter(x=>keys.includes(x.k))));
+    grp('Свої',items.filter(x=>!seen.has(x.k)));}
   const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'});pen.append(icEl('pen'),document.createTextNode('Редагувати кнопки'));pen.onclick=()=>{editList=kind;renderChipList(kind);};
   tools.append(pen);
 }
@@ -3036,6 +3085,16 @@ function initView(){initFolds();initFmt();
   /* одноразово: старий «Розмір шрифту» → масштаб */
   if(SET.scale==null&&SET.font&&SET.font!=='m'){SET.scale={s:90,l:110,xl:125}[SET.font]||100;SET.font='m';saveSet();}
   applyScale();applyLayout();}
+
+/* рядок зон: згасання по краю, коли пункти не вміщаються (видно, що можна прокрутити) */
+(function(){
+  const rows=[...document.querySelectorAll('#sec-zones .navrow')];if(!rows.length)return;
+  const upd=r=>{const over=r.scrollWidth>r.clientWidth+2;r.classList.toggle('ovf-r',over&&r.scrollLeft+r.clientWidth<r.scrollWidth-2);r.classList.toggle('ovf-l',over&&r.scrollLeft>2);};
+  rows.forEach(r=>{r.addEventListener('scroll',()=>upd(r),{passive:true});
+    if(window.ResizeObserver)new ResizeObserver(()=>upd(r)).observe(r);
+    new MutationObserver(()=>upd(r)).observe(r,{childList:true,subtree:true});upd(r);});
+  window.addEventListener('resize',()=>rows.forEach(upd));
+})();
 
 /* --- 070-archive.js --- */
 /* ===== Архів протоколів і «На контроль» ===== */
@@ -3932,25 +3991,34 @@ $('vBadge').onclick=openWhatsNew;
 /* знайомство */
 function openWelcome(){
   openDlg(box=>{
-    box.append(el('h2',null,'Вітаю! Кілька даних — один раз'));
-    const pr=el('div',{class:'trow wprof'});const pb=el('button',{type:'button',class:'btn'},'Завантажити профіль кабінету…');pb.onclick=()=>pickProfile(()=>{pb.textContent='Профіль завантажено ✓';d.value=SET.doctor||d.value;e1.value=SET.eed.ogk||'';e2.value=SET.eed.fg||'';});
-    pr.append(pb,el('span',{class:'note'},'Є файл від колеги чи адміністратора? Реквізити, бланк, відділення, ЕЕД — одним кліком.'));box.append(pr);
-    box.append(el('p',{class:'note'},'Вони підставлятимуться в протоколи і зберігаються лише на цьому пристрої. Усе можна змінити пізніше в «Налаштуваннях». Skiagrama — бета-версія: текст протоколу перевіряє й підписує лікар.'));
-    const tips=el('ol',{class:'steps'});[['Встановіть програму','у Chrome чи Edge — значок «Встановити» в адресному рядку або кнопка вгорі. Тоді вона відкривається як звичайна програма і оновлюється сама, коли є інтернет.'],['Оберіть папку даних','кнопка нижче, напр. «Документи». Туди самі зберігатимуться архів, копії протоколів і налаштування. Без папки архів сидить лише в браузері.'],['Реквізити закладу','— у «Налаштуваннях» → «Бланк і реквізити закладу». Без назви закладу бланки A/B/D не друкувати.'],['Тема','у «Налаштуваннях» є «Кабінет» — темно-сіра, під приглушене світло рентгенкабінету.']].forEach(([b,t])=>{const li=el('li');li.append(el('b',null,b+' '),document.createTextNode(t));tips.append(li);});box.append(tips);
+    box.classList.add('welcome');
+    box.append(el('h2',null,'Вітаю у Skiagrama'));
+    box.append(el('p',{class:'wlead'},'Вкажіть, хто підписує протоколи, — і можна починати. Решту можна змінити будь-коли в «Налаштуваннях».'));
     const f=el('div',{class:'fields'});
-    const mk=(lab,val,ph,cls,mode)=>{const l=el('label',{class:'f'+(cls?' '+cls:'')},lab);const i=el('input',{type:'text',placeholder:ph||'',inputmode:mode||null});i.value=val||'';l.append(i);f.append(l);return i;};
-    const d=mk('ПІБ лікаря (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
-    const e1=mk('ЕЕД ОГК, мЗв',SET.eed.ogk,'0,35',null,'decimal');const e2=mk('ЕЕД флюорографії, мЗв',SET.eed.fg,'',null,'decimal');
+    const mk=(par,lab,val,ph,cls,mode)=>{const l=el('label',{class:'f'+(cls?' '+cls:'')},lab);const i=el('input',{type:'text',placeholder:ph||'',inputmode:mode||null});i.value=val||'';l.append(i);par.append(l);return i;};
+    const d=mk(f,'ПІБ лікаря (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
     box.append(f);
+    const r2=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Почати');
+    r2.append(ok);
+    if(FOLDER_SUPPORTED){const fb=el('button',{type:'button',class:'btn'},folderOK()?'Папку даних підключено ✓':'Обрати папку даних');fb.title='Туди самі зберігатимуться архів, копії протоколів і налаштування';fb.onclick=async()=>{await folderPick();fb.textContent=folderOK()?'Папку даних підключено ✓':'Обрати папку даних';};r2.append(fb);}
+    const skip=el('button',{type:'button',class:'btn ghost'},'Пропустити — заповню пізніше');r2.append(skip);box.append(r2);
+    const more=el('details',{class:'wmore'});more.append(el('summary',null,'Більше: профіль кабінету, ЕЕД, поради'));box.append(more);
+    const pr=el('div',{class:'trow wprof'});const pb=el('button',{type:'button',class:'btn'},'Завантажити профіль кабінету…');pb.onclick=()=>pickProfile(()=>{pb.textContent='Профіль завантажено ✓';d.value=SET.doctor||d.value;e1.value=SET.eed.ogk||'';e2.value=SET.eed.fg||'';});
+    pr.append(pb,el('span',{class:'note'},'Є файл від колеги чи адміністратора? Реквізити, бланк, відділення, ЕЕД — одним кліком.'));more.append(pr);
+    const f2=el('div',{class:'fields'});
+    const e1=mk(f2,'ЕЕД ОГК, мЗв',SET.eed.ogk,'0,35',null,'decimal');const e2=mk(f2,'ЕЕД флюорографії, мЗв',SET.eed.fg,'',null,'decimal');
+    more.append(f2);
+    const tips=el('ol',{class:'steps'});[['Встановіть програму','у Chrome чи Edge — значок «Встановити» в адресному рядку або кнопка вгорі. Тоді вона відкривається як звичайна програма і оновлюється сама, коли є інтернет.'],['Оберіть папку даних','кнопка нижче, напр. «Документи». Туди самі зберігатимуться архів, копії протоколів і налаштування. Без папки архів сидить лише в браузері.'],['Реквізити закладу','— у «Налаштуваннях» → «Бланк і реквізити закладу». Без назви закладу бланки A/B/D не друкувати.'],['Тема','у «Налаштуваннях» є «Кабінет» — темно-сіра, під приглушене світло рентгенкабінету.']].forEach(([b,t])=>{const li=el('li');li.append(el('b',null,b+' '),document.createTextNode(t));tips.append(li);});more.append(tips);
     const r=el('div',{class:'trow'});
-    if(FOLDER_SUPPORTED){const fb=el('button',{type:'button',class:'btn'},folderOK()?'Папку даних підключено ✓':'Обрати папку даних');fb.onclick=async()=>{await folderPick();fb.textContent=folderOK()?'Папку даних підключено ✓':'Обрати папку даних';};r.append(fb);}
     const t=el('button',{type:'button',class:'btn'},'Пробний аркуш друку');t.onclick=()=>{save();closeDlg();testSheet();};r.append(t);
-    box.append(r);
+    more.append(r);
+    more.append(el('p',{class:'note'},'Дані зберігаються лише на цьому пристрої. Skiagrama — бета-версія: текст протоколу перевіряє й підписує лікар.'));
     const save=()=>{SET.doctor=d.value.trim();SET.eed.ogk=e1.value.trim();SET.eed.fg=e2.value.trim();SET.welcomed=true;SET.seenVersion=VERSION;saveSet();setEedDefault();renderSide();};
     const afterWelcome=()=>{if(window.isSecureContext&&!folderOK())showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.',true);};
-    const r2=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Готово');ok.onclick=()=>{save();closeDlg();toast('Збережено');afterWelcome();};
-    const skip=el('button',{type:'button',class:'btn'},'Пропустити — заповню пізніше');skip.onclick=()=>{SET.welcomed=true;SET.seenVersion=VERSION;saveSet();closeDlg();afterWelcome();};
-    r2.append(ok,skip);box.append(r2);setTimeout(()=>d.focus(),30);
+    ok.onclick=()=>{save();closeDlg();toast('Збережено');afterWelcome();};
+    skip.onclick=()=>{SET.welcomed=true;SET.seenVersion=VERSION;saveSet();closeDlg();afterWelcome();};
+    d.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ok.click();}});
+    setTimeout(()=>d.focus(),30);
   });
 }
 

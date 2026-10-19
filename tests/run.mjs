@@ -670,7 +670,9 @@ console.log('\n0.6: пілот і кабінет');
 {
   const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
   await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');
-  ok(await p.isVisible('#dlg >> text=Завантажити профіль кабінету…'),'знайомство: «Завантажити профіль кабінету…»');
+  ok(await p.isVisible('#dlg >> text=Почати')&&(await p.locator('#dlg input').filter({visible:true}).count())===1,'знайомство: одне поле і «Почати»');
+  await p.click('#dlg >> text=Більше: профіль кабінету, ЕЕД, поради');
+  ok(await p.isVisible('#dlg >> text=Завантажити профіль кабінету…'),'знайомство: «Завантажити профіль кабінету…» під «Більше»');
   await p.click('text=Пропустити — заповню пізніше');
   const prof={app:'skiagrama-profile',v:1,profile:{org:{name:'КНП «Демо-лікарня»',edrpou:'00000000'},theme:'grey',depts:'Демо-відділення',bl:{copies:'two'},blank:'B'}};
   ok(await p.evaluate(d=>__skg.applyProfile(d),prof),'профіль кабінету застосовується');
@@ -775,6 +777,21 @@ console.log('\n0.6: зони під себе і перевірки');
   await q.goto(FILE);await q.waitForTimeout(450);if(await q.isVisible('text=Пропустити — заповню пізніше'))await q.click('text=Пропустити — заповню пізніше');
   ok(await q.evaluate(()=>{const s=document.querySelector('#zone-infil .seg').getBoundingClientRect();return s.width>100&&!document.documentElement.classList.contains('scr-laptop');}),'телефон: кнопки зон на повну ширину, без стилю «ноутбук»');
   await c2.close();
+}
+// ===== дизайн: знайомство, групи висновку, бланк =====
+console.log('\nДизайн: знайомство, групи висновку');
+{
+  const ctx=await b.newContext({viewport:{width:1366,height:768}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForSelector('#dlg:not([hidden])');
+  await p.fill('#dlg input','Тест Т. Т.');await p.press('#dlg input','Enter');
+  ok(await p.isHidden('#dlg')&&await p.evaluate(()=>__skg.SET.doctor==='Тест Т. Т.'),'знайомство: Enter у полі ПІБ — зберегти й почати');
+  ok(await p.locator('#conclChips .cgroup').count()>=5&&await p.isVisible('#conclChips .cgroup >> text=Плевра'),'висновок ОГК: кнопки в групах з підписами');
+  ok(await p.evaluate(()=>{const n=__skg.STUDIES.ogk;const all=n.groups.flatMap(g=>g[1]);return n.chips.every(c=>all.includes(c));}),'усі кнопки ОГК мають групу');
+  ok(await p.evaluate(()=>{const n=__skg.STUDIES.bone;const all=n.groups.flatMap(g=>g[1]);return n.chips.every(c=>all.includes(c));}),'усі кнопки «Кістки» мають групу');
+  await p.click('#conclChips .chip >> text=Лівобічна пневмонія');ok((await paper(p)).includes('Лівобічна пневмонія'),'кнопка в групі йде в протокол');
+  ok(await p.evaluate(()=>{const t=document.getElementById('printBtn').getBoundingClientRect(),d=document.getElementById('doneBtn').getBoundingClientRect();return Math.abs(t.top-d.top)<4;}),'ноутбук 1366: панель протоколу в один ряд');
+  ok(errs.length===0,'без помилок JavaScript'+(errs.length?': '+errs.join(' | '):''));
+  await ctx.close();
 }
 await b.close();
 console.log(`\nУсього: ${pass} пройдено, ${fail} не пройдено`);

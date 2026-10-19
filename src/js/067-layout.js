@@ -177,3 +177,13 @@ function initView(){initFolds();initFmt();
   /* одноразово: старий «Розмір шрифту» → масштаб */
   if(SET.scale==null&&SET.font&&SET.font!=='m'){SET.scale={s:90,l:110,xl:125}[SET.font]||100;SET.font='m';saveSet();}
   applyScale();applyLayout();}
+
+/* рядок зон: згасання по краю, коли пункти не вміщаються (видно, що можна прокрутити) */
+(function(){
+  const rows=[...document.querySelectorAll('#sec-zones .navrow')];if(!rows.length)return;
+  const upd=r=>{const over=r.scrollWidth>r.clientWidth+2;r.classList.toggle('ovf-r',over&&r.scrollLeft+r.clientWidth<r.scrollWidth-2);r.classList.toggle('ovf-l',over&&r.scrollLeft>2);};
+  rows.forEach(r=>{r.addEventListener('scroll',()=>upd(r),{passive:true});
+    if(window.ResizeObserver)new ResizeObserver(()=>upd(r)).observe(r);
+    new MutationObserver(()=>upd(r)).observe(r,{childList:true,subtree:true});upd(r);});
+  window.addEventListener('resize',()=>rows.forEach(upd));
+})();

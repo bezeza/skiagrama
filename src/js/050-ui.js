@@ -337,10 +337,17 @@ function renderChipList(kind){
   const isC=kind==='concl';const root=$(isC?'conclChips':'recChips'),tools=$(isC?'conclTools':'recTools');root.textContent='';tools.textContent='';
   const arr=isC?S.concl:S.recs;
   if(editList===kind){root.hidden=true;renderListEditor(kind,tools);return;}root.hidden=false;
-  const chip=(t,k)=>{const on=arr.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
-    b.onclick=()=>{const extra=isC?manualConclusionExtra():'';tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}if(isC){audit(on?'conclusion_removed':'conclusion_selected');syncManualConclusion(extra);}renderAll();};root.append(b);};
+  const chip=(t,k,par)=>{const on=arr.includes(t);const b=el('button',{type:'button',class:'chip','aria-pressed':String(on)},t);
+    b.onclick=()=>{const extra=isC?manualConclusionExtra():'';tick();if(on)arr.splice(arr.indexOf(t),1);else{arr.push(t);if(k)countList(kind,k);}if(isC){audit(on?'conclusion_removed':'conclusion_selected');syncManualConclusion(extra);}renderAll();};(par||root).append(b);};
   if(isC)chip(normConclOf(),null);
-  effList(kind).forEach(x=>chip(x.t,x.k));
+  const items=effList(kind),G=isC&&study().groups,ord=(SET.lists[listKeyOf(kind)]||{}).order;
+  /* групи з підписами — лише поки лікар сам не переставив кнопки (тоді його порядок головніший) */
+  root.classList.toggle('grouped',!!(G&&!(ord&&ord.length)));
+  if(!G||(ord&&ord.length)){items.forEach(x=>chip(x.t,x.k));}
+  else{const seen=new Set();
+    const grp=(label,list)=>{if(!list.length)return;const g=el('div',{class:'cgroup',role:'group','aria-label':label});g.append(el('span',{class:'cgl'},label));const c=el('div',{class:'chips'});g.append(c);list.forEach(x=>{seen.add(x.k);chip(x.t,x.k,c);});root.append(g);};
+    G.forEach(([label,keys])=>grp(label,items.filter(x=>keys.includes(x.k))));
+    grp('Свої',items.filter(x=>!seen.has(x.k)));}
   const pen=el('button',{type:'button',class:'btn sm',title:'Змінити текст кнопок, сховати, переставити'});pen.append(icEl('pen'),document.createTextNode('Редагувати кнопки'));pen.onclick=()=>{editList=kind;renderChipList(kind);};
   tools.append(pen);
 }
