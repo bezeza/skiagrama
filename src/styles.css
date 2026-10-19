@@ -223,6 +223,12 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 .chosen{display:flex;flex-direction:column;gap:6px}
 .chosen .row{display:flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .chosen .row span{flex:1;min-width:0}
+#chosen .row{cursor:pointer;transition:background .15s,border-color .15s}
+#chosen .row:hover{border-color:var(--blue)}
+#chosen .row.sel{border-color:var(--blue);background:var(--blue-soft);box-shadow:0 0 0 1px var(--blue) inset}
+#chosen .row:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#chosen .row .mv{min-width:30px;padding-inline:6px}
+#chosen .row .mv:disabled{opacity:.35}
 .tbd{text-decoration:underline dotted var(--accent);text-underline-offset:3px}
 
 /* protocol panel */

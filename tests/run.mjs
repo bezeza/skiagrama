@@ -688,6 +688,23 @@ console.log('\n0.6: пілот і кабінет');
   ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
   await ctx.close();
 }
+// ===== 0.6: порядок діагнозів у висновку =====
+console.log('\n0.6: порядок діагнозів');
+{
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  await p.evaluate(()=>{const K=__skg;K.S.concl=['Перший','Другий','Третій','Четвертий'];K.renderAll();});
+  const order=()=>p.evaluate(()=>__skg.S.concl.join(','));
+  await p.click('#chosen .row:nth-child(1) button[aria-label="Нижче"]');ok(await order()==='Другий,Перший,Третій,Четвертий','↓ — нижче');
+  await p.click('#chosen .row:has-text("Третій") > span');ok(await p.locator('#chosen .row.sel').count()===1&&await p.isVisible('#chosen .row.sel button[aria-label="В кінець"]'),'клік по пункту — вибрано, є ⤒ ⤓');
+  await p.click('#chosen .row.sel button[aria-label="В кінець"]');ok(await order()==='Другий,Перший,Четвертий,Третій','⤓ — в кінець, вибір лишається на пункті');
+  ok(await p.evaluate(()=>document.activeElement.classList.contains('sel')&&document.activeElement.textContent.startsWith('Третій')),'фокус іде за пунктом');
+  await p.keyboard.press('Alt+Home');ok(await order()==='Третій,Другий,Перший,Четвертий','Alt+Home — на початок');
+  await p.keyboard.press('Alt+ArrowDown');ok(await order()==='Другий,Третій,Перший,Четвертий','Alt+↓ — нижче');
+  ok((await p.textContent('#paper')).includes('Другий'),'протокол оновлюється');
+  ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
+  await ctx.close();
+}
 // ===== 0.6: з форку — під себе, ФГ, перевірки =====
 console.log('\n0.6: зони під себе і перевірки');
 {

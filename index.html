@@ -253,6 +253,12 @@ label.chk{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:
 .chosen{display:flex;flex-direction:column;gap:6px}
 .chosen .row{display:flex;gap:8px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
 .chosen .row span{flex:1;min-width:0}
+#chosen .row{cursor:pointer;transition:background .15s,border-color .15s}
+#chosen .row:hover{border-color:var(--blue)}
+#chosen .row.sel{border-color:var(--blue);background:var(--blue-soft);box-shadow:0 0 0 1px var(--blue) inset}
+#chosen .row:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+#chosen .row .mv{min-width:30px;padding-inline:6px}
+#chosen .row .mv:disabled{opacity:.35}
 .tbd{text-decoration:underline dotted var(--accent);text-underline-offset:3px}
 
 /* protocol panel */
@@ -1535,6 +1541,7 @@ const CHANGELOG=[
    'Раз на тиждень — нагадування скопіювати дані на флешку.',
    '«Налаштування» → «Чи все готово до пілоту?» — живий список: реквізити, ПІБ, ЕЕД, папка, пробний аркуш, бланк, флешка.',
    'Зони під себе: олівець біля зони — назва, фраза норми, шаблон, сховати; «+ Своя зона»; проєкції — свої. У ОГК — пневмоторакс, ателектаз, утвір (у ФГ сховані, можна показати).',
+   'Порядок діагнозів у висновку: клацніть по діагнозу — його вибрано; ↑ ↓ посувають на один рядок, ⤒ ⤓ — на самий початок чи в кінець; з клавіатури — Alt+стрілки, Alt+Home / Alt+End.',
    'Перевірки точніші: «ексудативний» більше не плутається з ЕКС; Кобб ≤ 10° — без «сколіозу»; кут Богданова < 125° — підвищене склепіння.']],
  ['0.5',['Новий вигляд «Робоче місце»: висновок і рекомендації — праворуч одразу під протоколом, без порожнього місця. Межу протокол | висновок можна потягнути; подвійний клік — порівну.',
    'Для ноутбука 15″ — компактне розташування, щоб основні зони та протокол поміщалися на екрані; дані пацієнта й дослідження можна швидко згорнути та розгорнути.',
@@ -2245,6 +2252,10 @@ function renderStatus(){
     b.onclick=()=>{tick();S.status=S.status===k?null:(k===autoStatus()?null:k);renderAll();};seg.append(b);});
   $('statusNote').textContent=S.status?'вибрано вручну (клацніть ще раз — авто)':'визначено автоматично';
 }
+/* порядок діагнозів у висновку: вибрати рядок → ↑↓, ⤒⤓ (на початок / в кінець), Alt+стрілки */
+let conclSel=null;
+function moveConcl(i,to){const n=S.concl.length;to=Math.max(0,Math.min(n-1,to));if(to===i)return;tick();const [t]=S.concl.splice(i,1);S.concl.splice(to,0,t);conclSel=t;renderAll();focusConcl();}
+function focusConcl(){const r=document.querySelector('#chosen .row.sel');if(!r)return;r.focus({preventScroll:true});r.scrollIntoView({block:'nearest',behavior:'smooth'});}
 function renderConcl(){
   $('urgBtn').setAttribute('aria-pressed',String(!!S.urgent));renderStatus();
   const sg=$('sugs');sg.textContent='';
@@ -2254,9 +2265,17 @@ function renderConcl(){
     const x=el('button',{type:'button',class:'btn sm'},'Ні');x.onclick=()=>{tick();S.dismissed.push(t);renderAll();};row.append(a,x);sg.append(row);});
   if(sugs.length>1){const b=el('button',{type:'button',class:'btn'},'Прийняти всі підказки');b.onclick=()=>{tick();sugs.forEach(([t])=>S.concl.push(t));renderAll();};sg.append(b);}
   const ch=$('chosen');ch.textContent='';
-  S.concl.forEach((t,i)=>{const row=el('div',{class:'row'});row.append(el('span',null,t));
-    if(i>0){const u=el('button',{type:'button',class:'btn sm','aria-label':'Вище'},'↑');u.onclick=()=>{tick();[S.concl[i-1],S.concl[i]]=[S.concl[i],S.concl[i-1]];renderAll();};row.append(u);}
-    const x=el('button',{type:'button',class:'btn sm danger'},'Прибрати');x.onclick=()=>{tick();S.concl.splice(i,1);renderAll();};row.append(x);ch.append(row);});
+  if(!S.concl.includes(conclSel))conclSel=null;const n=S.concl.length;
+  S.concl.forEach((t,i)=>{const sel=t===conclSel;const row=el('div',{class:'row'+(sel?' sel':''),tabindex:'0','data-ci':String(i),'aria-selected':String(sel),title:'Клацніть, щоб вибрати; Alt+↑↓ — посунути, Alt+Home/End — на початок / в кінець'});
+    row.append(el('span',null,t));
+    const mv=(lab,aria,to,dis)=>{const b=el('button',{type:'button',class:'btn sm icon mv','aria-label':aria,title:aria,disabled:dis?'':null},lab);b.onclick=e=>{e.stopPropagation();moveConcl(i,to);};return b;};
+    if(n>1){if(sel)row.append(mv('⤒','На початок',0,i===0));row.append(mv('↑','Вище',i-1,i===0),mv('↓','Нижче',i+1,i===n-1));if(sel)row.append(mv('⤓','В кінець',n-1,i===n-1));}
+    const x=el('button',{type:'button',class:'btn sm danger'},'Прибрати');x.onclick=e=>{e.stopPropagation();tick();S.concl.splice(i,1);renderAll();};row.append(x);
+    row.onclick=()=>{conclSel=sel?null:t;renderConcl();if(conclSel)focusConcl();};
+    row.onkeydown=e=>{const k=e.key;if(e.altKey&&(k==='ArrowUp'||k==='ArrowDown'||k==='Home'||k==='End')){e.preventDefault();conclSel=t;moveConcl(i,k==='ArrowUp'?i-1:k==='ArrowDown'?i+1:k==='Home'?0:n-1);}
+      else if(!e.altKey&&(k==='ArrowUp'||k==='ArrowDown')){e.preventDefault();const r=ch.querySelector(`[data-ci="${i+(k==='ArrowUp'?-1:1)}"]`);if(r)r.focus();}
+      else if(k==='Enter'||k===' '){if(e.target===row){e.preventDefault();row.click();}}};
+    ch.append(row);});
   if(!S.concl.length&&allNormal())ch.append(el('p',{class:'note'},'Усі зони в нормі — у протокол піде «'+normConclOf()+'».'));
   renderChipList('concl');
 }
