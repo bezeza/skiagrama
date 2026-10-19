@@ -725,6 +725,24 @@ console.log('\n0.6: ергономіка');
   ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
   await ctx.close();
 }
+// ===== 0.6: КТІ =====
+console.log('\n0.6: кардіоторакальний індекс');
+{
+  const ctx=await b.newContext({viewport:{width:1440,height:900}});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+  await p.goto(FILE);await p.waitForTimeout(450);if(await p.isVisible('text=Пропустити — заповню пізніше'))await p.click('text=Пропустити — заповню пізніше');
+  await p.fill('#pAge','54');await p.click('#allNorm');
+  const k=i=>p.locator('#meas-kti .mi input').nth(i);
+  await k(0).fill('50');await k(1).fill('62');await k(2).fill('222');
+  ok((await p.textContent('#paper')).includes('КТІ 0,50.')&&!(await p.textContent('#sugs')).includes('Розширення тіні серця'),'112/222 = 0,504 → «КТІ 0,50» і норма (без протиріччя)');
+  await k(2).fill('200');
+  ok((await p.textContent('#paper')).includes('КТІ 0,56 — розширення тіні серця')&&(await p.textContent('#sugs')).includes('Розширення тіні серця'),'серце справа + зліва: 112/200 = 0,56 → розширення');
+  await p.selectOption('#meas-kti select','ap');
+  const t=await p.textContent('#paper');ok(t.includes('КТІ 0,56 (знімок лежачи / у передньо-задній проєкції')&&!(await p.textContent('#sugs')).includes('Розширення тіні серця'),'лежачи / AP: примітка, розширення не пропонується');
+  ok(await p.isHidden('#meas-kti .mwarn'),'дорослий — без примітки про дітей');
+  await p.fill('#pAge','8 міс.');ok(await p.isVisible('#meas-kti .mwarn'),'дитина до 2 років — примітка про іншу норму');
+  ok(errs.length===0,'без помилок JS'+(errs.length?': '+errs[0]:''));
+  await ctx.close();
+}
 // ===== 0.6: з форку — під себе, ФГ, перевірки =====
 console.log('\n0.6: зони під себе і перевірки');
 {

@@ -242,13 +242,20 @@ function renderMeas(){
     const nm=el('div');nm.append(el('b',null,def.n));nm.append(el('div',{class:'note'},'Норма: '+def.norm));row.append(nm);
     const mi=el('div',{class:'mi'});
     const mk=(key,ph,lab,cls)=>{const i=el('input',{type:'text',inputmode:cls?null:'decimal',placeholder:ph,'aria-label':def.n+': '+lab,class:cls||null});i.value=m[key]||'';i.addEventListener('input',()=>{tick('text');m[key]=i.value;updMeas();});return i;};
-    if(def.kind==='kti'){mi.append(mk('a','серце, мм','ширина серця'),el('span',null,'/'),mk('b','груди, мм','ширина грудної клітки'),el('span',{class:'note'},'або'),mk('v','індекс','індекс'));}
+    if(def.kind==='kti'){const cap=(t,i)=>{const l=el('label',{class:'mcap'});l.append(el('small',null,t),i);return l;};
+      mi.classList.add('kti');mi.append(cap('серце справа',mk('ar','мм','серце праворуч від середньої лінії, мм')),el('span',null,'+'),cap('серце зліва',mk('al','мм','серце ліворуч від середньої лінії, мм')),el('span',null,'/'),cap('груди',mk('b','мм','внутрішній поперечник грудної клітки, мм')),el('span',{class:'note'},'або'),cap('індекс',mk('v','0,00','індекс')));
+      const ps=el('select',{'aria-label':'Положення при знімку'});[['','стоячи, PA'],['ap','лежачи / AP']].forEach(([k,t])=>{const o=el('option',{value:k},t);if((m.pos||'')===k)o.selected=true;ps.append(o);});ps.onchange=()=>{tick();m.pos=ps.value;updMeas();};mi.append(ps);
+      const how=el('details',{class:'mhow'});how.append(el('summary',null,'Як міряти'),el('div',{class:'note mhint'},'Серце — від середньої лінії до найдальшої точки правого і лівого контурів, окремо (програма додасть). Груди — по внутрішніх краях ребер на рівні купола правої діафрагми.'));nm.append(how);
+      const ag=String($('pAge').value||'').trim();const yrs=/^\d+$/.test(ag)?+ag:/^(\d+)\s*р/.test(ag)?+RegExp.$1:/міс|дн|тиж/.test(ag)?0:NaN;
+      if(yrs<2)nm.append(el('div',{class:'note mwarn'},'Дитина до 2 років: норма КТІ вища (у новонароджених — до ~0,60). Межу підтвердить рентгенолог.'));}
     else{mi.append(mk('v',def.u==='%'?'%':'град.',def.n));mi.append(el('span',null,def.u||''));}
     if(def.dir){const s=el('select',{'aria-label':'Напрямок дуги'});[['','дуга —'],['правобічний','правобічна'],['лівобічний','лівобічна']].forEach(([k,t])=>{const o=el('option',{value:k},t);if(m.dir===k)o.selected=true;s.append(o);});s.onchange=()=>{tick();m.dir=s.value;updMeas();};mi.append(s);}
     if(def.lvl)mi.append(mk('lvl','хребець','рівень','lvl'));
     row.append(mi);row.append(el('div',{class:'mres',id:'mres-'+id}));root.append(row);});
   updMeas(true);
 }
+/* вік змінився — оновити примітку про дітей біля КТІ */
+$('pAge').addEventListener('input',()=>{if(activeMeas().includes('kti'))renderMeas();});
 function updMeas(silent){
   const rs=measResults();
   activeMeas().forEach(id=>{const r=rs.find(x=>x.id===id);const box=$('mres-'+id);if(!box)return;box.textContent='';box.className='mres';

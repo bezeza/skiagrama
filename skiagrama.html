@@ -823,6 +823,13 @@ h1,h2,h3,.vh h2{text-wrap:balance}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 @media (pointer:coarse){.btn,.seg button,.chip,.tpl button,.vbtn,.zpen,.fmtbar button{min-height:44px}.btn.sm{min-height:40px}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}}
+
+.mhint{font-size:12px;line-height:1.35}
+.mwarn{color:var(--warn);font-size:12px}
+.mrow .mi.kti input{width:64px}
+.mcap{display:inline-flex;flex-direction:column;gap:1px}
+.mcap small{font-size:11px;color:var(--muted);line-height:1.1}
+.mhow summary{cursor:pointer;font-size:12.5px;color:var(--blue);list-style-position:inside}
 /* памʼятка на 1 сторінку A4 */
 .memo{font-family:Calibri,'Segoe UI',Arial,sans-serif;font-size:10.5pt;line-height:1.35;color:#111;width:186mm}
 .memo .mh{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #1F4E79;padding-bottom:1.5mm;margin-bottom:2mm}
@@ -1502,7 +1509,12 @@ const DEF_EED={ogk:'0,35',fg:'',bone:'',spine:'',abd:'',skull:''};
 /* measurement definitions: value -> {ok, ph (phrase), c (conclusion), tbd} */
 const ST4=v=>v<=10?'I':v<=25?'II':v<=50?'III':'IV';
 const MEAS={
- kti:{lim:[0.3,0.85],n:'Кардіоторакальний індекс',kind:'kti',grade:(v)=>v<=0.5?{ok:1,ph:`КТІ ${fx(v,2)}.`}:{ph:`КТІ ${fx(v,2)} — розширення тіні серця.`,c:'Розширення тіні серця'},norm:'≤ 0,50'},
+ kti:{lim:[0.3,0.85],n:'Кардіоторакальний індекс',kind:'kti',norm:'≤ 0,50 (пряма задня проєкція, стоячи)',
+   /* v уже округлено до 0,01 — оцінюємо те число, що піде на папір. Лежачи / AP тінь серця більша — розширення не пропонуємо, вирішує лікар */
+   grade:(v,m)=>{const ap=m&&m.pos==='ap',s=fx(v,2);
+     if(v<=0.5)return {ok:1,ph:`КТІ ${s}${ap?' (знімок лежачи / у передньо-задній проєкції)':''}.`};
+     if(ap)return {ph:`КТІ ${s} (знімок лежачи / у передньо-задній проєкції — КТІ завищується, оцінювати з обережністю).`,ap:1};
+     return {ph:`КТІ ${s} — розширення тіні серця.`,c:'Розширення тіні серця'};}},
  cobb:{lim:[0,120],n:'Кут Кобба',u:'°',dir:1,grade:(v,m)=>{const st=ST4(v);const d=m.dir?m.dir+' ':'';
     if(v<=10)return {ok:1,ph:`Кут Кобба ${fx(v,0)}°`+(d?` (${d.trim()})`:'')+'.'};
     return {ph:`Кут Кобба ${fx(v,0)}° — ${d}сколіоз ${st} ступеня (за Чакліним).`,c:`${cap(d||'')}${d?'сколіоз':'Сколіоз'} ${st} ступеня`};},norm:'≤ 10° — без сколіозу; II 11–25°, III 26–50°, IV > 50°'},
@@ -1567,6 +1579,7 @@ const CHANGELOG=[
    '«Налаштування» → «Чи все готово до пілоту?» — живий список: реквізити, ПІБ, ЕЕД, папка, пробний аркуш, бланк, флешка.',
    'Зони під себе: олівець біля зони — назва, фраза норми, шаблон, сховати; «+ Своя зона»; проєкції — свої. У ОГК — пневмоторакс, ателектаз, утвір (у ФГ сховані, можна показати).',
    'Порядок діагнозів у висновку: клацніть по діагнозу — його вибрано; ↑ ↓ посувають на один рядок, ⤒ ⤓ — на самий початок чи в кінець; з клавіатури — Alt+стрілки, Alt+Home / Alt+End.',
+   'КТІ: оцінюється саме те число, що надруковано (0,504 → «0,50», норма); серце вводиться двома відстанями від середньої лінії (справа + зліва), є підказка «Як міряти»; знімок лежачи / AP — примітка в протоколі, розширення не пропонується автоматично; у дітей до 2 років — нагадування, що норма інша.',
    'Перевірки точніші: «ексудативний» більше не плутається з ЕКС; Кобб ≤ 10° — без «сколіозу»; кут Богданова < 125° — підвищене склепіння.']],
  ['0.5',['Новий вигляд «Робоче місце»: висновок і рекомендації — праворуч одразу під протоколом, без порожнього місця. Межу протокол | висновок можна потягнути; подвійний клік — порівну.',
    'Для ноутбука 15″ — компактне розташування, щоб основні зони та протокол поміщалися на екрані; дані пацієнта й дослідження можна швидко згорнути та розгорнути.',
@@ -1833,7 +1846,7 @@ function activeMeas(){if(S.study==='bone')return OBJ_MEAS[S.obj]||[];return stud
 function measResults(){
   const out=[];
   activeMeas().forEach(id=>{const def=MEAS[id];const m=S.meas[id]||{};let v;
-    if(def.kind==='kti'){const a=num(m.a),b=num(m.b);v=(a>0&&b>0)?a/b:num(m.v);}else v=num(m.v);
+    if(def.kind==='kti'){const ar=num(m.ar),al=num(m.al);const a=(ar>0&&al>0)?ar+al:num(m.a),b=num(m.b);v=(a>0&&b>0)?a/b:num(m.v);if(isFinite(v))v=Math.round(v*100)/100;}else v=num(m.v);
     if(!isFinite(v))return;if(def.lim&&(v<def.lim[0]||v>def.lim[1])){out.push({id,def,v,bad:true,r:{ok:1,ph:''}});return;}out.push({id,def,v,r:def.grade(v,m)});});
   return out;
 }
@@ -2257,13 +2270,20 @@ function renderMeas(){
     const nm=el('div');nm.append(el('b',null,def.n));nm.append(el('div',{class:'note'},'Норма: '+def.norm));row.append(nm);
     const mi=el('div',{class:'mi'});
     const mk=(key,ph,lab,cls)=>{const i=el('input',{type:'text',inputmode:cls?null:'decimal',placeholder:ph,'aria-label':def.n+': '+lab,class:cls||null});i.value=m[key]||'';i.addEventListener('input',()=>{tick('text');m[key]=i.value;updMeas();});return i;};
-    if(def.kind==='kti'){mi.append(mk('a','серце, мм','ширина серця'),el('span',null,'/'),mk('b','груди, мм','ширина грудної клітки'),el('span',{class:'note'},'або'),mk('v','індекс','індекс'));}
+    if(def.kind==='kti'){const cap=(t,i)=>{const l=el('label',{class:'mcap'});l.append(el('small',null,t),i);return l;};
+      mi.classList.add('kti');mi.append(cap('серце справа',mk('ar','мм','серце праворуч від середньої лінії, мм')),el('span',null,'+'),cap('серце зліва',mk('al','мм','серце ліворуч від середньої лінії, мм')),el('span',null,'/'),cap('груди',mk('b','мм','внутрішній поперечник грудної клітки, мм')),el('span',{class:'note'},'або'),cap('індекс',mk('v','0,00','індекс')));
+      const ps=el('select',{'aria-label':'Положення при знімку'});[['','стоячи, PA'],['ap','лежачи / AP']].forEach(([k,t])=>{const o=el('option',{value:k},t);if((m.pos||'')===k)o.selected=true;ps.append(o);});ps.onchange=()=>{tick();m.pos=ps.value;updMeas();};mi.append(ps);
+      const how=el('details',{class:'mhow'});how.append(el('summary',null,'Як міряти'),el('div',{class:'note mhint'},'Серце — від середньої лінії до найдальшої точки правого і лівого контурів, окремо (програма додасть). Груди — по внутрішніх краях ребер на рівні купола правої діафрагми.'));nm.append(how);
+      const ag=String($('pAge').value||'').trim();const yrs=/^\d+$/.test(ag)?+ag:/^(\d+)\s*р/.test(ag)?+RegExp.$1:/міс|дн|тиж/.test(ag)?0:NaN;
+      if(yrs<2)nm.append(el('div',{class:'note mwarn'},'Дитина до 2 років: норма КТІ вища (у новонароджених — до ~0,60). Межу підтвердить рентгенолог.'));}
     else{mi.append(mk('v',def.u==='%'?'%':'град.',def.n));mi.append(el('span',null,def.u||''));}
     if(def.dir){const s=el('select',{'aria-label':'Напрямок дуги'});[['','дуга —'],['правобічний','правобічна'],['лівобічний','лівобічна']].forEach(([k,t])=>{const o=el('option',{value:k},t);if(m.dir===k)o.selected=true;s.append(o);});s.onchange=()=>{tick();m.dir=s.value;updMeas();};mi.append(s);}
     if(def.lvl)mi.append(mk('lvl','хребець','рівень','lvl'));
     row.append(mi);row.append(el('div',{class:'mres',id:'mres-'+id}));root.append(row);});
   updMeas(true);
 }
+/* вік змінився — оновити примітку про дітей біля КТІ */
+$('pAge').addEventListener('input',()=>{if(activeMeas().includes('kti'))renderMeas();});
 function updMeas(silent){
   const rs=measResults();
   activeMeas().forEach(id=>{const r=rs.find(x=>x.id===id);const box=$('mres-'+id);if(!box)return;box.textContent='';box.className='mres';

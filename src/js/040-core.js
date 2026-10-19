@@ -196,7 +196,7 @@ function activeMeas(){if(S.study==='bone')return OBJ_MEAS[S.obj]||[];return stud
 function measResults(){
   const out=[];
   activeMeas().forEach(id=>{const def=MEAS[id];const m=S.meas[id]||{};let v;
-    if(def.kind==='kti'){const a=num(m.a),b=num(m.b);v=(a>0&&b>0)?a/b:num(m.v);}else v=num(m.v);
+    if(def.kind==='kti'){const ar=num(m.ar),al=num(m.al);const a=(ar>0&&al>0)?ar+al:num(m.a),b=num(m.b);v=(a>0&&b>0)?a/b:num(m.v);if(isFinite(v))v=Math.round(v*100)/100;}else v=num(m.v);
     if(!isFinite(v))return;if(def.lim&&(v<def.lim[0]||v>def.lim[1])){out.push({id,def,v,bad:true,r:{ok:1,ph:''}});return;}out.push({id,def,v,r:def.grade(v,m)});});
   return out;
 }
