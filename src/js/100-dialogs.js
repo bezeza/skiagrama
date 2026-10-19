@@ -101,25 +101,34 @@ $('vBadge').onclick=openWhatsNew;
 /* знайомство */
 function openWelcome(){
   openDlg(box=>{
-    box.append(el('h2',null,'Вітаю! Кілька даних — один раз'));
-    const pr=el('div',{class:'trow wprof'});const pb=el('button',{type:'button',class:'btn'},'Завантажити профіль кабінету…');pb.onclick=()=>pickProfile(()=>{pb.textContent='Профіль завантажено ✓';d.value=SET.doctor||d.value;e1.value=SET.eed.ogk||'';e2.value=SET.eed.fg||'';});
-    pr.append(pb,el('span',{class:'note'},'Є файл від колеги чи адміністратора? Реквізити, бланк, відділення, ЕЕД — одним кліком.'));box.append(pr);
-    box.append(el('p',{class:'note'},'Вони підставлятимуться в протоколи і зберігаються лише на цьому пристрої. Усе можна змінити пізніше в «Налаштуваннях». Skiagrama — бета-версія: текст протоколу перевіряє й підписує лікар.'));
-    const tips=el('ol',{class:'steps'});[['Встановіть програму','у Chrome чи Edge — значок «Встановити» в адресному рядку або кнопка вгорі. Тоді вона відкривається як звичайна програма і оновлюється сама, коли є інтернет.'],['Оберіть папку даних','кнопка нижче, напр. «Документи». Туди самі зберігатимуться архів, копії протоколів і налаштування. Без папки архів сидить лише в браузері.'],['Реквізити закладу','— у «Налаштуваннях» → «Бланк і реквізити закладу». Без назви закладу бланки A/B/D не друкувати.'],['Тема','у «Налаштуваннях» є «Кабінет» — темно-сіра, під приглушене світло рентгенкабінету.']].forEach(([b,t])=>{const li=el('li');li.append(el('b',null,b+' '),document.createTextNode(t));tips.append(li);});box.append(tips);
+    box.classList.add('welcome');
+    box.append(el('h2',null,'Вітаю у Skiagrama'));
+    box.append(el('p',{class:'wlead'},'Вкажіть, хто підписує протоколи, — і можна починати. Решту можна змінити будь-коли в «Налаштуваннях».'));
     const f=el('div',{class:'fields'});
-    const mk=(lab,val,ph,cls,mode)=>{const l=el('label',{class:'f'+(cls?' '+cls:'')},lab);const i=el('input',{type:'text',placeholder:ph||'',inputmode:mode||null});i.value=val||'';l.append(i);f.append(l);return i;};
-    const d=mk('ПІБ лікаря (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
-    const e1=mk('ЕЕД ОГК, мЗв',SET.eed.ogk,'0,35',null,'decimal');const e2=mk('ЕЕД флюорографії, мЗв',SET.eed.fg,'',null,'decimal');
+    const mk=(par,lab,val,ph,cls,mode)=>{const l=el('label',{class:'f'+(cls?' '+cls:'')},lab);const i=el('input',{type:'text',placeholder:ph||'',inputmode:mode||null});i.value=val||'';l.append(i);par.append(l);return i;};
+    const d=mk(f,'ПІБ лікаря (для підпису)',SET.doctor,'Прізвище І. Б.','wide');
     box.append(f);
+    const r2=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Почати');
+    r2.append(ok);
+    if(FOLDER_SUPPORTED){const fb=el('button',{type:'button',class:'btn'},folderOK()?'Папку даних підключено ✓':'Обрати папку даних');fb.title='Туди самі зберігатимуться архів, копії протоколів і налаштування';fb.onclick=async()=>{await folderPick();fb.textContent=folderOK()?'Папку даних підключено ✓':'Обрати папку даних';};r2.append(fb);}
+    const skip=el('button',{type:'button',class:'btn ghost'},'Пропустити — заповню пізніше');r2.append(skip);box.append(r2);
+    const more=el('details',{class:'wmore'});more.append(el('summary',null,'Більше: профіль кабінету, ЕЕД, поради'));box.append(more);
+    const pr=el('div',{class:'trow wprof'});const pb=el('button',{type:'button',class:'btn'},'Завантажити профіль кабінету…');pb.onclick=()=>pickProfile(()=>{pb.textContent='Профіль завантажено ✓';d.value=SET.doctor||d.value;e1.value=SET.eed.ogk||'';e2.value=SET.eed.fg||'';});
+    pr.append(pb,el('span',{class:'note'},'Є файл від колеги чи адміністратора? Реквізити, бланк, відділення, ЕЕД — одним кліком.'));more.append(pr);
+    const f2=el('div',{class:'fields'});
+    const e1=mk(f2,'ЕЕД ОГК, мЗв',SET.eed.ogk,'0,35',null,'decimal');const e2=mk(f2,'ЕЕД флюорографії, мЗв',SET.eed.fg,'',null,'decimal');
+    more.append(f2);
+    const tips=el('ol',{class:'steps'});[['Встановіть програму','у Chrome чи Edge — значок «Встановити» в адресному рядку або кнопка вгорі. Тоді вона відкривається як звичайна програма і оновлюється сама, коли є інтернет.'],['Оберіть папку даних','кнопка нижче, напр. «Документи». Туди самі зберігатимуться архів, копії протоколів і налаштування. Без папки архів сидить лише в браузері.'],['Реквізити закладу','— у «Налаштуваннях» → «Бланк і реквізити закладу». Без назви закладу бланки A/B/D не друкувати.'],['Тема','у «Налаштуваннях» є «Кабінет» — темно-сіра, під приглушене світло рентгенкабінету.']].forEach(([b,t])=>{const li=el('li');li.append(el('b',null,b+' '),document.createTextNode(t));tips.append(li);});more.append(tips);
     const r=el('div',{class:'trow'});
-    if(FOLDER_SUPPORTED){const fb=el('button',{type:'button',class:'btn'},folderOK()?'Папку даних підключено ✓':'Обрати папку даних');fb.onclick=async()=>{await folderPick();fb.textContent=folderOK()?'Папку даних підключено ✓':'Обрати папку даних';};r.append(fb);}
     const t=el('button',{type:'button',class:'btn'},'Пробний аркуш друку');t.onclick=()=>{save();closeDlg();testSheet();};r.append(t);
-    box.append(r);
+    more.append(r);
+    more.append(el('p',{class:'note'},'Дані зберігаються лише на цьому пристрої. Skiagrama — бета-версія: текст протоколу перевіряє й підписує лікар.'));
     const save=()=>{SET.doctor=d.value.trim();SET.eed.ogk=e1.value.trim();SET.eed.fg=e2.value.trim();SET.welcomed=true;SET.seenVersion=VERSION;saveSet();setEedDefault();renderSide();};
     const afterWelcome=()=>{if(window.isSecureContext&&!folderOK())showFolderBanner('Папка даних не підключена. Архів живе лише в цьому браузері — підключіть папку, щоб не втратити протоколи.',true);};
-    const r2=el('div',{class:'trow'});const ok=el('button',{type:'button',class:'btn primary'},'Готово');ok.onclick=()=>{save();closeDlg();toast('Збережено');afterWelcome();};
-    const skip=el('button',{type:'button',class:'btn'},'Пропустити — заповню пізніше');skip.onclick=()=>{SET.welcomed=true;SET.seenVersion=VERSION;saveSet();closeDlg();afterWelcome();};
-    r2.append(ok,skip);box.append(r2);setTimeout(()=>d.focus(),30);
+    ok.onclick=()=>{save();closeDlg();toast('Збережено');afterWelcome();};
+    skip.onclick=()=>{SET.welcomed=true;SET.seenVersion=VERSION;saveSet();closeDlg();afterWelcome();};
+    d.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ok.click();}});
+    setTimeout(()=>d.focus(),30);
   });
 }
 

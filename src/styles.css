@@ -13,19 +13,19 @@
   --blue:#7DB3DE; --blue-soft:#1C3347; --accent:#F2A65A; --accent-soft:#3A2A1A;
   --warn:#F2C26B; --warn-soft:#3A2F17; --bad:#FF8A80; --bad-soft:#3D1F1F; --ok:#7FD1A0; --ok-soft:#173326;
   --dot-n:#5CCB8A; --dot-c:#F2A65A; --dot-x:#6E7F8F; --dot-e:#FF6B61;
-  --paper:#F4F1EA; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
+  --paper:#DDD8CC; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0E1822; --surface:#15222F; --line:#2A3B4B; --ink:#E4ECF3; --muted:#9FB0C0;
   --blue:#7DB3DE; --blue-soft:#1C3347; --accent:#F2A65A; --accent-soft:#3A2A1A;
   --warn:#F2C26B; --warn-soft:#3A2F17; --bad:#FF8A80; --bad-soft:#3D1F1F; --ok:#7FD1A0; --ok-soft:#173326;
   --dot-n:#5CCB8A; --dot-c:#F2A65A; --dot-x:#6E7F8F; --dot-e:#FF6B61;
-  --paper:#F4F1EA; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+  --paper:#DDD8CC; --paper-ink:#1B2B3C; --flash:#F5D58A; --scrim:rgba(0,0,0,.6); color-scheme:dark}
 :root[data-theme="grey"]{ /* «Кабінет»: нейтральний темно-сірий для притемненої кімнати */
   --bg:#2A2B2D; --surface:#343538; --line:#4A4C50; --ink:#E6E6E6; --muted:#A8AAAE;
   --blue:#9DB8CF; --blue-soft:#3E434A; --accent:#E0A35E; --accent-soft:#45392B;
   --warn:#E8C27A; --warn-soft:#45402F; --bad:#F09A92; --bad-soft:#4A3232; --ok:#8FCFA6; --ok-soft:#2F4237;
   --dot-n:#6CC08C; --dot-c:#E8A75C; --dot-x:#7C7F84; --dot-e:#F07A70;
-  --paper:#E9E9E6; --paper-ink:#1E1E1E; --flash:#E9D9A8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
+  --paper:#D2D2CE; --paper-ink:#1E1E1E; --flash:#E9D9A8; --scrim:rgba(0,0,0,.6); color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 html,body{margin:0}
@@ -804,3 +804,34 @@ h1,h2,h3,.vh h2{text-wrap:balance}
 .mcap small{font-size:11px;color:var(--muted);line-height:1.1}
 .mhow summary{cursor:pointer;font-size:12.5px;color:var(--blue);list-style-position:inside}
 .swlist{margin:0 0 6px}
+
+/* ===== 0.6.x: дизайн-поліровка ===== */
+/* знайомство: одне поле і «Почати», решта — під «Більше» */
+.modal .box.welcome{max-width:540px;gap:14px;padding:22px 24px}
+.modal .box.welcome h2{font-size:22px}
+.welcome .wlead{margin:-4px 0 0;color:var(--muted);font-size:14.5px}
+.welcome .fields{grid-template-columns:1fr}
+.welcome .btn.ghost{border-color:transparent;background:none;color:var(--muted);font-weight:400}
+.welcome .btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.welcome .wmore{border-top:1px solid var(--line);padding-top:10px}
+.welcome .wmore>summary{cursor:pointer;color:var(--blue);font-size:14px;font-weight:500;padding:4px 0}
+.welcome .wmore[open]>summary{margin-bottom:10px}
+.welcome .wmore>*+*{margin-top:12px}
+/* плашка про папку — тонша, менше з’їдає висоту */
+.banner{padding:5px 8px 5px 14px;font-size:13.5px;margin-top:6px;gap:8px 10px}
+.banner .btn.sm{min-height:30px}
+#folderBannerText{flex:1 1 320px}
+:root.scr-laptop .banner{margin-top:4px;padding-block:3px}
+/* висновок: кнопки згруповані з підписами */
+#conclChips.grouped{flex-direction:column;align-items:stretch;gap:8px}
+#conclChips.grouped>.chip{align-self:flex-start}
+.cgroup{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cgroup .cgl{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+.cgroup+.cgroup{border-top:1px solid var(--line);padding-top:8px}
+/* бланк: назва не обрізається до «С · під…» */
+@container (max-width:900px){.toolrow label.bsel select{width:126px;padding-inline:6px 2px}}
+/* рядок зон в «Описі»: згасання по краю, коли далі ще є пункти */
+.navrow.ovf-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
+.navrow.ovf-l.ovf-r{-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
+.navrow.ovf-l:not(.ovf-r){-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px);mask-image:linear-gradient(90deg,transparent,#000 40px)}
+@container (max-width:640px){.toolrow .lbl3{display:none}}
