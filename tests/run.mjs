@@ -277,10 +277,17 @@ for(const vp of [{width:1440,height:900,name:'ПК'},{width:390,height:844,name:
   await p.click('#allNorm');
   await p.evaluate(()=>{const K=window.__skg;K.setZones({infil:{st:'c',sel:{side:'права',loc:'нижні',char:'інфільтр'}}});K.S.concl=['Правобічна пневмонія'];K.renderAll();});
   await p.dblclick('#ptext [data-zone="infil"]');
-  let t=await paper(p);
-  ok(t.includes('нижніх легеневих полях лівої легені'),'подвійний клік по зоні: права → ліва');
-  await p.dblclick('#ptext .concl');t=await paper(p);
+  ok(await p.isVisible('#dlg >> text=Змінити бік: справа ↔ зліва?')&&(await p.textContent('#dlg')).includes('«Правобічна пневмонія» → «Лівобічна пневмонія»'),'подвійний клік по зоні — питає і пропонує змінити висновок');
+  await p.click('#dlg >> text=Скасувати');let t=await paper(p);
+  ok(t.includes('нижніх легеневих полях правої легені')&&t.includes('Правобічна пневмонія'),'«Скасувати» — нічого не змінено');
+  await p.dblclick('#ptext [data-zone="infil"]');await p.click('#dlg >> text=Лише в описі');t=await paper(p);
+  ok(t.includes('нижніх легеневих полях лівої легені')&&t.includes('Правобічна пневмонія'),'«Лише в описі»: права → ліва, висновок як був');
+  ok((await p.textContent('#checkList')).includes('Бічність'),'після зміни лише в описі перевірка бачить розбіжність');
+  await p.dblclick('#ptext .concl');await p.click('#dlg >> text=Лише у висновку');t=await paper(p);
   ok(t.includes('Rö-ч: Лівобічна пневмонія.'),'подвійний клік по висновку: правобічна → лівобічна');
+  await p.dblclick('#ptext [data-zone="infil"]');await p.keyboard.press('Enter');t=await paper(p);
+  ok(t.includes('нижніх легеневих полях правої легені')&&t.includes('Rö-ч: Правобічна пневмонія.'),'Enter = «Змінити і в описі, і у висновку»');
+  await p.dblclick('#ptext [data-zone="infil"]');await p.click('#dlg >> text=Змінити і в описі, і у висновку');t=await paper(p);
   ok(!(await p.textContent('#checkList')).includes('Бічність'),'після заміни бічність узгоджена');
   // суперечність: висновок «гідроторакс», зона синусів — норма
   await p.evaluate(()=>{const K=window.__skg;K.S.concl=['Правобічний гідроторакс'];K.renderAll();});

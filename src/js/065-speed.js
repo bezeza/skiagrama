@@ -1,20 +1,33 @@
 /* ===== Швидкість: «справа ↔ зліва» подвійним клацанням, скорочення «.слово», пропуски «__» ===== */
 
-/* подвійне клацання по реченню протоколу міняє бік */
-function swapZoneSide(id){
-  const d=visibleZones().find(z=>z.id===id)||allZonesOf(S.study).find(z=>z.id===id);const z=S.zones[id];if(!d||!z||z.st!=='c')return false;
+/* подвійне клацання по реченню протоколу міняє бік — після підтвердження, і пропонує узгодити висновок / опис */
+function planZoneSide(id){
+  const d=visibleZones().find(z=>z.id===id)||allZonesOf(S.study).find(z=>z.id===id);const z=S.zones[id];if(!d||!z||z.st!=='c')return null;
   const next=clone(z.sel);let changed=false;
   d.groups.forEach(g=>{const v=z.sel[g.id];if(v==null||v==='')return;const opts=effOpts(d,g,true);
     const one=k=>{const o=opts.find(x=>x.k===k);if(!o)return k;const sw=swapSide(o.ph);if(sw===o.ph)return k;const t=opts.find(x=>x.ph===sw);if(t){changed=true;return t.k;}return k;};
     next[g.id]=Array.isArray(v)?v.map(one):one(v);});
-  if(!changed)return false;
-  tick();z.sel=next;return true;
+  return changed?{name:d.name,apply:()=>{z.sel=next;}}:null;
 }
-function swapConclSide(){
+function planConclSide(){
   let changed=false;const sw=t=>{const r=swapSide(t);if(r!==t)changed=true;return r;};
   const c=S.concl.map(sw),f=$('conclFree').value,f2=sw(f);
-  if(!changed)return false;
-  tick();S.concl=c;$('conclFree').value=f2;S.dismissed=[];return true;
+  if(!changed)return null;
+  const before=S.concl.concat(f.trim()?[f.trim()]:[]).filter(t=>swapSide(t)!==t),after=before.map(swapSide);
+  return {before,after,apply:()=>{S.concl=c;$('conclFree').value=f2;S.dismissed=[];}};
+}
+function planZonesSide(){const ps=visibleZones().map(d=>planZoneSide(d.id)).filter(Boolean);return ps.length?{names:ps.map(x=>x.name),apply:()=>ps.forEach(x=>x.apply())}:null;}
+/* сумісність зі старими викликами */
+function swapZoneSide(id){const pz=planZoneSide(id);if(!pz)return false;tick();pz.apply();return true;}
+function swapConclSide(){const pc=planConclSide();if(!pc)return false;tick();pc.apply();return true;}
+function askSide(o){ /* o: {title, main:{label,apply}, extra:{label,apply,list}|null} */
+  openDlg(box=>{box.append(el('h2',null,'Змінити бік: справа ↔ зліва?'));box.append(el('p',null,o.title));
+    if(o.extra&&o.extra.list){const ul=el('ul',{class:'steps swlist'});o.extra.list.forEach(t=>ul.append(el('li',null,t)));box.append(el('p',{class:'note'},o.extra.what),ul);}
+    const r=el('div',{class:'trow'});const done=(fns,msg)=>{tick();fns.forEach(f=>f());renderAll();dlgReturn=null;closeDlg();getSelection().removeAllRanges();toast(msg);};
+    if(o.extra){const b1=el('button',{type:'button',class:'btn primary','data-autofocus':'1'},o.extra.label);b1.onclick=()=>done([o.main.apply,o.extra.apply],o.extra.toast);r.append(b1);
+      const b2=el('button',{type:'button',class:'btn'},o.main.only);b2.onclick=()=>done([o.main.apply],o.main.toast+' — перевірте '+o.extra.check);r.append(b2);}
+    else{const b1=el('button',{type:'button',class:'btn primary','data-autofocus':'1'},o.main.label);b1.onclick=()=>done([o.main.apply],o.main.toast);r.append(b1);}
+    const c=el('button',{type:'button',class:'btn'},'Скасувати');c.onclick=()=>{dlgReturn=null;closeDlg();getSelection().removeAllRanges();};r.append(c);box.append(r);});
 }
 function swapManualWord(){
   const s=getSelection();if(!s.rangeCount)return false;const w=s.toString();if(!w||w.length>30)return false;
@@ -23,16 +36,24 @@ function swapManualWord(){
 }
 $('paper').addEventListener('dblclick',e=>{
   if(paperView)return;const tx=e.target.closest('#ptext');if(!tx)return;
-  let ok=false,what='';
-  if(S.manual!=null){ok=swapManualWord();what='у слові';}
-  else{
-    const zn=e.target.closest('[data-zone]'),cn=e.target.closest('.concl');
-    if(zn){ok=swapZoneSide(zn.dataset.zone);what='у зоні';}
-    else if(cn){ok=swapConclSide();what='у висновку';}
-    else if(S.study==='bone'&&(S.side==='п'||S.side==='л')&&tx.children[1]&&tx.children[1].contains(e.target)){tick();S.side=S.side==='п'?'л':'п';ok=true;what='у назві дослідження';}
-    if(ok){getSelection().removeAllRanges();document.activeElement&&document.activeElement.blur();renderAll();}
-  }
-  if(ok)toast('Бік змінено '+what+': справа ↔ зліва');
+  if(S.manual!=null){if(swapManualWord())toast('Бік змінено у слові: справа ↔ зліва — перевірте висновок');return;}
+  const zn=e.target.closest('[data-zone]'),cn=e.target.closest('.concl');
+  /* поки питаємо — текст протоколу не в фокусі, щоб він не став «відредагованим вручну» */
+  const calm0=()=>{getSelection().removeAllRanges();if(document.activeElement===tx)tx.blur();};
+  if(zn||cn||S.study==='bone')calm0();
+  const conclList=pc=>pc.before.map((t,i)=>`«${t}» → «${pc.after[i]}»`);
+  if(zn){const pz=planZoneSide(zn.dataset.zone);if(!pz)return;const pc=planConclSide();
+    askSide({title:`Зона «${pz.name}»: бік у описі зміниться на протилежний.`,
+      main:{label:'Змінити',only:'Лише в описі',apply:pz.apply,toast:'Бік змінено в описі'},
+      extra:pc?{label:'Змінити і в описі, і у висновку',apply:pc.apply,what:'У висновку теж є бік — змінити й там?',list:conclList(pc),toast:'Бік змінено в описі й у висновку',check:'висновок'}:null});}
+  else if(cn){const pc=planConclSide();if(!pc)return;const pz=planZonesSide();
+    askSide({title:'Бік у висновку зміниться на протилежний: '+conclList(pc).join('; ')+'.',
+      main:{label:'Змінити',only:'Лише у висновку',apply:pc.apply,toast:'Бік змінено у висновку'},
+      extra:pz?{label:'Змінити і у висновку, і в описі',apply:pz.apply,what:'В описі теж є бік — змінити й там?',list:pz.names.map(n=>'зона «'+n+'»'),toast:'Бік змінено у висновку й в описі',check:'опис'}:null});}
+  else if(S.study==='bone'&&(S.side==='п'||S.side==='л')&&tx.children[1]&&tx.children[1].contains(e.target)){const pc=planConclSide();const to=S.side==='п'?'ліва':'права';
+    askSide({title:`Бік у назві дослідження зміниться на «${to}».`,
+      main:{label:'Змінити',only:'Лише в назві',apply:()=>{S.side=S.side==='п'?'л':'п';},toast:'Бік змінено в назві дослідження'},
+      extra:pc?{label:'Змінити і в назві, і у висновку',apply:pc.apply,what:'У висновку теж є бік — змінити й там?',list:conclList(pc),toast:'Бік змінено в назві й у висновку',check:'висновок'}:null});}
 });
 
 /* скорочення і пропуски */
